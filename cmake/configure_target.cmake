@@ -37,8 +37,14 @@ function(vmtutorial_configure_target TARGET_NAME)
 
   if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    # I would've put -Werror here, but there are too many warnings from
+    # dependencies and warnings within our own code that our mostly
+    # informational; to selectively disable them all would be quite annoying
+    # and the amount of them would be... immense.
+    #
+    # We'll just have to remain vigilant.
       set(ADDITIONAL_COMPILER_FLAGS
-          "-Wall;-Werror;-Wextra;-Wno-c++98-compat;-Wno-c++98-compat-pedantic")
+          "-Wall;-Wextra;-Wno-c++98-compat;-Wno-c++98-compat-pedantic")
     elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
       set(ADDITIONAL_COMPILER_FLAGS "-Wall;-Werror;-Wextra")
     endif()
