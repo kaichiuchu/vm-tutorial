@@ -27,3 +27,4 @@ function(register_vmtutorial_core_test TEST_NAME SRCS)
 endfunction()
 
 register_vmtutorial_core_test(core_disasm_test disasm.cpp)
+register_vmtutorial_core_test(core_impl_test impl.cpp)

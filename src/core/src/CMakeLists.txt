@@ -22,9 +22,12 @@ include(FetchContent)
 #
 # This level of separation allows us to think in terms of "interface" vs
 # "implementation".
-set(PRIVATE_FILES private/disasm.cpp)
-set(PUBLIC_FILES public/core/disasm.h
-                 public/core/spec.h)
+set(PRIVATE_SRCS private/disasm.cpp private/impl_interpreter.cpp)
+set(PRIVATE_HDRS private/impl_interpreter.h)
+
+set(PUBLIC_HDRS public/core/disasm.h
+                public/core/impl.h
+                public/core/spec.h)
 
 # I am not sure if this is the result of my own ignorance, or if CMake truly
 # does not offer this functionality:
@@ -51,7 +54,7 @@ FetchContent_MakeAvailable(fmt)
 # We're only going to support compiling the core as a static library for now;
 # there's no reason to make it shared as only one other component of this
 # project is going to use it: the frontend.
-add_library(core STATIC ${PRIVATE_FILES} ${PUBLIC_FILES})
+add_library(core STATIC ${PRIVATE_SRCS} ${PRIVATE_HDRS} ${PUBLIC_HDRS})
 
 # Make sure we can use libfmt in our core!
 target_link_libraries(core fmt::fmt)

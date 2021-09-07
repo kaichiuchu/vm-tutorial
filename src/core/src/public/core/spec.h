@@ -12,6 +12,7 @@
 
 #pragma once
 
+#include <array>
 #include <cstdint>
 
 namespace chip8 {
@@ -35,8 +36,8 @@ namespace instruction_decoders {
 /// \returns The group the instruction belongs to, or the actual instruction.
 constexpr auto GetGroup(const uint_fast16_t instruction) noexcept
     -> unsigned int {
-  constexpr auto kGroupShift = 12;
-  return instruction >> kGroupShift;
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+  return instruction >> 12;
 }
 
 /// Decodes the lower 12 bits of the instruction.
@@ -54,8 +55,8 @@ constexpr auto GetGroup(const uint_fast16_t instruction) noexcept
 /// \returns The lower 12 bits of the instruction.
 constexpr auto GetAddress(const uint_fast16_t instruction) noexcept
     -> unsigned int {
-  constexpr auto kAddressMask = 0xFFF;
-  return instruction & kAddressMask;
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+  return instruction & 0xFFF;
 }
 
 /// Decodes the lower 4 bits of the instruction.
@@ -73,8 +74,8 @@ constexpr auto GetAddress(const uint_fast16_t instruction) noexcept
 /// \returns The lower 4 bits of the instruction.
 constexpr auto GetNibble(const uint_fast16_t instruction) noexcept
     -> unsigned int {
-  constexpr auto kNibbleMask = 0xF;
-  return instruction & kNibbleMask;
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+  return instruction & 0xF;
 }
 
 /// Decodes the lower 4 bits of the high byte of the instruction.
@@ -91,10 +92,8 @@ constexpr auto GetNibble(const uint_fast16_t instruction) noexcept
 ///
 /// \returns The lower 4 bits of the high byte of the instruction.
 constexpr auto GetX(const uint_fast16_t instruction) noexcept -> size_t {
-  constexpr auto kShiftAmount = 8;
-  constexpr auto kRegisterMask = 0x0F;
-
-  return (instruction >> kShiftAmount) & kRegisterMask;
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+  return (instruction >> 8) & 0x0F;
 }
 
 /// Decodes the upper 4 bits of the low byte of the instruction.
@@ -111,10 +110,8 @@ constexpr auto GetX(const uint_fast16_t instruction) noexcept -> size_t {
 ///
 /// \returns The upper 4 bits of the low byte of the instruction.
 constexpr auto GetY(const uint_fast16_t instruction) noexcept -> size_t {
-  constexpr auto kByteMask = 0xFF;
-  constexpr auto kShiftAmount = 4;
-
-  return (instruction & kByteMask) >> kShiftAmount;
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+  return (instruction & 0xFF) >> 4;
 }
 
 /// Decodes the lowest 8 bits of the instruction.
@@ -132,8 +129,8 @@ constexpr auto GetY(const uint_fast16_t instruction) noexcept -> size_t {
 /// \returns The lower 8 bits of the instruction.
 constexpr auto GetByte(const uint_fast16_t instruction) noexcept
     -> uint_fast8_t {
-  constexpr auto kByteMask = 0xFF;
-  return instruction & kByteMask;
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+  return instruction & 0xFF;
 }
 }  // namespace instruction_decoders
 
@@ -148,6 +145,8 @@ struct Instruction {
         byte_(instruction_decoders::GetByte(value)),
         nibble_(instruction_decoders::GetNibble(value)),
         value_(value) {}
+
+  Instruction& operator=(const Instruction&) { return *this; }
 
   /// The group that this instruction falls under. For cases where an
   /// instruction does not belong to any group, this will contain the
@@ -176,6 +175,16 @@ struct Instruction {
   /// The original instruction value used to create this structure.
   const uint_fast16_t value_;
 };
+
+enum Key { k1, k2, k3, k4, k5, k6, k7, k8, k9, kA, kB, kC, kD, kE, kF };
+
+enum KeyState : bool { kPressed = true, kReleased = false };
+
+/// Defines BGRA32 values for pixel colors.
+namespace pixel {
+constexpr auto kWhite = 0xFFFFFF;
+constexpr auto kBlack = 0x000000;
+}  // namespace pixel
 
 namespace instruction_groups {
 constexpr auto kControlFlowAndScreen = 0x0;
@@ -237,4 +246,76 @@ constexpr uint_fast8_t kLD_I_Vx = 0x55;
 constexpr uint_fast8_t kLD_Vx_I = 0x65;
 }  // namespace timer_and_memory_control_instructions
 
+/// Defines the sizes of various CHIP-8 data types.
+namespace data_size {
+constexpr auto kV = 16;
+constexpr auto kStack = 16;
+constexpr auto kInternalMemory = 4096;
+constexpr auto kInstructionLength = 2;
+constexpr auto kKeypad = 16;
+constexpr auto kFontLength = 5;
+}  // namespace data_size
+
+/// Defines the limits of various CHIP-8 types.
+namespace data_limits {
+constexpr auto kProgramCounter =
+    data_size::kInternalMemory - data_size::kInstructionLength;
+
+constexpr auto kMinRandomValue = 0;
+constexpr auto kMaxRandomValue = 255;
+}  // namespace data_limits
+
+/// Defines the dimensions of the framebuffer.
+namespace framebuffer {
+constexpr auto kWidth = 64;
+constexpr auto kHeight = 32;
+constexpr auto kSize = kWidth * kHeight;
+}  // namespace framebuffer
+
+namespace initial_values {
+constexpr auto kProgramCounter = 0x200;
+constexpr auto kStackPointer = -1;
+constexpr auto kStack = 0;
+constexpr auto kI = 0;
+constexpr auto kDelayTimer = 0;
+constexpr auto kSoundTimer = 0;
+constexpr auto kKeypad = KeyState::kReleased;
+constexpr auto kKeyPressHaltState = false;
+constexpr auto kInternalMemory = 0x00;
+constexpr auto kV = 0x00;
+
+/// This font set can be used by guest programs to display predefined
+/// hexadecimal sprites, ranging from 0 to F. It should be copied to the
+/// beginning of an implementation's internal memory following a reset.
+constexpr std::array kFontSet = {
+    0xF0, 0x90, 0x90, 0x90, 0xF0,  // 0
+    0x20, 0x60, 0x20, 0x20, 0x70,  // 1
+    0xF0, 0x10, 0xF0, 0x80, 0xF0,  // 2
+    0xF0, 0x10, 0xF0, 0x10, 0xF0,  // 3
+    0x90, 0x90, 0xF0, 0x10, 0x10,  // 4
+    0xF0, 0x80, 0xF0, 0x10, 0xF0,  // 5
+    0xF0, 0x80, 0xF0, 0x90, 0xF0,  // 6
+    0xF0, 0x10, 0x20, 0x40, 0x40,  // 7
+    0xF0, 0x90, 0xF0, 0x90, 0xF0,  // 8
+    0xF0, 0x90, 0xF0, 0x10, 0xF0,  // 9
+    0xF0, 0x90, 0xF0, 0x90, 0x90,  // A
+    0xE0, 0x90, 0xE0, 0x90, 0xE0,  // B
+    0xF0, 0x80, 0x80, 0x80, 0xF0,  // C
+    0xE0, 0x90, 0x90, 0x90, 0xE0,  // D
+    0xF0, 0x80, 0xF0, 0x80, 0xF0,  // E
+    0xF0, 0x80, 0xF0, 0x80, 0x80   // F
+};
+}  // namespace initial_values
+
+/// Defines the results of execution steps.
+enum class StepResult {
+  kSuccess,
+  kWaitForKeyPress,
+  kInvalidMemoryLocation,
+  kInvalidInstruction,
+  kInvalidKey,
+  kInvalidSpriteLocation,
+  kStackUnderflow,
+  kStackOverflow
+};
 }  // namespace chip8

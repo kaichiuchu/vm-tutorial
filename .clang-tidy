@@ -222,8 +222,6 @@ CheckOptions:
     value:           'true'
   - key:             cppcoreguidelines-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic
     value:           'true'
-  - key:             readability-function-cognitive-complexity.Threshold
-    value:           '25'
   - key:             cppcoreguidelines-no-malloc.Allocations
     value:           '::malloc;::calloc'
   - key:             performance-faster-string-find.StringLikeClasses
