@@ -15,6 +15,7 @@
 #include <core/spec.h>
 
 #include <algorithm>
+#include <tuple>
 
 namespace chip8 {
 /// This class defines the interface for a CHIP-8 implementation.
@@ -55,8 +56,7 @@ namespace chip8 {
 ///
 /// 3) cached interpreter
 ///
-///    Essentially, this is the same thing as JIT compilation (see below), but
-///    the blocks point to fixed instruction handlers.
+///    _removed as of this commit_
 ///
 /// 4) Just-in-time compilation (JIT)
 ///
@@ -97,6 +97,19 @@ class ImplementationInterface {
  public:
   virtual ~ImplementationInterface() noexcept = default;
 
+  /// Determines if the implementation should halt, pending a key press.
+  ///
+  /// Example code:
+  ///   \code
+  ///     const auto waiting = IsWaitingForKeyPress();
+  ///   \endcode
+  ///
+  /// \returns true if the implementation should halt pending a key press, or
+  /// false otherwise.
+  auto IsHaltedUntilKeyPress() const noexcept -> bool {
+    return halted_until_key_press_;
+  }
+
   /// Executes the next instruction.
   ///
   /// Example code:
@@ -131,21 +144,7 @@ class ImplementationInterface {
     ResetInternalMemory();
   }
 
-  /// Determines if the implementation should halt, pending a key press.
-  ///
-  /// Example code:
-  ///   \code
-  ///     const auto waiting = IsWaitingForKeyPress();
-  ///   \endcode
-  ///
-  /// \returns true if the implementation should halt pending a key press, or
-  /// false otherwise.
-  auto IsWaitingForKeyPress() const noexcept -> bool {
-    return waiting_for_key_press_;
-  }
-
-  /// Sets the program counter, performing bounds checking. Derived classes may
-  /// override this method.
+  /// Sets the program counter, performing bounds checking.
   ///
   /// If the default implementation is used, the specified new program counter
   /// cannot exceed 4094 (0xFFE). While the internal memory can reference a
@@ -172,6 +171,7 @@ class ImplementationInterface {
   ///
   /// \param new_delay_timer_value The new delay timer value to set.
   void SetDelayTimerValue(const uint_fast8_t new_delay_timer_value) noexcept {
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index,cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
     delay_timer_ = new_delay_timer_value & 0xFF;
   }
 
@@ -190,19 +190,19 @@ class ImplementationInterface {
   /// \param key The key to update its state for.
   /// \param state The new state of the key.
   void SetKeyState(const chip8::Key key, const chip8::KeyState state) noexcept {
-    if ((state == chip8::KeyState::kPressed) && IsWaitingForKeyPress()) {
+    if ((state == chip8::KeyState::kPressed) && IsHaltedUntilKeyPress()) {
       // We disable the constant array index warning because we know \ref key
       // *will* be valid.
       //
       // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
       V_[key_press_dest_] = key;
-      waiting_for_key_press_ = false;
+      halted_until_key_press_ = false;
     }
     // We disable the constant array index warning because we know \ref key
     // *will* be valid.
     //
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
-    keypad_[key] = static_cast<bool>(state);
+    keypad_[key] = state;
   }
 
   /// CHIP-8 has 16 general purpose 8-bit registers, conventionally referred to
@@ -231,7 +231,7 @@ class ImplementationInterface {
   std::array<uint_fast32_t, chip8::framebuffer::kSize> framebuffer_;
 
   /// CHIP-8 contains a hexadecimal keypad, consisting of 16 keys.
-  std::array<bool, chip8::data_size::kKeypad> keypad_;
+  std::array<chip8::KeyState, chip8::data_size::kKeypad> keypad_;
 
   /// The program counter is an index into internal memory. It may be between
   /// the ranges of 0 or 4094 (0xFFE). While the internal memory can reference a
@@ -272,7 +272,7 @@ class ImplementationInterface {
   ///
   /// \param x The V register destination to store the key value pressed.
   void HaltUntilKeyPress(const size_t x) noexcept {
-    waiting_for_key_press_ = true;
+    halted_until_key_press_ = true;
     key_press_dest_ = x;
   }
 
@@ -314,20 +314,38 @@ class ImplementationInterface {
     delay_timer_ = chip8::initial_values::kDelayTimer;
     sound_timer_ = chip8::initial_values::kSoundTimer;
     I_ = chip8::initial_values::kI;
-    waiting_for_key_press_ = chip8::initial_values::kKeyPressHaltState;
+    halted_until_key_press_ = chip8::initial_values::kKeyPressHaltState;
   }
 
   void ResetGeneralPurposeRegisters() noexcept {
     std::fill(V_.begin(), V_.end(), chip8::initial_values::kV);
   }
 
+  using HundredsPlace = unsigned int;
+  using TensPlace = unsigned int;
+  using OnesPlace = unsigned int;
+
+  using PlaceValues = std::tuple<HundredsPlace, TensPlace, OnesPlace>;
+
+  /// Determines the digits located at the hundreds, tens, and ones places.
+  ///
+  /// \param Vx The value of the Vx register.
+  ///
+  /// \returns A tuple containing the hundreds, tens, and ones digits in that
+  /// order.
+  static auto GetPlaceValues(const uint_fast8_t Vx) noexcept -> PlaceValues {
+    return {((Vx / 100) % 10),  // Hundreds digit
+            ((Vx / 10) % 10),   // Tens digit
+            Vx % 10};           // Ones digit
+  }
+
  private:
   /// One instruction requires the virtual machine to stop execution until a key
   /// is pressed (0xFx0A, "LD Vx, K"). If this is set to true, implementations
   /// should do nothing when their \ref Step() method is called. The state of
-  /// this variable can be examined through the `IsWaitingForKeyPress()` method
+  /// this variable can be examined through the `IsHaltedUntilKeyPress()` method
   /// call, and changed through a call to the `HaltUntilKeyPress()` method.
-  bool waiting_for_key_press_;
+  bool halted_until_key_press_;
 
   /// The index to store a pressed key value, assuming the implementation is
   /// waiting for a key press.

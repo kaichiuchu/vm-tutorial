@@ -12,8 +12,8 @@
 
 #include "impl_interpreter.h"
 
-auto InterpreterImplementation::GetPixelIndex(size_t x_coord,
-                                              size_t y_coord) noexcept
+auto InterpreterImplementation::GetPixelIndex(const size_t x_coord,
+                                              const size_t y_coord) noexcept
     -> size_t {
   return y_coord * chip8::framebuffer::kWidth + x_coord;
 }
@@ -45,8 +45,8 @@ auto InterpreterImplementation::GetVxVyRegisters(
 }
 
 chip8::StepResult InterpreterImplementation::Step() noexcept {
-  if (IsWaitingForKeyPress()) {
-    return chip8::StepResult::kWaitForKeyPress;
+  if (IsHaltedUntilKeyPress()) {
+    return chip8::StepResult::kHaltUntilKeyPress;
   }
 
   const auto instruction = FetchAndDecodeInstruction();
@@ -232,7 +232,7 @@ chip8::StepResult InterpreterImplementation::Step() noexcept {
           // array.
           //
           // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
-          SkipNextInstructionIf(keypad_[Vx]);
+          SkipNextInstructionIf(keypad_[Vx] == chip8::KeyState::kPressed);
           break;
 
         case chip8::keyboard_control_flow_instructions::kSKNP:
@@ -245,7 +245,7 @@ chip8::StepResult InterpreterImplementation::Step() noexcept {
           // array.
           //
           // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
-          SkipNextInstructionIf(!keypad_[Vx]);
+          SkipNextInstructionIf(keypad_[Vx] == chip8::KeyState::kReleased);
           break;
 
         default:
@@ -262,7 +262,7 @@ chip8::StepResult InterpreterImplementation::Step() noexcept {
 
         case chip8::timer_and_memory_control_instructions::kLD_Vx_K:
           HaltUntilKeyPress(instruction.x_);
-          step_result = chip8::StepResult::kWaitForKeyPress;
+          step_result = chip8::StepResult::kHaltUntilKeyPress;
 
           break;
 
@@ -283,26 +283,30 @@ chip8::StepResult InterpreterImplementation::Step() noexcept {
           break;
 
         case chip8::timer_and_memory_control_instructions::kLD_B_Vx: {
-          if ((I_ + 2) >= memory_.size()) {
+          const auto ones_digit_store_address = I_ + 2;
+
+          if (ones_digit_store_address >= memory_.size()) {
             step_result = chip8::StepResult::kInvalidMemoryLocation;
             break;
           }
 
           const auto hundreds_digit_store_address = I_ + 0;
           const auto tens_digit_store_address = I_ + 1;
-          const auto ones_digit_store_address = I_ + 2;
+
+          const auto [hundreds_digit, tens_digit, ones_digit] =
+              GetPlaceValues(Vx);
 
           // We just did bounds checking, so it's safe to directly access the
           // array.
 
           // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index,cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
-          memory_[hundreds_digit_store_address] = (Vx / 100) % 10;
+          memory_[hundreds_digit_store_address] = hundreds_digit;
 
           // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index,cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
-          memory_[tens_digit_store_address] = (Vx / 10) % 10;
+          memory_[tens_digit_store_address] = tens_digit;
 
           // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index,cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
-          memory_[ones_digit_store_address] = Vx % 10;
+          memory_[ones_digit_store_address] = ones_digit;
 
           break;
         }
@@ -332,7 +336,7 @@ chip8::StepResult InterpreterImplementation::Step() noexcept {
 
   // If an error occurred, we want the program counter that caused the fault.
   if ((step_result == chip8::StepResult::kSuccess) ||
-      (step_result == chip8::StepResult::kWaitForKeyPress)) {
+      (step_result == chip8::StepResult::kHaltUntilKeyPress)) {
     program_counter_ = next_program_counter_;
   }
   return step_result;

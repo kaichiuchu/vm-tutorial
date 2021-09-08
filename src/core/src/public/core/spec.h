@@ -310,7 +310,7 @@ constexpr std::array kFontSet = {
 /// Defines the results of execution steps.
 enum class StepResult {
   kSuccess,
-  kWaitForKeyPress,
+  kHaltUntilKeyPress,
   kInvalidMemoryLocation,
   kInvalidInstruction,
   kInvalidKey,

@@ -767,7 +767,7 @@ TYPED_TEST(ImplementationTest, Opcode_LD_Vx_K) {
   InjectInstruction(impl_, 0xF0, 0x0A);
 
   // Make sure the instruction succeeded.
-  ASSERT_EQ(impl_.Step(), chip8::StepResult::kWaitForKeyPress);
+  ASSERT_EQ(impl_.Step(), chip8::StepResult::kHaltUntilKeyPress);
 
   // Now press a key to stop waiting for a key press.
   impl_.SetKeyState(chip8::Key::k1, chip8::KeyState::kPressed);
@@ -776,7 +776,7 @@ TYPED_TEST(ImplementationTest, Opcode_LD_Vx_K) {
   ASSERT_EQ(impl_.V_[0], chip8::Key::k1);
 
   // The virtual machine should no longer be waiting for a key press.
-  ASSERT_FALSE(impl_.IsWaitingForKeyPress());
+  ASSERT_FALSE(impl_.IsHaltedUntilKeyPress());
 }
 
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
