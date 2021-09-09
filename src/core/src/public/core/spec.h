@@ -265,6 +265,15 @@ constexpr auto kMinRandomValue = 0;
 constexpr auto kMaxRandomValue = 255;
 }  // namespace data_limits
 
+namespace memory_region {
+constexpr auto kProgramArea = 0x200;
+}
+
+namespace timing {
+constexpr auto kDefaultInstructionsPerSecond = 500;
+constexpr auto kDefaultFrameRate = 60.0;
+}  // namespace timing
+
 /// Defines the dimensions of the framebuffer.
 namespace framebuffer {
 constexpr auto kWidth = 64;

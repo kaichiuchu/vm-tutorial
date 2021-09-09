@@ -95,6 +95,8 @@ namespace chip8 {
 /// machine.
 class ImplementationInterface {
  public:
+  using Framebuffer = std::array<uint_fast32_t, framebuffer::kSize>;
+
   virtual ~ImplementationInterface() noexcept = default;
 
   /// Determines if the implementation should halt, pending a key press.
@@ -228,7 +230,7 @@ class ImplementationInterface {
   /// CHIP-8 contains a 64x32 monochrome framebuffer used for displaying
   /// graphics. In our implementation, we store BGRA32 values to allow for easy
   /// displaying through modern APIs.
-  std::array<uint_fast32_t, chip8::framebuffer::kSize> framebuffer_;
+  Framebuffer framebuffer_;
 
   /// CHIP-8 contains a hexadecimal keypad, consisting of 16 keys.
   std::array<chip8::KeyState, chip8::data_size::kKeypad> keypad_;

@@ -22,12 +22,16 @@ include(FetchContent)
 #
 # This level of separation allows us to think in terms of "interface" vs
 # "implementation".
-set(PRIVATE_SRCS private/disasm.cpp private/impl_interpreter.cpp)
+set(PRIVATE_SRCS private/disasm.cpp
+                 private/impl_interpreter.cpp
+                 private/vm_instance.cpp)
+
 set(PRIVATE_HDRS private/impl_interpreter.h)
 
 set(PUBLIC_HDRS public/core/disasm.h
                 public/core/impl.h
-                public/core/spec.h)
+                public/core/spec.h
+                public/core/vm_instance.h)
 
 # I am not sure if this is the result of my own ignorance, or if CMake truly
 # does not offer this functionality:
