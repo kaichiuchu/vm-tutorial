@@ -65,7 +65,19 @@ class VMInstance {
   template <typename Container,
             typename = std::enable_if_t<
                 std::is_same_v<typename Container::value_type, uint_fast8_t>>>
-  auto LoadProgram(const Container& program_data) noexcept -> bool;
+  auto LoadProgram(const Container& program_data) noexcept -> bool {
+    constexpr auto kMaxProgramSize =
+        chip8::data_size::kInternalMemory - chip8::memory_region::kProgramArea;
+
+    if (program_data.size() > kMaxProgramSize) {
+      return false;
+    }
+
+    Reset();
+    std::copy(program_data.cbegin(), program_data.cend(),
+              impl_->memory_.begin() + chip8::memory_region::kProgramArea);
+    return true;
+  }
 
   /// Executes the number of steps necessary to count as a full frame, based on
   /// the current timing configuration.

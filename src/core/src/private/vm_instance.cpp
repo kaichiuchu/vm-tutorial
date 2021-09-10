@@ -86,22 +86,6 @@ auto chip8::VMInstance::SetTiming(const unsigned int instructions_per_second,
   return true;
 }
 
-template <typename Container, typename>
-auto chip8::VMInstance::LoadProgram(const Container& program_data) noexcept
-    -> bool {
-  constexpr auto kMaxProgramSize =
-      chip8::data_size::kInternalMemory - chip8::memory_region::kProgramArea;
-
-  if (program_data.size() > kMaxProgramSize) {
-    return false;
-  }
-
-  Reset();
-  std::copy(program_data.cbegin(), program_data.cend(),
-            impl_->memory_.begin() + chip8v::memory_region::kProgramArea);
-  return true;
-}
-
 auto chip8::VMInstance::RunForOneFrame() noexcept -> chip8::StepResult {
   for (auto executed_steps = 0; executed_steps < number_of_steps_per_frame_;
        ++executed_steps) {
