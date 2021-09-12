@@ -215,9 +215,34 @@ chip8::StepResult InterpreterImplementation::Step() noexcept {
       Vx = random_number_(random_engine_) & instruction.byte_;
       break;
 
-    // We don't have a frontend yet at the time of this commit, when we do then
-    // we can worry about drawing.
     case chip8::ungrouped_instructions::kDRW:
+      VF = 0;
+
+      for (unsigned int y = 0; y < instruction.nibble_; ++y) {
+        const auto sprite_location = I_ + y;
+
+        if (sprite_location >= memory_.size()) {
+          step_result = chip8::StepResult::kInvalidSpriteLocation;
+          break;
+        }
+
+        const auto sprite_line = memory_[sprite_location];
+        const unsigned int y_pos = (Vy + y) % chip8::framebuffer::kHeight;
+
+        for (auto x = 0; x < 8; x++) {
+          const unsigned int x_pos = (Vx + x) % chip8::framebuffer::kWidth;
+          const auto pixel_location = GetPixelIndex(x_pos, y_pos);
+
+          if (sprite_line & (0x80 >> x)) {
+            if (framebuffer_[pixel_location] == chip8::pixel::kWhite) {
+              framebuffer_[pixel_location] = chip8::pixel::kBlack;
+              VF = 1;
+            } else {
+              framebuffer_[pixel_location] = chip8::pixel::kWhite;
+            }
+          }
+        }
+      }
       break;
 
     case chip8::instruction_groups::kKeyboardControlFlow:

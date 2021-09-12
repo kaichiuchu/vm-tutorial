@@ -23,6 +23,10 @@ chip8::VMInstance::VMInstance() noexcept
   Reset();
 }
 
+auto chip8::VMInstance::GetMaxFrameTime() const noexcept -> double {
+  return max_frame_time_;
+}
+
 auto chip8::VMInstance::CalculateDurationOfTone() const noexcept -> double {
   constexpr auto kTimerDecrementRate = 1 / 60.0;
   return kTimerDecrementRate * impl_->sound_timer_;
@@ -83,6 +87,10 @@ auto chip8::VMInstance::SetTiming(const unsigned int instructions_per_second,
   }
 
   number_of_steps_per_frame_ = static_cast<unsigned int>(steps_per_frame);
+
+  constexpr auto kSecInMs = 1000;
+  max_frame_time_ = kSecInMs / desired_frame_rate;
+
   return true;
 }
 

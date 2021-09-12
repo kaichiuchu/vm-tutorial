@@ -27,6 +27,13 @@ class VMInstance {
   /// (500Hz) within 60 frames.
   VMInstance() noexcept;
 
+  /// Retrieves the maximum frame time in milliseconds as determined by the last
+  /// call to \ref SetTiming().
+  ///
+  /// \returns The maximum frame time in milliseconds as determined by the last
+  /// call to \ref SetTiming().
+  auto GetMaxFrameTime() const noexcept -> double;
+
   /// Resets the virtual machine to a well-defined startup state.
   ///
   /// This method can be called at any time, however it is advisable that
@@ -137,5 +144,9 @@ class VMInstance {
   /// call the play tone callback. We need to do this, so we can decrement the
   /// sound timer normally.
   bool is_playing_tone_;
+
+  /// The maximum frame time as determined by the last call to the \ref
+  /// SetTiming() method.
+  double max_frame_time_;
 };
 }  // namespace chip8
