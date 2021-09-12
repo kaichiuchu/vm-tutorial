@@ -20,4 +20,4 @@ wouldn't get the same feeling. Surely you can understand that, can't you?
 
 ## Screenshots
 
-[!Space Invaders](https://user-images.githubusercontent.com/88908600/133001028-03223a30-fa1b-4880-8439-2c62131f0a67.png)
+![Space Invaders](https://user-images.githubusercontent.com/88908600/133001028-03223a30-fa1b-4880-8439-2c62131f0a67.png)
