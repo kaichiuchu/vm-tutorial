@@ -54,7 +54,7 @@ class VMThread : public QThread {
 
   /// This signal is emitted when it is time to play a tone.
   ///
-  /// \param tone_duration The length of the tone in milliseconds.
+  /// \param tone_duration The duration of the tone in milliseconds.
   void PlayTone(double tone_duration);
 
   /// This signal is emitted when a fatal error has occurred within the virtual

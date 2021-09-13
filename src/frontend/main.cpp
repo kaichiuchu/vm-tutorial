@@ -20,7 +20,7 @@
 /// environment in which the program is run.
 ///
 /// \param argv The arguments passed to the program from the environment in
-/// which the program is run, if any.
+/// which the program is run.
 auto main(int argc, char* argv[]) -> int {
   QApplication qt_app_instance(argc, argv);
 

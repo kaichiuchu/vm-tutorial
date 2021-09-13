@@ -27,7 +27,7 @@ VMTutorialApplication::VMTutorialApplication() noexcept
             // We need to keep track if the virtual machine was running or not
             // so that in case opening the new ROM fails, the original program
             // can continue.
-            const bool vm_thread_was_running = vm_thread_.isRunning();
+            const auto vm_thread_was_running = vm_thread_.isRunning();
             vm_thread_.quit();
 
             QFile rom_file(rom_file_path);
@@ -77,6 +77,8 @@ VMTutorialApplication::VMTutorialApplication() noexcept
               }
               return;
             }
+
+            // No errors reported, start the virtual machine thread.
             vm_thread_.start();
           });
 
