@@ -28,15 +28,15 @@ function(vmtutorial_configure_target TARGET_NAME)
   # g++ handles these flags just fine on every platform that I'm aware of.
   #
   # These flags are set regardless of the build type specified.
-  if ((CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND
-       CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "GNU") OR
-       CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+  if ((CMAKE_CXX_COMPILER_ID MATCHES "Clang" AND
+       CMAKE_CXX_COMPILER_FRONTEND_VARIANT MATCHES "GNU") OR
+       CMAKE_CXX_COMPILER_ID MATCHES "GNU")
     set(MAIN_COMPILER_FLAGS
         "-fno-exceptions;-fno-rtti;-fno-unwind-tables;-fno-asynchronous-unwind-tables")
   endif()
 
   if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-    if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     # I would've put -Werror here, but there are too many warnings from
     # dependencies and warnings within our own code that our mostly
     # informational; to selectively disable them all would be quite annoying
@@ -45,7 +45,7 @@ function(vmtutorial_configure_target TARGET_NAME)
     # We'll just have to remain vigilant.
       set(ADDITIONAL_COMPILER_FLAGS
           "-Wall;-Wextra;-Wno-c++98-compat;-Wno-c++98-compat-pedantic")
-    elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    elseif (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
       set(ADDITIONAL_COMPILER_FLAGS "-Wall;-Werror;-Wextra")
     endif()
   endif()

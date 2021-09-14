@@ -44,7 +44,7 @@ project(vm-tutorial VERSION 1.0.0.0
 # While CMake >=3.0 has line continuation of quoted arguments, it does not
 # respect indentation and as such it is entirely worthless to use. We *could*
 # use it, however to do so would look absolutely nasty.
-if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+if (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
   if (CMAKE_CXX_COMPILER_VERSION LESS "8.1")
     string(CONCAT WARNING_MSG "You are compiling this tutorial project using an "
                               "unsupported g++ version. It is recommended that "
@@ -52,7 +52,7 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
                               "project.")
     message(WARNING ${WARNING_MSG})
   endif()
-elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   if (CMAKE_CXX_COMPILER_VERSION LESS "5.0")
     string(CONCAT WARNING_MSG "You are compiling this tutorial project using "
                               "an unsupported clang++ version. It is "
