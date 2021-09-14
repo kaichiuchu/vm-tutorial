@@ -22,7 +22,6 @@ Renderer::Renderer(QWidget* parent_widget) noexcept
 
 void Renderer::initializeGL() noexcept {
   initializeOpenGLFunctions();
-  EnableDebugCallback();
   CreateVertexShader();
   CreateFragmentShader();
   CreateProgram();
@@ -57,16 +56,6 @@ GLuint Renderer::CreateShader(const GLenum type,
   glCompileShader(shader);
 
   return shader;
-}
-
-void Renderer::EnableDebugCallback() noexcept {
-#if 0
-  glEnable(GL_DEBUG_OUTPUT);
-  glDebugMessageCallback(
-      [](GLenum, GLenum, GLuint, GLenum, GLsizei, const GLchar* message,
-         const void*) { qDebug() << message; },
-      nullptr);
-#endif
 }
 
 void Renderer::CreateTexture() noexcept {

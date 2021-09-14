@@ -73,10 +73,6 @@ class Renderer : public QOpenGLWidget, public QOpenGLFunctions_4_1_Core {
   void paintGL() noexcept override;
 
  private:
-  /// Enables the debug callback if we're using a debug context and the
-  /// extension is supported.
-  void EnableDebugCallback() noexcept;
-
   /// Creates the vertex shader.
   void CreateVertexShader() noexcept;
 
