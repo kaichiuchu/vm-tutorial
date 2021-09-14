@@ -14,12 +14,12 @@
 
 #include <core/impl.h>
 
-#include <QOpenGLFunctions_4_5_Core>
+#include <QOpenGLFunctions_4_1_Core>
 #include <QOpenGLWidget>
 
 /// This class handles OpenGL rendering for the CHIP-8 framebuffer. It is
 /// displayed as the central widget of the main window.
-class Renderer : public QOpenGLWidget, public QOpenGLFunctions_4_5_Core {
+class Renderer : public QOpenGLWidget, public QOpenGLFunctions_4_1_Core {
   Q_OBJECT
 
  public:

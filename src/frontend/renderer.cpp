@@ -44,9 +44,9 @@ void Renderer::paintGL() noexcept {
 void Renderer::UpdateScreen(
     const chip8::ImplementationInterface::Framebuffer& framebuffer) noexcept {
   glBindTexture(GL_TEXTURE_2D, texture_);
-  glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, chip8::framebuffer::kWidth,
-                  chip8::framebuffer::kHeight, GL_BGRA, GL_UNSIGNED_BYTE,
-                  framebuffer.data());
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, chip8::framebuffer::kWidth,
+               chip8::framebuffer::kHeight, 0, GL_BGRA, GL_UNSIGNED_BYTE,
+               framebuffer.data());
   update();
 }
 
@@ -60,18 +60,22 @@ GLuint Renderer::CreateShader(const GLenum type,
 }
 
 void Renderer::EnableDebugCallback() noexcept {
+#if 0
   glEnable(GL_DEBUG_OUTPUT);
   glDebugMessageCallback(
       [](GLenum, GLenum, GLuint, GLenum, GLsizei, const GLchar* message,
          const void*) { qDebug() << message; },
       nullptr);
+#endif
 }
 
 void Renderer::CreateTexture() noexcept {
   glGenTextures(1, &texture_);
   glBindTexture(GL_TEXTURE_2D, texture_);
-  glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, chip8::framebuffer::kWidth,
-                 chip8::framebuffer::kHeight);
+
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);

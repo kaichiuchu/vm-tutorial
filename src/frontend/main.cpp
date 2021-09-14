@@ -11,6 +11,7 @@
 // <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 #include <QApplication>
+#include <QSurfaceFormat>
 
 #include "vm_tutorial_app.h"
 
@@ -22,6 +23,19 @@
 /// \param argv The arguments passed to the program from the environment in
 /// which the program is run.
 auto main(int argc, char* argv[]) -> int {
+  /// Per Qt documentation at https://doc.qt.io/qt-6/qopenglwidget.html:
+  ///
+  /// Note: Calling \ref QSurfaceFormat::setDefaultFormat() before constructing
+  /// the QApplication instance is mandatory on some platforms (for example,
+  /// macOS) when an OpenGL core profile context is requested. This is to ensure
+  /// that resource sharing between contexts stays functional as all internal
+  /// contexts are created using the correct version and profile.
+  QSurfaceFormat default_surface_format;
+  default_surface_format.setMajorVersion(4);
+  default_surface_format.setMinorVersion(1);
+  default_surface_format.setProfile(QSurfaceFormat::CoreProfile);
+  QSurfaceFormat::setDefaultFormat(default_surface_format);
+
   QApplication qt_app_instance(argc, argv);
 
   qt_app_instance.setApplicationName("vm-tutorial");
