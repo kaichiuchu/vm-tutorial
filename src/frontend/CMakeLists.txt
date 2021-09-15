@@ -20,10 +20,10 @@ set(CMAKE_AUTOUIC ON)
 set(SRCS main.cpp renderer.cpp sound_manager.cpp vm_thread.cpp vm_tutorial_app.cpp)
 set(HDRS renderer.h sound_manager.h vm_thread.h vm_tutorial_app.h)
 
-set(CONTROLLER_SRCS controllers/main_window.cpp controllers/settings_dialog.cpp)
-set(CONTROLLER_HDRS controllers/main_window.h controllers/settings_dialog.h)
+set(CONTROLLER_SRCS controllers/logger_window.cpp controllers/main_window.cpp controllers/settings_dialog.cpp)
+set(CONTROLLER_HDRS controllers/logger_window.h controllers/main_window.h controllers/settings_dialog.h)
 
-set(VIEWS_FILES views/main_window.ui views/settings_dialog.ui)
+set(VIEWS_FILES views/logger_window.ui views/main_window.ui views/settings_dialog.ui)
 
 add_executable(VMTutorialFrontend ${SRCS}
                                   ${HDRS}

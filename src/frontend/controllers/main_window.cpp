@@ -27,6 +27,9 @@ MainWindowController::MainWindowController() noexcept {
       emit StartROM(file_name);
     }
   });
+
+  connect(view_.actionDisplayLogger, &QAction::triggered,
+          [this]() { emit DisplayLogger(); });
 }
 
 void MainWindowController::ReportROMOpenError(

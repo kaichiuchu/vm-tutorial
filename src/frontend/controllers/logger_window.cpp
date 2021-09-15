@@ -10,24 +10,8 @@
 // with this software. If not, see
 // <http://creativecommons.org/publicdomain/zero/1.0/>.
 
-#pragma once
+#include "logger_window.h"
 
-#include <QObject>
-
-#include "controllers/logger_window.h"
-#include "controllers/main_window.h"
-#include "controllers/settings_dialog.h"
-#include "vm_thread.h"
-
-class VMTutorialApplication : public QObject {
-  Q_OBJECT
-
- public:
-  VMTutorialApplication() noexcept;
-
- private:
-  LoggerWindowController logger_window_;
-  MainWindowController main_window_;
-  SettingsDialogController settings_dialog_;
-  VMThread vm_thread_;
-};
+LoggerWindowController::LoggerWindowController() noexcept {
+  view_.setupUi(this);
+}

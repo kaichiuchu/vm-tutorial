@@ -82,5 +82,8 @@ VMTutorialApplication::VMTutorialApplication() noexcept
             vm_thread_.start();
           });
 
+  connect(&main_window_, &MainWindowController::DisplayLogger,
+          [this]() { logger_window_.show(); });
+
   main_window_.show();
 }

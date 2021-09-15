@@ -63,6 +63,9 @@
    <addaction name="actionPause"/>
    <addaction name="actionReset"/>
    <addaction name="separator"/>
+   <addaction name="actionDisplay_Debugger"/>
+   <addaction name="actionDisplayLogger"/>
+   <addaction name="separator"/>
    <addaction name="actionSettings"/>
   </widget>
   <action name="actionStart_ROM">
@@ -70,13 +73,16 @@
     <string>Start ROM...</string>
    </property>
    <property name="toolTip">
-    <string>Starts a ROM file immediately for playing</string>
+    <string>Starts a ROM file immediately for playing.</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+O</string>
    </property>
   </action>
   <action name="actionResume">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Resume</string>
    </property>
@@ -88,6 +94,9 @@
    </property>
   </action>
   <action name="actionPause">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Pause</string>
    </property>
@@ -99,6 +108,9 @@
    </property>
   </action>
   <action name="actionReset">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Reset</string>
    </property>
@@ -115,6 +127,22 @@
    </property>
    <property name="toolTip">
     <string>Configure the virtual machine</string>
+   </property>
+  </action>
+  <action name="actionDisplayLogger">
+   <property name="text">
+    <string>Display Logger</string>
+   </property>
+   <property name="toolTip">
+    <string>Opens the logger.</string>
+   </property>
+  </action>
+  <action name="actionDisplay_Debugger">
+   <property name="text">
+    <string>Display Debugger</string>
+   </property>
+   <property name="toolTip">
+    <string>Opens the debugger.</string>
    </property>
   </action>
  </widget>

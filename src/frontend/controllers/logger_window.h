@@ -12,22 +12,16 @@
 
 #pragma once
 
-#include <QObject>
+#include <QMainWindow>
 
-#include "controllers/logger_window.h"
-#include "controllers/main_window.h"
-#include "controllers/settings_dialog.h"
-#include "vm_thread.h"
+#include "ui_logger_window.h"
 
-class VMTutorialApplication : public QObject {
+class LoggerWindowController : public QMainWindow {
   Q_OBJECT
 
  public:
-  VMTutorialApplication() noexcept;
+  LoggerWindowController() noexcept;
 
  private:
-  LoggerWindowController logger_window_;
-  MainWindowController main_window_;
-  SettingsDialogController settings_dialog_;
-  VMThread vm_thread_;
+  Ui::LoggerWindow view_;
 };

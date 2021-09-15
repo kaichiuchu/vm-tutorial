@@ -72,6 +72,9 @@ class MainWindowController : public QMainWindow {
   /// The user wishes to open the debugger.
   void OpenDebugger();
 
+  /// The user wishes to open the logger.
+  void DisplayLogger();
+
   /// The user has selected a ROM file to play.
   void StartROM(const QString& rom_file_path);
 };
