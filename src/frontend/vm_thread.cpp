@@ -24,7 +24,7 @@ VMThread::VMThread(QObject* parent_object) noexcept : QThread(parent_object) {
 }
 
 void VMThread::run() noexcept {
-  for (;;) {
+  while (!isInterruptionRequested()) {
     QElapsedTimer timer;
     timer.start();
 

@@ -15,6 +15,8 @@
 #include <QFileDialog>
 #include <QMessageBox>
 
+#include "models/app_settings.h"
+
 MainWindowController::MainWindowController() noexcept {
   view_.setupUi(this);
 
@@ -28,8 +30,39 @@ MainWindowController::MainWindowController() noexcept {
     }
   });
 
+  connect(view_.actionResume, &QAction::triggered,
+          [this]() { emit ResumeEmulation(); });
+
+  connect(view_.actionPause, &QAction::triggered,
+          [this]() { emit PauseEmulation(); });
+
+  connect(view_.actionReset, &QAction::triggered,
+          [this]() { emit ResetEmulation(); });
+
   connect(view_.actionDisplayLogger, &QAction::triggered,
           [this]() { emit DisplayLogger(); });
+
+  connect(view_.actionSettings, &QAction::triggered,
+          [this]() { emit DisplayProgramSettings(); });
+}
+
+void MainWindowController::SetRunState(const RunState run_state) noexcept {
+  switch (run_state) {
+    case RunState::kRunning:
+      view_.actionResume->setEnabled(false);
+      view_.actionPause->setEnabled(true);
+      view_.actionReset->setEnabled(true);
+
+      break;
+
+    case RunState::kPaused:
+      view_.actionResume->setEnabled(true);
+      view_.actionPause->setEnabled(false);
+      view_.actionReset->setEnabled(true);
+
+    default:
+      break;
+  }
 }
 
 void MainWindowController::ReportROMOpenError(
@@ -116,6 +149,30 @@ void MainWindowController::ReportExecutionFailure(
                             QMessageBox::Yes | QMessageBox::No);
 
   if (user_response == QMessageBox::Yes) {
-    emit OpenDebugger();
+    emit DisplayDebugger();
   }
+}
+
+Renderer* MainWindowController::GetRenderer() const noexcept {
+  return view_.openGLWidget;
+}
+
+void MainWindowController::keyPressEvent(QKeyEvent* key_event) noexcept {
+  const auto chip8_key = AppSettingsModel().GetVMKeyBinding(key_event->key());
+
+  if (!chip8_key) {
+    QMainWindow::keyPressEvent(key_event);
+    return;
+  }
+  emit CHIP8KeyPress(chip8_key.value());
+}
+
+void MainWindowController::keyReleaseEvent(QKeyEvent* key_event) noexcept {
+  const auto chip8_key = AppSettingsModel().GetVMKeyBinding(key_event->key());
+
+  if (!chip8_key) {
+    QMainWindow::keyReleaseEvent(key_event);
+    return;
+  }
+  emit CHIP8KeyRelease(chip8_key.value());
 }

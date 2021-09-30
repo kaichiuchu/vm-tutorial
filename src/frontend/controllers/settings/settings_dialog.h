@@ -16,11 +16,29 @@
 
 #include "ui_settings_dialog.h"
 
+/// This class handles the interaction between the user and the settings
+/// dialog, which is used to configure the application.
 class SettingsDialogController : public QDialog {
   Q_OBJECT
 
  public:
+  enum SettingsCategory {
+    kGeneralSettings = 0,
+    kMachineSettings = 1,
+    kGraphicsSettings = 2,
+    kKeypadSettings = 3,
+    kAudioSettings = 4
+  };
+
   explicit SettingsDialogController(QWidget* parent_widget) noexcept;
+
+  /// Adds a widget to the settings container area.
+  ///
+  /// \param index The setting category to associate the widget with.
+  /// \param widget The widget that will be displayed when the specified setting
+  /// category has been clicked.
+  void AddWidgetToSettingsContainer(const SettingsCategory index,
+                                    QWidget* widget) noexcept;
 
  private:
   Ui::SettingsDialog view_;

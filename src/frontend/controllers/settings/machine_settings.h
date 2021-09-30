@@ -12,21 +12,19 @@
 
 #pragma once
 
-#include <QMainWindow>
+#include <QWidget>
 
-#include "ui_logger_window.h"
+#include "ui_machine_settings.h"
 
-/// This class handles the logic of user actions that take place in the logger
-/// window.
-///
-/// The logger window displays log messages that are dispatched by the virtual
-/// machine and the program.
-class LoggerWindowController : public QMainWindow {
+/// This class handles the logic of user actions that take place in the machine
+/// settings widget.
+class MachineSettingsController : public QWidget {
   Q_OBJECT
 
  public:
-  LoggerWindowController() noexcept;
+  explicit MachineSettingsController(QWidget* parent_widget) noexcept;
 
  private:
-  Ui::LoggerWindow view_;
+  void PopulateDataFromAppSettings() noexcept;
+  Ui::MachineSettings view_;
 };

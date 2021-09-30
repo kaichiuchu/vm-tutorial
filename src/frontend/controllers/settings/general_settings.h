@@ -12,21 +12,21 @@
 
 #pragma once
 
-#include <QMainWindow>
+#include <QWidget>
 
-#include "ui_logger_window.h"
+#include "ui_general_settings.h"
 
-/// This class handles the logic of user actions that take place in the logger
-/// window.
-///
-/// The logger window displays log messages that are dispatched by the virtual
-/// machine and the program.
-class LoggerWindowController : public QMainWindow {
+/// This class handles the logic of user actions that take place in the general
+/// settings widget. The general settings widget handles, so far, the default
+/// location where to look for CHIP-8 programs.
+class GeneralSettingsController : public QWidget {
   Q_OBJECT
 
  public:
-  LoggerWindowController() noexcept;
+  explicit GeneralSettingsController(QWidget* parent_widget) noexcept;
 
  private:
-  Ui::LoggerWindow view_;
+  /// Populates the widget with the current settings.
+  void PopulateDataFromAppSettings() noexcept;
+  Ui::GeneralSettings view_;
 };

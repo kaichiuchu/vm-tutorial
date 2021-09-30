@@ -10,23 +10,15 @@
 // with this software. If not, see
 // <http://creativecommons.org/publicdomain/zero/1.0/>.
 
-#pragma once
+#include "general_settings.h"
 
-#include <QMainWindow>
+#include "models/app_settings.h"
 
-#include "ui_logger_window.h"
+GeneralSettingsController::GeneralSettingsController(
+    QWidget* parent_widget) noexcept
+    : QWidget(parent_widget) {
+  view_.setupUi(this);
+  PopulateDataFromAppSettings();
+}
 
-/// This class handles the logic of user actions that take place in the logger
-/// window.
-///
-/// The logger window displays log messages that are dispatched by the virtual
-/// machine and the program.
-class LoggerWindowController : public QMainWindow {
-  Q_OBJECT
-
- public:
-  LoggerWindowController() noexcept;
-
- private:
-  Ui::LoggerWindow view_;
-};
+void GeneralSettingsController::PopulateDataFromAppSettings() noexcept {}

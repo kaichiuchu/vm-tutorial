@@ -176,7 +176,7 @@ struct Instruction {
   const uint_fast16_t value_;
 };
 
-enum Key { k1, k2, k3, k4, k5, k6, k7, k8, k9, kA, kB, kC, kD, kE, kF };
+enum Key { k0, k1, k2, k3, k4, k5, k6, k7, k8, k9, kA, kB, kC, kD, kE, kF };
 
 enum KeyState : bool { kPressed = true, kReleased = false };
 

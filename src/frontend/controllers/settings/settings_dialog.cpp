@@ -12,10 +12,17 @@
 
 #include "settings_dialog.h"
 
-#include "ui_settings_dialog.h"
-
 SettingsDialogController::SettingsDialogController(
     QWidget* parent_widget) noexcept
     : QDialog(parent_widget) {
   view_.setupUi(this);
+
+  connect(view_.settingsList, &QListWidget::currentRowChanged, [this](int row) {
+    view_.selectedSettingsWidget->setCurrentIndex(row);
+  });
+}
+
+void SettingsDialogController::AddWidgetToSettingsContainer(
+    const SettingsCategory index, QWidget* widget) noexcept {
+  view_.selectedSettingsWidget->insertWidget(index, widget);
 }
