@@ -24,6 +24,12 @@ class VMThread : public QThread {
   Q_OBJECT
 
  public:
+  using AverageFPSInMS = double;
+  using CurrentFPS = unsigned int;
+  using TargetFPS = unsigned int;
+
+  using PerformanceCounters = std::tuple<CurrentFPS, AverageFPSInMS, TargetFPS>;
+
   explicit VMThread(QObject* parent_object) noexcept;
 
   /// From Qt documentation:
@@ -45,7 +51,17 @@ class VMThread : public QThread {
   /// The virtual machine instance.
   chip8::VMInstance vm_instance_;
 
+ private:
+  /// The number of frames that have been generated. This is used to calculate
+  /// the frame time averaged to 1 second.
+  unsigned int num_frames_;
+
  signals:
+  /// This signal is emitted when 1 second has passed within the run loop.
+  ///
+  /// \param perf_info The performance information of the virtual machine.
+  void PerformanceInfo(const PerformanceCounters& perf_info);
+
   /// This signal is emitted when it is time to update the screen.
   ///
   /// \param framebuffer The screen data to render, containing BGRA32 values.

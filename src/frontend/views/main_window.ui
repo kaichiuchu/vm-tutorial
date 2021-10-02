@@ -51,6 +51,9 @@
    <property name="windowTitle">
     <string>toolBar</string>
    </property>
+   <property name="toolButtonStyle">
+    <enum>Qt::ToolButtonTextUnderIcon</enum>
+   </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
    </attribute>
@@ -68,7 +71,12 @@
    <addaction name="separator"/>
    <addaction name="actionSettings"/>
   </widget>
+  <widget class="QStatusBar" name="statusBar"/>
   <action name="actionStart_ROM">
+   <property name="icon">
+    <iconset resource="../assets/assets.qrc">
+     <normaloff>:/assets/start_rom_button.png</normaloff>:/assets/start_rom_button.png</iconset>
+   </property>
    <property name="text">
     <string>Start ROM...</string>
    </property>
@@ -82,6 +90,10 @@
   <action name="actionResume">
    <property name="enabled">
     <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../assets/assets.qrc">
+     <normaloff>:/assets/play_button.png</normaloff>:/assets/play_button.png</iconset>
    </property>
    <property name="text">
     <string>Resume</string>
@@ -97,6 +109,10 @@
    <property name="enabled">
     <bool>false</bool>
    </property>
+   <property name="icon">
+    <iconset resource="../assets/assets.qrc">
+     <normaloff>:/assets/pause_button.png</normaloff>:/assets/pause_button.png</iconset>
+   </property>
    <property name="text">
     <string>Pause</string>
    </property>
@@ -111,6 +127,10 @@
    <property name="enabled">
     <bool>false</bool>
    </property>
+   <property name="icon">
+    <iconset resource="../assets/assets.qrc">
+     <normaloff>:/assets/reset_button.png</normaloff>:/assets/reset_button.png</iconset>
+   </property>
    <property name="text">
     <string>Reset</string>
    </property>
@@ -122,6 +142,10 @@
    </property>
   </action>
   <action name="actionSettings">
+   <property name="icon">
+    <iconset resource="../assets/assets.qrc">
+     <normaloff>:/assets/settings_button.png</normaloff>:/assets/settings_button.png</iconset>
+   </property>
    <property name="text">
     <string>Settings</string>
    </property>
@@ -130,6 +154,10 @@
    </property>
   </action>
   <action name="actionDisplayLogger">
+   <property name="icon">
+    <iconset resource="../assets/assets.qrc">
+     <normaloff>:/assets/logger_button.png</normaloff>:/assets/logger_button.png</iconset>
+   </property>
    <property name="text">
     <string>Display Logger</string>
    </property>
@@ -138,6 +166,10 @@
    </property>
   </action>
   <action name="actionDisplay_Debugger">
+   <property name="icon">
+    <iconset resource="../assets/assets.qrc">
+     <normaloff>:/assets/debugger_button.png</normaloff>:/assets/debugger_button.png</iconset>
+   </property>
    <property name="text">
     <string>Display Debugger</string>
    </property>
@@ -153,6 +185,8 @@
    <header>renderer.h</header>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="../assets/assets.qrc"/>
+ </resources>
  <connections/>
 </ui>

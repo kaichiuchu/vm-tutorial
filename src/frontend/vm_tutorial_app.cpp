@@ -13,6 +13,7 @@
 #include "vm_tutorial_app.h"
 
 #include <QFile>
+#include <QFileInfo>
 
 #include "models/app_settings.h"
 
@@ -119,6 +120,9 @@ void VMTutorialApplication::StartROM(const QString& rom_file_path) noexcept {
 
   // No errors reported, start the virtual machine thread.
   main_window_->SetRunState(MainWindowController::RunState::kRunning);
+
+  main_window_->SetWindowTitleGuestProgramInfo(
+      QFileInfo(rom_file_path).fileName());
   vm_thread_->start();
 }
 
@@ -165,6 +169,13 @@ void VMTutorialApplication::CreateMachineSettingsWidget() noexcept {
 void VMTutorialApplication::ConnectVMThreadSignalsToSlots() noexcept {
   connect(vm_thread_, &VMThread::UpdateScreen, main_window_->GetRenderer(),
           &Renderer::UpdateScreen);
+
+  connect(vm_thread_, &VMThread::PerformanceInfo,
+          [this](const VMThread::PerformanceCounters& perf_counters) {
+            const auto [current_fps, average_fps, target_fps] = perf_counters;
+
+            main_window_->UpdateFPSInfo(current_fps, target_fps, average_fps);
+          });
 }
 
 void VMTutorialApplication::AddSettingsWidgetsToSettingsContainer() noexcept {

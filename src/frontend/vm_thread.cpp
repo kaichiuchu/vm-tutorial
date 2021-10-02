@@ -24,11 +24,26 @@ VMThread::VMThread(QObject* parent_object) noexcept : QThread(parent_object) {
 }
 
 void VMThread::run() noexcept {
+  QElapsedTimer fps_counter;
+  fps_counter.start();
+
+  num_frames_ = 0;
+
   while (!isInterruptionRequested()) {
+    if (fps_counter.hasExpired(1000)) {
+      emit PerformanceInfo({num_frames_,
+                            (1000.0 / static_cast<double>(num_frames_)),
+                            vm_instance_.GetTargetFrameRate()});
+
+      num_frames_ = 0;
+      fps_counter.restart();
+    }
+
     QElapsedTimer timer;
     timer.start();
 
     const auto step_result = vm_instance_.RunForOneFrame();
+    num_frames_++;
 
     if (step_result != chip8::StepResult::kSuccess) {
       quit();

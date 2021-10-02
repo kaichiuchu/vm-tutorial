@@ -27,6 +27,13 @@ class VMInstance {
   /// (500Hz) within 60 frames.
   VMInstance() noexcept;
 
+  /// Retrieves the target number of frames per second.
+  ///
+  /// This value is the last value passed to the \ref SetTiming() method.
+  ///
+  /// \returns The target number of frames per second.
+  auto GetTargetFrameRate() const noexcept -> unsigned int;
+
   /// Retrieves the maximum frame time in milliseconds as determined by the last
   /// call to \ref SetTiming().
   ///
@@ -144,6 +151,10 @@ class VMInstance {
   /// call the play tone callback. We need to do this, so we can decrement the
   /// sound timer normally.
   bool is_playing_tone_;
+
+  /// The target frame rate as passed by the last call to the \ref SetTiming()
+  /// method.
+  unsigned int target_frame_rate_;
 
   /// The maximum frame time as determined by the last call to the \ref
   /// SetTiming() method.

@@ -23,6 +23,10 @@ chip8::VMInstance::VMInstance() noexcept
   Reset();
 }
 
+auto chip8::VMInstance::GetTargetFrameRate() const noexcept -> unsigned int {
+  return target_frame_rate_;
+}
+
 auto chip8::VMInstance::GetMaxFrameTime() const noexcept -> double {
   return max_frame_time_;
 }
@@ -86,6 +90,7 @@ auto chip8::VMInstance::SetTiming(const unsigned int instructions_per_second,
     return false;
   }
 
+  target_frame_rate_ = static_cast<unsigned int>(desired_frame_rate);
   number_of_steps_per_frame_ = static_cast<unsigned int>(steps_per_frame);
 
   constexpr auto kSecInMs = 1000;

@@ -19,6 +19,7 @@
 
 MainWindowController::MainWindowController() noexcept {
   view_.setupUi(this);
+  CreateStatusBarWidgets();
 
   connect(view_.actionStart_ROM, &QAction::triggered, this, [this]() {
     const auto file_name = QFileDialog::getOpenFileName(
@@ -153,8 +154,32 @@ void MainWindowController::ReportExecutionFailure(
   }
 }
 
+void MainWindowController::SetWindowTitleGuestProgramInfo(
+    const QString& program_file_name) noexcept {
+  setWindowTitle(QString{"vm-tutorial - running %1"}.arg(program_file_name));
+}
+
+void MainWindowController::UpdateFPSInfo(const unsigned int current_fps,
+                                         const unsigned int target_fps,
+                                         const double average_fps) noexcept {
+  const auto average_fps_text = QString::number(average_fps, 'f', 2);
+
+  fps_info_->setText(QString{"FPS: %1/%2 (avg. %3ms)"}
+                         .arg(current_fps)
+                         .arg(target_fps)
+                         .arg(average_fps_text));
+}
+
 Renderer* MainWindowController::GetRenderer() const noexcept {
   return view_.openGLWidget;
+}
+
+void MainWindowController::CreateStatusBarWidgets() noexcept {
+  frame_time_info_ = new QLabel(view_.statusBar);
+  fps_info_ = new QLabel(view_.statusBar);
+
+  view_.statusBar->addPermanentWidget(fps_info_);
+  view_.statusBar->addPermanentWidget(frame_time_info_);
 }
 
 void MainWindowController::keyPressEvent(QKeyEvent* key_event) noexcept {

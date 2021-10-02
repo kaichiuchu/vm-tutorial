@@ -49,6 +49,8 @@ set(VIEWS_SETTINGS_FILES views/settings/audio_settings.ui
                          views/settings/machine_settings.ui
                          views/settings/settings_dialog.ui)
 
+set(ASSET_FILE assets/assets.qrc)
+
 add_executable(VMTutorialFrontend ${SRCS}
                                   ${HDRS}
                                   ${CONTROLLER_SRCS}
@@ -58,7 +60,8 @@ add_executable(VMTutorialFrontend ${SRCS}
                                   ${MODELS_SRCS}
                                   ${MODELS_HDRS}
                                   ${VIEWS_FILES}
-                                  ${VIEWS_SETTINGS_FILES})
+                                  ${VIEWS_SETTINGS_FILES}
+                                  ${ASSET_FILE})
 
 target_link_libraries(VMTutorialFrontend core Qt6::OpenGLWidgets Qt6::Widgets)
 target_include_directories(VMTutorialFrontend PRIVATE ../core/src/public .)

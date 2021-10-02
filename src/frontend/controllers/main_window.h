@@ -13,6 +13,7 @@
 #pragma once
 
 #include <QKeyEvent>
+#include <QLabel>
 #include <QMainWindow>
 
 #include "ui_main_window.h"
@@ -74,12 +75,43 @@ class MainWindowController : public QMainWindow {
   /// chip8::StepResult for more details.
   void ReportExecutionFailure(const chip8::StepResult step_result) noexcept;
 
+  /// Updates the window title to display the currently running guest program.
+  ///
+  /// \param program_file_name The file name of the program currently being
+  /// executed. Note that it is NOT the full path to the file.
+  void SetWindowTitleGuestProgramInfo(
+      const QString& program_file_name) noexcept;
+
+  /// Updates the FPS (frames per second) informational counter located in the
+  /// status bar.
+  ///
+  /// \param current_fps The number of frames that have been generated in 1
+  /// second.
+  ///
+  /// \param target_fps The number of frames we want to generate in 1 second
+  /// based on the current virtual machine timing configuration.
+  ///
+  /// \param average_fps The time in milliseconds needed to draw a frame,
+  /// averaged on 1 second.
+  void UpdateFPSInfo(const unsigned int current_fps,
+                     const unsigned int target_fps,
+                     const double average_fps) noexcept;
+
   /// Retrieves the renderer instance.
   ///
   /// \returns The OpenGL renderer instance.
   Renderer* GetRenderer() const noexcept;
 
  private:
+  /// This widget is part of the status bar, which displays the average, worst,
+  /// and best frame times in milliseconds.
+  QLabel* frame_time_info_;
+  QLabel* fps_info_;
+
+  /// Creates the status bar widgets, which will display the FPS, average
+  /// frame time in milliseconds, best and worst frame times.
+  void CreateStatusBarWidgets() noexcept;
+
   /// From Qt documentation (with minor changes):
   ///
   /// This event handler can be reimplemented in a subclass to

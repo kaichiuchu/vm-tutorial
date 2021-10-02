@@ -1,0 +1,11 @@
+<RCC>
+    <qresource prefix="/assets">
+        <file>play_button.png</file>
+        <file>pause_button.png</file>
+        <file>reset_button.png</file>
+        <file>settings_button.png</file>
+        <file>debugger_button.png</file>
+        <file>logger_button.png</file>
+        <file>start_rom_button.png</file>
+    </qresource>
+</RCC>
