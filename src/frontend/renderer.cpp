@@ -38,6 +38,7 @@ void Renderer::paintGL() noexcept {
   glClear(GL_COLOR_BUFFER_BIT);
   glBindTexture(GL_TEXTURE_2D, texture_);
   glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+  glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 void Renderer::UpdateScreen(
