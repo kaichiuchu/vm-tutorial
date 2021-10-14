@@ -10,7 +10,7 @@
 # with this software. If not, see
 # <http://creativecommons.org/publicdomain/zero/1.0/>.
 
-find_package(Qt6 COMPONENTS OpenGLWidgets Widgets REQUIRED)
+find_package(Qt6 COMPONENTS Multimedia OpenGLWidgets Widgets REQUIRED)
 set(CMAKE_AUTOUIC_SEARCH_PATHS views views/settings)
 
 set(CMAKE_AUTOMOC ON)
@@ -40,6 +40,10 @@ set(CONTROLLER_SETTINGS_HDRS controllers/settings/audio_settings.h
 set(MODELS_SRCS models/app_settings.cpp)
 set(MODELS_HDRS models/app_settings.h)
 
+set(TONE_GENERATORS_SRCS tone_generators/sine_wave.cpp)
+set(TONE_GENERATORS_HDRS tone_generators/interface.h
+                         tone_generators/sine_wave.h)
+
 set(VIEWS_FILES views/logger_window.ui views/main_window.ui)
 
 set(VIEWS_SETTINGS_FILES views/settings/audio_settings.ui
@@ -59,9 +63,15 @@ add_executable(VMTutorialFrontend ${SRCS}
                                   ${CONTROLLER_SETTINGS_HDRS}
                                   ${MODELS_SRCS}
                                   ${MODELS_HDRS}
+                                  ${TONE_GENERATORS_SRCS}
+                                  ${TONE_GENERATORS_HDRS}
                                   ${VIEWS_FILES}
                                   ${VIEWS_SETTINGS_FILES}
                                   ${ASSET_FILE})
 
-target_link_libraries(VMTutorialFrontend core Qt6::OpenGLWidgets Qt6::Widgets)
+target_link_libraries(VMTutorialFrontend core
+                                         Qt6::Multimedia
+                                         Qt6::OpenGLWidgets
+                                         Qt6::Widgets)
+
 target_include_directories(VMTutorialFrontend PRIVATE ../core/src/public .)

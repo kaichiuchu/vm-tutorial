@@ -10,8 +10,59 @@
 // with this software. If not, see
 // <http://creativecommons.org/publicdomain/zero/1.0/>.
 
-/// This is a stub while we wait for the stable version of Qt 6.2 to be
-/// released, which contains Qt Multimedia. This should be done according to
-/// their road map by September 30th, 2021.
-
 #pragma once
+
+#include <QAudioSink>
+#include <QMediaDevices>
+
+#include "tone_generators/interface.h"
+
+enum class ToneType { kSineWave };
+
+/// This class handles the management of sound devices and tone generation.
+class SoundManager : public QObject {
+  Q_OBJECT
+
+ public:
+  explicit SoundManager(QObject* parent_object) noexcept;
+
+  /// Plays a tone for the specified period.
+  ///
+  /// This method will do nothing if a tone generator was not specified, or if
+  /// audio is muted.
+  ///
+  /// \param duration The length of the tone to generate, in milliseconds.
+  void PlayTone(double duration) noexcept;
+
+  /// Sets the audio output volume.
+  ///
+  /// \param volume The new audio output volume. This value cannot exceed 100.
+  void SetVolume(unsigned int volume) noexcept;
+
+  /// Sets the type of tone to generate.
+  ///
+  /// \param tone_type A tone type specified by the \ref ToneType enumeration.
+  void SetToneType(ToneType tone_type) noexcept;
+
+  /// Sets the frequency of the tone to be generated.
+  ///
+  /// \param tone_freq The frequency of the tone to be generated.
+  void SetToneFrequency(int tone_freq) noexcept;
+
+  /// Sets the audio output device to use.
+  ///
+  /// \param audio_device The audio device to send tone output to.
+  void SetAudioOutputDevice(const QAudioDevice& audio_device) noexcept;
+
+  /// Retrieves a list of audio outputs available on the system.
+  ///
+  /// \returns A list of available audio output devices.
+  auto GetAudioOutputDevices() const noexcept -> QList<QAudioDevice>;
+
+ private:
+  int tone_freq_;
+  QIODevice* audio_io_;
+  ToneGeneratorInterface* tone_generator_ = nullptr;
+  QAudioSink* audio_output_ = nullptr;
+  QMediaDevices* media_devices_;
+};

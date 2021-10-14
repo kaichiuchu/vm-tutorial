@@ -59,7 +59,7 @@ void VMThread::run() noexcept {
     // We want the thread to stop sleeping after one frame. Update the deadline
     // accordingly.
     deadline_time_point += std::chrono::milliseconds(
-        static_cast<int>(vm_instance_.GetMaxFrameTime()));
+        static_cast<unsigned int>(vm_instance_.GetMaxFrameTime()));
 
     // We need to retrieve the current point in time...
     auto current_time_point = std::chrono::steady_clock::now();

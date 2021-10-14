@@ -20,6 +20,7 @@
 #include "controllers/settings/keypad_settings.h"
 #include "controllers/settings/machine_settings.h"
 #include "controllers/settings/settings_dialog.h"
+#include "sound_manager.h"
 #include "vm_thread.h"
 
 /// This class handles the interaction between controllers and the interaction
@@ -63,6 +64,7 @@ class VMTutorialApplication : public QObject {
   KeypadSettingsController* keypad_settings_ = nullptr;
   MachineSettingsController* machine_settings_ = nullptr;
   SettingsDialogController* settings_dialog_ = nullptr;
+  SoundManager* sound_manager_;
   VMThread* vm_thread_;
 
   std::vector<uint_fast8_t> current_rom_data_;

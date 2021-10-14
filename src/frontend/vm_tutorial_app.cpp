@@ -19,6 +19,7 @@
 
 VMTutorialApplication::VMTutorialApplication() noexcept
     : main_window_(new MainWindowController),
+      sound_manager_(new SoundManager(this)),
       vm_thread_(new VMThread(main_window_)) {
   ConnectVMThreadSignalsToSlots();
   ConnectMainWindowSignalsToSlots();
@@ -167,6 +168,9 @@ void VMTutorialApplication::CreateMachineSettingsWidget() noexcept {
 }
 
 void VMTutorialApplication::ConnectVMThreadSignalsToSlots() noexcept {
+  connect(vm_thread_, &VMThread::PlayTone, sound_manager_,
+          &SoundManager::PlayTone);
+
   connect(vm_thread_, &VMThread::UpdateScreen, main_window_->GetRenderer(),
           &Renderer::UpdateScreen);
 
