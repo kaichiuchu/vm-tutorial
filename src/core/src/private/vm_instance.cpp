@@ -33,7 +33,7 @@ auto chip8::VMInstance::GetMaxFrameTime() const noexcept -> double {
 
 auto chip8::VMInstance::CalculateDurationOfTone() const noexcept -> double {
   constexpr auto kTimerDecrementRate = 1 / 60.0;
-  return kTimerDecrementRate * impl_->sound_timer_;
+  return (kTimerDecrementRate * impl_->sound_timer_) * 1000;
 }
 
 void chip8::VMInstance::CheckTimers() noexcept {
@@ -69,7 +69,6 @@ void chip8::VMInstance::DecrementTimers() noexcept {
   }
 }
 
-/// Resets the virtual machine to a well-defined startup state.
 void chip8::VMInstance::Reset() noexcept {
   impl_->Reset();
   number_of_steps_executed_ = 0;

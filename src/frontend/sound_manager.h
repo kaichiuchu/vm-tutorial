@@ -15,8 +15,6 @@
 #include <QAudioSink>
 #include <QMediaDevices>
 
-#include "tone_generators/interface.h"
-
 enum class ToneType { kSineWave };
 
 /// This class handles the management of sound devices and tone generation.
@@ -24,6 +22,11 @@ class SoundManager : public QObject {
   Q_OBJECT
 
  public:
+  using BytesPerSample = int;
+  using BytesForDuration = int32_t;
+
+  using SoundBufferInfo = std::pair<BytesPerSample, BytesForDuration>;
+
   explicit SoundManager(QObject* parent_object) noexcept;
 
   /// Plays a tone for the specified period.
@@ -59,10 +62,16 @@ class SoundManager : public QObject {
   /// \returns A list of available audio output devices.
   auto GetAudioOutputDevices() const noexcept -> QList<QAudioDevice>;
 
+  auto ConfigureSoundBuffer(const QAudioFormat& format,
+                            double duration) noexcept -> SoundBufferInfo;
+
  private:
+  void GenerateSineWave(double duration) noexcept;
+
   int tone_freq_;
-  QIODevice* audio_io_;
-  ToneGeneratorInterface* tone_generator_ = nullptr;
+  QByteArray sound_buffer_;
+  ToneType tone_type_;
   QAudioSink* audio_output_ = nullptr;
   QMediaDevices* media_devices_;
+  QIODevice* audio_io_;
 };

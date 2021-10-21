@@ -40,10 +40,6 @@ set(CONTROLLER_SETTINGS_HDRS controllers/settings/audio_settings.h
 set(MODELS_SRCS models/app_settings.cpp)
 set(MODELS_HDRS models/app_settings.h)
 
-set(TONE_GENERATORS_SRCS tone_generators/sine_wave.cpp)
-set(TONE_GENERATORS_HDRS tone_generators/interface.h
-                         tone_generators/sine_wave.h)
-
 set(VIEWS_FILES views/logger_window.ui views/main_window.ui)
 
 set(VIEWS_SETTINGS_FILES views/settings/audio_settings.ui
@@ -63,8 +59,6 @@ add_executable(VMTutorialFrontend ${SRCS}
                                   ${CONTROLLER_SETTINGS_HDRS}
                                   ${MODELS_SRCS}
                                   ${MODELS_HDRS}
-                                  ${TONE_GENERATORS_SRCS}
-                                  ${TONE_GENERATORS_HDRS}
                                   ${VIEWS_FILES}
                                   ${VIEWS_SETTINGS_FILES}
                                   ${ASSET_FILE})

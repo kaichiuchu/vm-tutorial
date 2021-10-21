@@ -12,9 +12,7 @@
 
 #include "sound_manager.h"
 
-#include "tone_generators/sine_wave.h"
-
-SoundManager::SoundManager(QObject* parent_object) noexcept
+SoundManager::SoundManager(QObject *parent_object) noexcept
     : QObject(parent_object), media_devices_(new QMediaDevices(this)) {
   SetAudioOutputDevice(media_devices_->defaultAudioOutput());
   SetToneType(ToneType::kSineWave);
@@ -27,20 +25,12 @@ void SoundManager::PlayTone(const double duration) noexcept {
     return;
   }
 
-  if (audio_output_->state() == QAudio::StoppedState) {
-    return;
+  switch (tone_type_) {
+    case ToneType::kSineWave:
+      GenerateSineWave(duration);
+      break;
   }
-
-  tone_generator_->Generate(audio_output_->format(), duration, tone_freq_);
-
-  auto len = audio_output_->bytesFree();
-  QByteArray buffer(len, 0);
-
-  len = tone_generator_->read(buffer.data(), len);
-
-  if (len) {
-    audio_io_->write(buffer.data(), len);
-  }
+  audio_io_->write(sound_buffer_.data(), sound_buffer_.size());
 }
 
 void SoundManager::SetVolume(const unsigned int volume) noexcept {
@@ -54,15 +44,7 @@ void SoundManager::SetVolume(const unsigned int volume) noexcept {
 }
 
 void SoundManager::SetToneType(const ToneType tone_type) noexcept {
-  switch (tone_type) {
-    case ToneType::kSineWave:
-      tone_generator_ = new SineWaveGenerator(this);
-      break;
-
-    default:
-      break;
-  }
-  tone_generator_->start();
+  tone_type_ = tone_type;
 }
 
 void SoundManager::SetToneFrequency(const int tone_freq) noexcept {
@@ -70,7 +52,7 @@ void SoundManager::SetToneFrequency(const int tone_freq) noexcept {
 }
 
 void SoundManager::SetAudioOutputDevice(
-    const QAudioDevice& audio_device) noexcept {
+    const QAudioDevice &audio_device) noexcept {
   const auto audio_device_format = audio_device.preferredFormat();
 
   audio_output_ = new QAudioSink(audio_device, audio_device_format);
@@ -80,4 +62,69 @@ void SoundManager::SetAudioOutputDevice(
 auto SoundManager::GetAudioOutputDevices() const noexcept
     -> QList<QAudioDevice> {
   return media_devices_->audioOutputs();
+}
+
+auto SoundManager::ConfigureSoundBuffer(const QAudioFormat &format,
+                                        const double duration) noexcept
+    -> SoundBufferInfo {
+  // The bytes per sample is the number of bytes required to represent one
+  // sample.
+  const auto bytes_per_sample = format.bytesPerSample();
+
+  // The \ref QAudioFormat::bytesForDuration() method takes microseconds, so
+  // we have to convert from milliseconds to microseconds. It returns the
+  // number of bytes necessary to play a tone of `duration`.
+  const auto bytes_for_duration = format.bytesForDuration(duration * 1000);
+
+  // Adjust the size of the audio buffer.
+  sound_buffer_.resize(bytes_for_duration);
+
+  return {bytes_per_sample, bytes_for_duration};
+}
+
+void SoundManager::GenerateSineWave(double duration) noexcept {
+  const auto format = audio_output_->format();
+
+  auto [bytes_per_sample, bytes_for_duration] =
+      ConfigureSoundBuffer(format, duration);
+
+  auto ptr = reinterpret_cast<unsigned char *>(sound_buffer_.data());
+  auto sample_index = 0;
+
+  const auto sample_rate = format.sampleRate();
+
+  while (bytes_for_duration) {
+    const auto amplitude =
+        std::sin(2 * M_PI * tone_freq_ * qreal(sample_index++ % sample_rate) /
+                 sample_rate);
+
+    for (auto i = 0; i < format.channelCount(); ++i) {
+      switch (format.sampleFormat()) {
+        case QAudioFormat::UInt8:
+          *reinterpret_cast<uint8_t *>(ptr) =
+              static_cast<uint8_t>((1.0 + amplitude) / 2 * 255);
+          break;
+
+        case QAudioFormat::Int16:
+          *reinterpret_cast<int16_t *>(ptr) =
+              static_cast<int16_t>(amplitude * 32767);
+          break;
+
+        case QAudioFormat::Int32:
+          *reinterpret_cast<int32_t *>(ptr) = static_cast<int32_t>(
+              amplitude * std::numeric_limits<int32_t>::max());
+          break;
+
+        case QAudioFormat::Float:
+          *reinterpret_cast<float *>(ptr) = amplitude;
+          break;
+
+        default:
+          break;
+      }
+
+      ptr += bytes_per_sample;
+      bytes_for_duration -= bytes_per_sample;
+    }
+  }
 }
