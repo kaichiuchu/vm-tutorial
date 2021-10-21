@@ -25,6 +25,11 @@ VMThread::VMThread(QObject* parent_object) noexcept : QThread(parent_object) {
   };
 }
 
+void VMThread::StopExecution() noexcept {
+  requestInterruption();
+  wait();
+}
+
 void VMThread::run() noexcept {
   // We pull in this inline namespace to make parts of the frame limiter code
   // more clear.
@@ -102,6 +107,9 @@ void VMThread::run() noexcept {
     }
 
     // We're done here; sleep until the deadline.
+    //
+    // XXX: Removing the frame limiter here will cause Qt's memory usage to
+    // spike dramatically...
     std::this_thread::sleep_until(deadline_time_point);
   }
 }

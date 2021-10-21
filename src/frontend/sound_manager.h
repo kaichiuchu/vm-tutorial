@@ -15,6 +15,7 @@
 #include <QAudioSink>
 #include <QMediaDevices>
 
+/// Defines the types of tones that we support.
 enum class ToneType { kSineWave };
 
 /// This class handles the management of sound devices and tone generation.
@@ -39,7 +40,8 @@ class SoundManager : public QObject {
 
   /// Sets the audio output volume.
   ///
-  /// \param volume The new audio output volume. This value cannot exceed 100.
+  /// \param volume The new audio output volume. This value cannot exceed 100
+  /// and if any value over 100 is passed, the volume will be treated as 100.
   void SetVolume(unsigned int volume) noexcept;
 
   /// Sets the type of tone to generate.
@@ -62,16 +64,47 @@ class SoundManager : public QObject {
   /// \returns A list of available audio output devices.
   auto GetAudioOutputDevices() const noexcept -> QList<QAudioDevice>;
 
+  /// Configures the sound buffer for new audio data.
+  ///
+  /// \param format The format of the audio device currently in use.
+  /// \param duration The duration of the tone to generate.
+  ///
+  /// \returns The number of required bytes to represent one sample and the
+  /// number of bytes required to represent the duration of the tone.
   auto ConfigureSoundBuffer(const QAudioFormat& format,
                             double duration) noexcept -> SoundBufferInfo;
 
  private:
+  /// Generates a sine wave.
+  ///
+  /// The frequency of the sine wave is governed by the last call to \ref
+  /// SetToneFrequency().
+  ///
+  /// The sine wave data is stored into the \ref sound_buffer_ buffer.
+  ///
+  /// \param duration The duration of the sine wave.
   void GenerateSineWave(double duration) noexcept;
 
+  /// The frequency of a generated tone as determined by the last call to \ref
+  /// SetToneFrequency().
   int tone_freq_;
+
+  /// The buffer which contains the generated sound wave data.
   QByteArray sound_buffer_;
+
+  /// The type of tone to generate as determined by the last call to \ref
+  /// SetToneType().
   ToneType tone_type_;
+
+  /// The current interface to send audio data to an audio output device as
+  /// determined by the last call to \ref SetAudioOutputDevice().
   QAudioSink* audio_output_ = nullptr;
+
+  /// The interface to information about the audio devices available on the
+  /// system.
   QMediaDevices* media_devices_;
+
+  /// The I/O device used to transfer data to the audio output device as
+  /// determined by the last call to \ref SetAudioOutputDevice().
   QIODevice* audio_io_;
 };

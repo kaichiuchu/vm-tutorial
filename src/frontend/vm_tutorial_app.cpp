@@ -38,8 +38,15 @@ void VMTutorialApplication::ConnectMainWindowSignalsToSlots() noexcept {
 
   connect(main_window_, &MainWindowController::CHIP8KeyPress,
           [this](const chip8::Key key) {
+            const auto halted_until_key_press =
+                vm_thread_->vm_instance_.impl_->IsHaltedUntilKeyPress();
+
             vm_thread_->vm_instance_.impl_->SetKeyState(
                 key, chip8::KeyState::kPressed);
+
+            if (halted_until_key_press) {
+              vm_thread_->start();
+            }
           });
 
   connect(main_window_, &MainWindowController::CHIP8KeyRelease,
@@ -54,13 +61,12 @@ void VMTutorialApplication::ConnectMainWindowSignalsToSlots() noexcept {
   });
 
   connect(main_window_, &MainWindowController::PauseEmulation, [this]() {
-    vm_thread_->requestInterruption();
+    vm_thread_->StopExecution();
     main_window_->SetRunState(MainWindowController::RunState::kPaused);
   });
 
   connect(main_window_, &MainWindowController::ResetEmulation, [this]() {
-    vm_thread_->requestInterruption();
-    vm_thread_->wait();
+    vm_thread_->StopExecution();
 
     vm_thread_->vm_instance_.LoadProgram(current_rom_data_);
     vm_thread_->start();
@@ -70,8 +76,7 @@ void VMTutorialApplication::ConnectMainWindowSignalsToSlots() noexcept {
 void VMTutorialApplication::StartROM(const QString& rom_file_path) noexcept {
   const auto vm_thread_was_running = vm_thread_->isRunning();
 
-  vm_thread_->requestInterruption();
-  vm_thread_->wait();
+  vm_thread_->StopExecution();
 
   QFile rom_file(rom_file_path);
 
@@ -168,18 +173,21 @@ void VMTutorialApplication::CreateMachineSettingsWidget() noexcept {
 }
 
 void VMTutorialApplication::ConnectVMThreadSignalsToSlots() noexcept {
-  connect(vm_thread_, &VMThread::PlayTone, sound_manager_,
-          &SoundManager::PlayTone);
-
-  connect(vm_thread_, &VMThread::UpdateScreen, main_window_->GetRenderer(),
-          &Renderer::UpdateScreen);
-
   connect(vm_thread_, &VMThread::PerformanceInfo,
           [this](const VMThread::PerformanceCounters& perf_counters) {
             const auto [current_fps, average_fps, target_fps] = perf_counters;
 
             main_window_->UpdateFPSInfo(current_fps, target_fps, average_fps);
           });
+
+  connect(vm_thread_, &VMThread::UpdateScreen, main_window_->GetRenderer(),
+          &Renderer::UpdateScreen);
+
+  connect(vm_thread_, &VMThread::PlayTone, sound_manager_,
+          &SoundManager::PlayTone);
+
+  connect(vm_thread_, &VMThread::ExecutionFailure, main_window_,
+          &MainWindowController::ReportExecutionFailure);
 }
 
 void VMTutorialApplication::AddSettingsWidgetsToSettingsContainer() noexcept {

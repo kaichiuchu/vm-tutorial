@@ -48,6 +48,9 @@ class VMThread : public QThread {
   /// handle various events that may occur.
   void run() noexcept override;
 
+  /// Stops the execution of the thread.
+  void StopExecution() noexcept;
+
   /// The virtual machine instance.
   chip8::VMInstance vm_instance_;
 

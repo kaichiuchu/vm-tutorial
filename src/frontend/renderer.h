@@ -103,7 +103,7 @@ class Renderer : public QOpenGLWidget, public QOpenGLFunctions_4_1_Core {
   /// \param src The source code for the shader.
   ///
   /// \returns A valid shader object.
-  GLuint CreateShader(const GLenum type, const char* const src) noexcept;
+  GLuint CreateShader(GLenum type, const char* const src) noexcept;
 
   /// The vertex array object created by \ref CreateVertexBufferObject().
   unsigned int vbo_;

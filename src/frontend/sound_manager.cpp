@@ -71,9 +71,10 @@ auto SoundManager::ConfigureSoundBuffer(const QAudioFormat &format,
   // sample.
   const auto bytes_per_sample = format.bytesPerSample();
 
-  // The \ref QAudioFormat::bytesForDuration() method takes microseconds, so
-  // we have to convert from milliseconds to microseconds. It returns the
-  // number of bytes necessary to play a tone of `duration`.
+  // The \ref QAudioFormat::bytesForDuration() method takes microseconds, and
+  // the duration of a tone is returned as milliseconds from the core, so we
+  // have to convert from milliseconds to microseconds. It returns the number of
+  // bytes necessary to play a tone of `duration` length.
   const auto bytes_for_duration = format.bytesForDuration(duration * 1000);
 
   // Adjust the size of the audio buffer.
