@@ -129,6 +129,7 @@ void VMTutorialApplication::StartROM(const QString& rom_file_path) noexcept {
 
   main_window_->SetWindowTitleGuestProgramInfo(
       QFileInfo(rom_file_path).fileName());
+
   vm_thread_->start();
 }
 
@@ -154,6 +155,25 @@ void VMTutorialApplication::DisplayProgramSettings() noexcept {
 
 void VMTutorialApplication::CreateAudioSettingsWidget() noexcept {
   audio_settings_ = new AudioSettingsController(settings_dialog_);
+
+  audio_settings_->UpdateSoundCardList(sound_manager_->GetAudioOutputDevices());
+
+  connect(audio_settings_, &AudioSettingsController::ToneTypeChanged,
+          sound_manager_, &SoundManager::SetToneType);
+
+  connect(audio_settings_, &AudioSettingsController::VolumeChanged,
+          sound_manager_, &SoundManager::SetVolume);
+
+  connect(audio_settings_, &AudioSettingsController::FrequencyChanged,
+          sound_manager_, &SoundManager::SetToneFrequency);
+
+  connect(audio_settings_, &AudioSettingsController::AudioDeviceChanged,
+          sound_manager_, &SoundManager::SetAudioOutputDevice);
+
+  connect(sound_manager_, &SoundManager::AudioDevicesUpdated, this, [this]() {
+    audio_settings_->UpdateSoundCardList(
+        sound_manager_->GetAudioOutputDevices());
+  });
 }
 
 void VMTutorialApplication::CreateGeneralSettingsWidget() noexcept {
@@ -162,6 +182,10 @@ void VMTutorialApplication::CreateGeneralSettingsWidget() noexcept {
 
 void VMTutorialApplication::CreateGraphicsSettingsWidget() noexcept {
   graphics_settings_ = new GraphicsSettingsController(settings_dialog_);
+
+  connect(graphics_settings_,
+          &GraphicsSettingsController::EnableBilinearFiltering,
+          main_window_->GetRenderer(), &Renderer::EnableBilinearFiltering);
 }
 
 void VMTutorialApplication::CreateKeypadSettingsWidget() noexcept {

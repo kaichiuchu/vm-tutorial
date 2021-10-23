@@ -25,7 +25,12 @@ class GraphicsSettingsController : public QWidget {
   explicit GraphicsSettingsController(QWidget* parent_widget) noexcept;
 
  private:
+  void ConnectSignalsToSlots() noexcept;
+
   /// Populates the widget with the current graphics settings.
   void PopulateDataFromAppSettings() noexcept;
   Ui::GraphicsSettings view_;
+
+ signals:
+  void EnableBilinearFiltering(bool enabled);
 };

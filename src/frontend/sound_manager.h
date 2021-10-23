@@ -15,8 +15,7 @@
 #include <QAudioSink>
 #include <QMediaDevices>
 
-/// Defines the types of tones that we support.
-enum class ToneType { kSineWave };
+#include "types.h"
 
 /// This class handles the management of sound devices and tone generation.
 class SoundManager : public QObject {
@@ -75,6 +74,11 @@ class SoundManager : public QObject {
                             double duration) noexcept -> SoundBufferInfo;
 
  private:
+  /// Connects signals to slots.
+  void ConnectSignalsToSlots() noexcept;
+
+  void SetupFromAppSettings() noexcept;
+
   /// Generates a sine wave.
   ///
   /// The frequency of the sine wave is governed by the last call to \ref
@@ -107,4 +111,7 @@ class SoundManager : public QObject {
   /// The I/O device used to transfer data to the audio output device as
   /// determined by the last call to \ref SetAudioOutputDevice().
   QIODevice* audio_io_;
+
+ signals:
+  void AudioDevicesUpdated();
 };

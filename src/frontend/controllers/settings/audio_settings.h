@@ -12,24 +12,48 @@
 
 #pragma once
 
+#include <QAudioDevice>
 #include <QWidget>
 
+#include "types.h"
 #include "ui_audio_settings.h"
 
 /// This class handles the logic of user actions that take place in the audio
 /// settings widget.
-///
-/// This is a stub while we wait for the stable version of Qt 6.2 to be
-/// released, which contains Qt Multimedia. This should be done according to
-/// their road map by September 30th, 2021.
 class AudioSettingsController : public QWidget {
   Q_OBJECT
 
  public:
   explicit AudioSettingsController(QWidget* parent_widget) noexcept;
 
+  /// Updates the sound card devices list.
+  ///
+  /// \param audio_devices The list of output audio devices present on the
+  /// system.
+  void UpdateSoundCardList(const QList<QAudioDevice>& audio_devices) noexcept;
+
  private:
+  /// Sets up the remainder of the UI.
+  void SetupAdditionalUI() noexcept;
+
   /// Populates the widget with the current settings.
   void PopulateDataFromAppSettings() noexcept;
+
+  /// Connects various signals from the interface to slots.
+  void ConnectSignalsToSlots() noexcept;
+
   Ui::AudioSettings view_;
+
+ signals:
+  /// Emitted when the tone type has been changed by the user.
+  void ToneTypeChanged(ToneType tone_type);
+
+  /// Emitted when the frequency of the tone has been changed by the user.
+  void FrequencyChanged(int value);
+
+  /// Emitted when the volume has been changed by the user.
+  void VolumeChanged(int value);
+
+  /// Emitted when the audio device has been changed by the user.
+  void AudioDeviceChanged(const QAudioDevice& device);
 };

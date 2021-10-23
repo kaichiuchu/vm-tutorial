@@ -12,6 +12,8 @@
 
 #include "renderer.h"
 
+#include "models/app_settings.h"
+
 namespace {
 GLuint vertex_shader;
 GLuint fragment_shader;
@@ -29,6 +31,7 @@ void Renderer::initializeGL() noexcept {
   CreateVertexArray();
   CreateElementArray();
   CreateTexture();
+  SetupFromAppSettings();
 }
 
 void Renderer::resizeGL(int w, int h) noexcept { glViewport(0, 0, w, h); }
@@ -50,6 +53,15 @@ void Renderer::UpdateScreen(
   update();
 }
 
+void Renderer::EnableBilinearFiltering(const bool enabled) noexcept {
+  const auto filter = enabled ? GL_LINEAR : GL_NEAREST;
+
+  glBindTexture(GL_TEXTURE_2D, texture_);
+
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
+}
+
 GLuint Renderer::CreateShader(const GLenum type,
                               const char* const src) noexcept {
   auto shader = glCreateShader(type);
@@ -68,8 +80,12 @@ void Renderer::CreateTexture() noexcept {
 
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+}
+
+void Renderer::SetupFromAppSettings() noexcept {
+  AppSettingsModel app_settings;
+
+  EnableBilinearFiltering(app_settings.BilinearFilteringEnabled());
 }
 
 void Renderer::CreateVertexArray() noexcept {

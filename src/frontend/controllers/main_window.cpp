@@ -23,7 +23,8 @@ MainWindowController::MainWindowController() noexcept {
 
   connect(view_.actionStart_ROM, &QAction::triggered, this, [this]() {
     const auto file_name = QFileDialog::getOpenFileName(
-        this, tr("Open CHIP-8 ROM file"), "",
+        this, tr("Open CHIP-8 ROM file"),
+        AppSettingsModel().GetProgramFilesPath(),
         tr("CHIP-8 ROM files (*.c8, *.ch8);;All files (*)"));
 
     if (!file_name.isEmpty()) {

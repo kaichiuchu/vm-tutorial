@@ -26,6 +26,8 @@ class GeneralSettingsController : public QWidget {
   explicit GeneralSettingsController(QWidget* parent_widget) noexcept;
 
  private:
+  void ConnectSignalsToSlots() noexcept;
+
   /// Populates the widget with the current settings.
   void PopulateDataFromAppSettings() noexcept;
   Ui::GeneralSettings view_;

@@ -19,6 +19,22 @@ GraphicsSettingsController::GraphicsSettingsController(
     : QWidget(parent_widget) {
   view_.setupUi(this);
   PopulateDataFromAppSettings();
+  ConnectSignalsToSlots();
 }
 
-void GraphicsSettingsController::PopulateDataFromAppSettings() noexcept {}
+void GraphicsSettingsController::ConnectSignalsToSlots() noexcept {
+  connect(view_.enableBilinearFiltering, &QCheckBox::stateChanged,
+          [this](const int state) {
+            AppSettingsModel app_settings;
+
+            app_settings.SetBilinearFiltering(state);
+            emit EnableBilinearFiltering(state);
+          });
+}
+
+void GraphicsSettingsController::PopulateDataFromAppSettings() noexcept {
+  AppSettingsModel app_settings;
+
+  view_.enableBilinearFiltering->setChecked(
+      app_settings.BilinearFilteringEnabled());
+}

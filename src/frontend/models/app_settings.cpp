@@ -12,15 +12,14 @@
 
 #include "app_settings.h"
 
+#include <QDir>
+
 AppSettingsModel::AppSettingsModel(QObject* parent_object) noexcept
     : QSettings("vm-tutorial.ini", QSettings::IniFormat, parent_object) {}
 
 auto AppSettingsModel::KeyBindingExists(const int physical_key) noexcept
     -> bool {
-  if (GetVMKeyBinding(physical_key)) {
-    return true;
-  }
-  return false;
+  return GetVMKeyBinding(physical_key).has_value();
 }
 
 auto AppSettingsModel::GetVMKeyBindings() noexcept -> VMKeyBindings {
@@ -35,8 +34,8 @@ auto AppSettingsModel::GetVMKeyBindings() noexcept -> VMKeyBindings {
   return bindings;
 }
 
-std::optional<chip8::Key> AppSettingsModel::GetVMKeyBinding(
-    const int physical_key) noexcept {
+auto AppSettingsModel::GetVMKeyBinding(const int physical_key) noexcept
+    -> std::optional<chip8::Key> {
   // We call \ref QSettings::beginGroup() here so we can grab all of the child
   // keys of the virtual machine key binding group without the group name in the
   // result of \ref QSettings::childKeys().
@@ -64,6 +63,56 @@ std::optional<chip8::Key> AppSettingsModel::GetVMKeyBinding(
   // called \ref QSettings::beginGroup().
   endGroup();
   return std::nullopt;
+}
+
+auto AppSettingsModel::GetAudioDeviceID() const noexcept -> QByteArray {
+  return value("audio/default_device").toByteArray();
+}
+
+auto AppSettingsModel::GetAudioToneFrequency() const noexcept -> int {
+  return value("audio/tone_freq", 500).toInt();
+}
+
+auto AppSettingsModel::GetAudioVolume() const noexcept -> int {
+  return value("audio/volume", 100).toInt();
+}
+
+auto AppSettingsModel::GetAudioToneType() const noexcept -> ToneType {
+  return value("audio/tone_type", static_cast<int>(ToneType::kSineWave))
+      .value<ToneType>();
+}
+
+auto AppSettingsModel::GetProgramFilesPath() const noexcept -> QString {
+  return value("paths/program_files", QDir::currentPath()).toString();
+}
+
+auto AppSettingsModel::BilinearFilteringEnabled() const noexcept -> bool {
+  return value("graphics/bilinear_filtering", false).toBool();
+}
+
+void AppSettingsModel::SetProgramFilesPath(const QString& path) noexcept {
+  setValue("paths/program_files", path);
+}
+
+void AppSettingsModel::SetBilinearFiltering(const bool enabled) noexcept {
+  setValue("graphics/bilinear_filtering", enabled);
+}
+
+void AppSettingsModel::SetAudioToneFrequency(const unsigned int freq) noexcept {
+  setValue("audio/tone_freq", freq);
+}
+
+void AppSettingsModel::SetAudioVolume(const unsigned int value) noexcept {
+  setValue("audio/volume", value);
+}
+
+void AppSettingsModel::SetAudioToneType(const ToneType tone_type) noexcept {
+  setValue("audio/tone_type", static_cast<int>(tone_type));
+}
+
+void AppSettingsModel::SetAudioDeviceID(
+    const QByteArray& audio_device_id) noexcept {
+  setValue("audio/default_device", audio_device_id);
 }
 
 void AppSettingsModel::SetVMKeyBinding(const chip8::Key chip8_key,

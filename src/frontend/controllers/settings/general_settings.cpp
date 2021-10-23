@@ -12,13 +12,35 @@
 
 #include "general_settings.h"
 
+#include <QFileDialog>
+
 #include "models/app_settings.h"
 
 GeneralSettingsController::GeneralSettingsController(
     QWidget* parent_widget) noexcept
     : QWidget(parent_widget) {
   view_.setupUi(this);
+  ConnectSignalsToSlots();
   PopulateDataFromAppSettings();
 }
 
-void GeneralSettingsController::PopulateDataFromAppSettings() noexcept {}
+void GeneralSettingsController::ConnectSignalsToSlots() noexcept {
+  connect(view_.programFilesPath, &QPushButton::clicked, [this]() {
+    const auto dir = QFileDialog::getExistingDirectory(
+        this, tr("Open Directory"), "/home",
+        QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+
+    if (dir.isEmpty()) {
+      return;
+    }
+
+    AppSettingsModel app_settings;
+    app_settings.SetProgramFilesPath(dir);
+    view_.programFilesPath->setText(dir);
+  });
+}
+
+void GeneralSettingsController::PopulateDataFromAppSettings() noexcept {
+  AppSettingsModel app_settings;
+  view_.programFilesPath->setText(app_settings.GetProgramFilesPath());
+}

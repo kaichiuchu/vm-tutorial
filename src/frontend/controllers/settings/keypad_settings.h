@@ -33,15 +33,14 @@ class KeypadSettingsController : public QWidget {
   ///
   /// \param physical_key The physical key which conflicts with another key
   /// binding.
-  void ReportKeyConfliction(const int physical_key) noexcept;
+  void ReportKeyConfliction(int physical_key) noexcept;
 
  private:
   /// Populates the widget with the current keypad settings.
   void PopulateDataFromAppSettings() noexcept;
 
-  ///
-  void UpdateButtonText(QPushButton* const button,
-                        const int physical_key) noexcept;
+  /// Updates the text of a button.
+  void UpdateButtonText(QPushButton* const button, int physical_key) noexcept;
 
   /// Connects the buttons to set bindings for the CHIP-8 keypad to \ref
   /// HandleKeyBindingChange().
@@ -52,7 +51,7 @@ class KeypadSettingsController : public QWidget {
   /// button on the keyboard to bind the corresponding CHIP-8 key to a physical
   /// key.
   void HandleKeyBindingChange(QPushButton* const button,
-                              const chip8::Key chip8_key) noexcept;
+                              chip8::Key chip8_key) noexcept;
 
   /// This method is called every second by the countdown timer to handle the
   /// countdown. Users have 5 seconds to press a key to bind a physical key to a

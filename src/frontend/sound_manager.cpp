@@ -12,12 +12,12 @@
 
 #include "sound_manager.h"
 
+#include "models/app_settings.h"
+
 SoundManager::SoundManager(QObject *parent_object) noexcept
     : QObject(parent_object), media_devices_(new QMediaDevices(this)) {
-  SetAudioOutputDevice(media_devices_->defaultAudioOutput());
-  SetToneType(ToneType::kSineWave);
-  SetToneFrequency(500);
-  SetVolume(100);
+  SetupFromAppSettings();
+  ConnectSignalsToSlots();
 }
 
 void SoundManager::PlayTone(const double duration) noexcept {
@@ -34,13 +34,11 @@ void SoundManager::PlayTone(const double duration) noexcept {
 }
 
 void SoundManager::SetVolume(const unsigned int volume) noexcept {
-  if (audio_output_) {
-    const auto linear_volume = QAudio::convertVolume(
-        volume / qreal(100), QAudio::LogarithmicVolumeScale,
-        QAudio::LinearVolumeScale);
+  const auto linear_volume =
+      QAudio::convertVolume(volume / qreal(100), QAudio::LogarithmicVolumeScale,
+                            QAudio::LinearVolumeScale);
 
-    audio_output_->setVolume(linear_volume);
-  }
+  audio_output_->setVolume(linear_volume);
 }
 
 void SoundManager::SetToneType(const ToneType tone_type) noexcept {
@@ -81,6 +79,42 @@ auto SoundManager::ConfigureSoundBuffer(const QAudioFormat &format,
   sound_buffer_.resize(bytes_for_duration);
 
   return {bytes_per_sample, bytes_for_duration};
+}
+
+void SoundManager::ConnectSignalsToSlots() noexcept {
+  connect(media_devices_, &QMediaDevices::audioOutputsChanged, this,
+          [this]() { emit AudioDevicesUpdated(); });
+}
+
+void SoundManager::SetupFromAppSettings() noexcept {
+  AppSettingsModel app_settings;
+
+  const auto audio_output_devices = media_devices_->audioOutputs();
+
+  const auto audio_device_id = app_settings.GetAudioDeviceID();
+
+  const auto result =
+      std::find_if(audio_output_devices.cbegin(), audio_output_devices.cend(),
+                   [audio_device_id](const QAudioDevice &audio_device) {
+                     return audio_device.id() == audio_device_id;
+                   });
+
+  if (result != audio_output_devices.cend()) {
+    SetAudioOutputDevice(*result);
+  } else {
+    const auto default_audio_device = media_devices_->defaultAudioOutput();
+
+    if (!default_audio_device.isNull()) {
+      SetAudioOutputDevice(default_audio_device);
+    } else {
+      // No audio devices on the system; stop.
+      return;
+    }
+  }
+
+  SetToneFrequency(app_settings.GetAudioToneFrequency());
+  SetToneType(app_settings.GetAudioToneType());
+  SetVolume(app_settings.GetAudioVolume());
 }
 
 void SoundManager::GenerateSineWave(double duration) noexcept {

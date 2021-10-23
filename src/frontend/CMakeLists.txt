@@ -18,7 +18,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 set(SRCS main.cpp renderer.cpp sound_manager.cpp vm_thread.cpp vm_tutorial_app.cpp)
-set(HDRS renderer.h sound_manager.h vm_thread.h vm_tutorial_app.h)
+set(HDRS renderer.h sound_manager.h vm_thread.h vm_tutorial_app.h types.h)
 
 set(CONTROLLER_SRCS controllers/logger_window.cpp controllers/main_window.cpp)
 set(CONTROLLER_HDRS controllers/logger_window.h controllers/main_window.h)

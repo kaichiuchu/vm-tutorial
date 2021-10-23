@@ -35,6 +35,8 @@ class Renderer : public QOpenGLWidget, public QOpenGLFunctions_4_1_Core {
   void UpdateScreen(
       const chip8::ImplementationInterface::Framebuffer& framebuffer) noexcept;
 
+  void EnableBilinearFiltering(bool enabled) noexcept;
+
  protected:
   /// From Qt documentation:
   ///
@@ -73,6 +75,8 @@ class Renderer : public QOpenGLWidget, public QOpenGLFunctions_4_1_Core {
   void paintGL() noexcept override;
 
  private:
+  void SetupFromAppSettings() noexcept;
+
   /// Creates the vertex shader.
   void CreateVertexShader() noexcept;
 
