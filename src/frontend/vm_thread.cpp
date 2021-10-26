@@ -23,6 +23,9 @@ VMThread::VMThread(QObject* parent_object) noexcept : QThread(parent_object) {
   vm_instance_.play_tone_func_ = [this](const double tone_duration) {
     emit PlayTone(tone_duration);
   };
+
+  vm_instance_.SetLogMessageFunc(
+      [this](const std::string& msg) { emit LogMessageEmitted(msg); });
 }
 
 void VMThread::StopExecution() noexcept {

@@ -14,23 +14,26 @@
 
 #include <QWidget>
 
-#include "ui_machine_settings.h"
+#include "ui_logger_settings.h"
 
-/// This class handles the logic of user actions that take place in the machine
-/// settings widget.
-class MachineSettingsController : public QWidget {
+class LoggerSettingsController : public QWidget {
   Q_OBJECT
 
  public:
-  explicit MachineSettingsController(QWidget* parent_widget) noexcept;
+  explicit LoggerSettingsController(QWidget* parent_object) noexcept;
 
  private:
+  Ui::LoggerSettings view_;
+
   void ConnectSignalsToSlots() noexcept;
 
+  /// Populates the widget with the current settings.
   void PopulateDataFromAppSettings() noexcept;
-  Ui::MachineSettings view_;
 
- signals:
-  void MachineInstructionsPerSecondChanged(int value);
-  void MachineFrameRateChanged(double value);
+  void SetLogFontInfo(const QFont& font) noexcept;
+
+  void SetButtonColor(QPushButton* const button, const QColor& color) noexcept;
+
+  void SelectLevelColor(QPushButton* const level_button,
+                        const QString& level_name) noexcept;
 };

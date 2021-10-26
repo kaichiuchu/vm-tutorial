@@ -15,6 +15,8 @@
 #include <core/spec.h>
 
 #include <QAudioDevice>
+#include <QColor>
+#include <QFont>
 #include <QSettings>
 #include <unordered_map>
 
@@ -28,6 +30,10 @@ class AppSettingsModel : public QSettings {
  public:
   using VMKeyBindings = std::unordered_map<QString, int>;
 
+  /// Constructs the application settings model.
+  ///
+  /// \param parent_object The parent widget of which this class is a child of
+  /// it.
   explicit AppSettingsModel(QObject* parent_object = nullptr) noexcept;
 
   /// Checks to see if a physical key is bound to either an application setting
@@ -35,15 +41,17 @@ class AppSettingsModel : public QSettings {
   ///
   /// \param physical_key The scancode of the key to check.
   ///
-  /// \returns true if the key is already bound, or false otherwise.
+  /// \returns \p true if the key is already bound, or \p false otherwise.
   auto KeyBindingExists(int physical_key) noexcept -> bool;
 
-  /// Returns virtual machine key associations.
+  /// Gets the mapping of virtual machine key bindings.
+  ///
+  /// \returns The virtual machine key bindings.
   auto GetVMKeyBindings() noexcept -> VMKeyBindings;
 
   /// Tries to find the virtual machine key the physical key corresponds to.
   ///
-  /// \param physical_key The physical key that the user pressed.
+  /// \param physical_key The scancode of the key that the user pressed.
   ///
   /// \returns The CHIP-8 key that the physical key corresponds to, if any.
   auto GetVMKeyBinding(const int physical_key) noexcept
@@ -52,19 +60,20 @@ class AppSettingsModel : public QSettings {
   /// Tries to find the audio device to use by its ID.
   ///
   /// \returns The audio device ID within the configuration file. If the byte
-  /// array is empty, the default audio output device should be used.
+  /// array is empty, the default audio output device on the system should be
+  /// used, if any.
   auto GetAudioDeviceID() const noexcept -> QByteArray;
 
   /// Tries to find the frequency of the tone to generate within the
   /// configuration file.
   ///
-  /// \returns The audio tone frequency within the configuration file, or 500 as
-  /// a default value.
+  /// \returns The audio tone frequency within the configuration file, or \p 500
+  /// as a default value.
   auto GetAudioToneFrequency() const noexcept -> int;
 
   /// Tries to find the audio volume within the configuration file.
   ///
-  /// \returns The audio volume within the configuration file, or 100 as a
+  /// \returns The audio volume within the configuration file, or \p 100 as a
   /// default value.
   auto GetAudioVolume() const noexcept -> int;
 
@@ -84,45 +93,101 @@ class AppSettingsModel : public QSettings {
   /// Tries to find if bilinear filtering is enabled according to the
   /// configuration file.
   ///
-  /// \returns true if bilinear filtering is enabled, or false otherwise. If the
-  /// bilinear filtering state is not within the configuration file, false is
-  /// returned by default.
+  /// \returns \p true if bilinear filtering is enabled, or \p false otherwise.
+  /// If the bilinear filtering state is not within the configuration file, \p
+  /// false is returned by default.
   auto BilinearFilteringEnabled() const noexcept -> bool;
 
-  /// Sets the default path of the guest program files.
+  /// Tries to find the color a level belongs to.
+  ///
+  /// \param level The name of the level to search for.
+  ///
+  /// \returns The color that the log level is associated with, if any. If no
+  /// color exists, the default text color on the system should be used.
+  auto GetLogLevelColor(const QString& level) const noexcept -> QColor;
+
+  /// Tries to find the font of the logger.
+  ///
+  /// \returns The font of the logger within the configuration file, if any. If
+  /// no font exists, the default font on the system should be used.
+  auto GetLogFont() noexcept -> std::optional<QFont>;
+
+  /// Tries to find the desired frame rate for the virtual machine.
+  ///
+  /// \returns The desired frame rate of the virtual machine, if any, or \p 60.0
+  /// by default.
+  auto GetMachineFrameRate() const noexcept -> double;
+
+  /// Tries to find the desired number of instructions per second for the
+  /// virtual machine.
+  ///
+  /// \returns The desired number of instructions per second of the virtual
+  /// machine, if any, or \p 500 by default.
+  auto GetMachineInstructionsPerSecond() const noexcept -> int;
+
+  /// Sets frame rate within the configuration file.
+  ///
+  /// \param frame_rate The new desired frame rate of the virtual machine.
+  void SetMachineFrameRate(double frame_rate) noexcept;
+
+  /// Sets the number of instructions per second to execute within the
+  /// configuration file.
+  ///
+  /// \param instructions_per_second The new desired number of instructions to
+  /// execute per second.
+  void SetMachineInstructionsPerSecond(int instructions_per_second) noexcept;
+
+  /// Sets the default path of the guest program files within the configuration
+  /// file.
   ///
   /// \param path The new default path of the guest program files.
   void SetProgramFilesPath(const QString& path) noexcept;
 
-  /// Sets the state of bilinear filtering.
+  /// Sets the state of bilinear filtering within the configuration file.
   ///
-  /// \param enabled true if bilinear filtering should be enabled, or false
-  /// otherwise.
+  /// \param enabled \p true if bilinear filtering should be enabled, or \p
+  /// false otherwise.
   void SetBilinearFiltering(bool enabled) noexcept;
 
-  /// Sets the frequency of the tone to generate.
+  /// Sets the frequency of the tone to generate within the configuration file.
   ///
   /// \param freq The frequency of the audio tone to generate.
   void SetAudioToneFrequency(unsigned int freq) noexcept;
 
-  /// Sets the volume of the audio output.
+  /// Sets the volume of the audio output within the configuration file.
   ///
-  /// \param value The volume of the audio output. If this value exceeds 100,
-  /// the result is 100.
+  /// \param value The volume of the audio output.
   void SetAudioVolume(unsigned int value) noexcept;
 
-  /// Sets the type of audio tone.
+  /// Sets the type of audio tone within the configuration file.
   ///
   /// \param tone_type The type of audio tone to use.
   void SetAudioToneType(ToneType tone_type) noexcept;
 
-  /// Sets the audio device ID.
+  /// Sets the audio device ID within the configuration file.
   ///
   /// \param audio_device_id The ID of the audio device to use.
   void SetAudioDeviceID(const QByteArray& audio_device_id) noexcept;
 
-  /// Sets the virtual machine key the physical key corresponds to.
+  /// Sets the virtual machine key the physical key corresponds to within the
+  /// configuration file.
+  ///
+  /// \param chip8_key The CHIP-8 key to associate with the physical key.
+  /// \param physical_key The scancode of the physical key to associate with the
+  /// CHIP-8 key.
   void SetVMKeyBinding(chip8::Key chip8_key, int physical_key) noexcept;
+
+  /// Sets the font of the logger within the configuration file.
+  ///
+  /// \param font The log font to use.
+  void SetLogFont(const QFont& font) noexcept;
+
+  /// Sets the color of a log level within the configuration file.
+  ///
+  /// \param level_name The name of a level to associate a color with.
+  /// \param color The color to associate with the level.
+  void SetLogLevelColor(const QString& level_name,
+                        const QColor& color) noexcept;
 
  private:
   /// Maps the names of virtual machine key binding sections to CHIP-8 keys.

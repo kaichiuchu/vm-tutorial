@@ -19,6 +19,29 @@ MachineSettingsController::MachineSettingsController(
     : QWidget(parent_widget) {
   view_.setupUi(this);
   PopulateDataFromAppSettings();
+  ConnectSignalsToSlots();
 }
 
-void MachineSettingsController::PopulateDataFromAppSettings() noexcept {}
+void MachineSettingsController::ConnectSignalsToSlots() noexcept {
+  connect(view_.instructionsPerSecondSpinBox, &QSpinBox::valueChanged,
+          [this](const int value) {
+            AppSettingsModel().SetMachineInstructionsPerSecond(value);
+            emit MachineInstructionsPerSecondChanged(value);
+          });
+
+  connect(view_.frameRateSpinBox, &QSpinBox::valueChanged,
+          [this](const int value) {
+            AppSettingsModel().SetMachineFrameRate(static_cast<double>(value));
+            emit MachineFrameRateChanged(static_cast<double>(value));
+          });
+}
+
+void MachineSettingsController::PopulateDataFromAppSettings() noexcept {
+  AppSettingsModel app_settings;
+
+  view_.instructionsPerSecondSpinBox->setValue(
+      app_settings.GetMachineInstructionsPerSecond());
+
+  view_.frameRateSpinBox->setValue(
+      static_cast<int>(app_settings.GetMachineFrameRate()));
+}

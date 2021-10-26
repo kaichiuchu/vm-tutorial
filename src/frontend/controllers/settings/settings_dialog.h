@@ -24,10 +24,11 @@ class SettingsDialogController : public QDialog {
  public:
   enum SettingsCategory {
     kGeneralSettings = 0,
-    kMachineSettings = 1,
-    kGraphicsSettings = 2,
-    kKeypadSettings = 3,
-    kAudioSettings = 4
+    kLoggerSettings = 1,
+    kMachineSettings = 2,
+    kGraphicsSettings = 3,
+    kKeypadSettings = 4,
+    kAudioSettings = 5
   };
 
   explicit SettingsDialogController(QWidget* parent_widget) noexcept;

@@ -18,7 +18,6 @@ AudioSettingsController::AudioSettingsController(
     QWidget* parent_widget) noexcept
     : QWidget(parent_widget) {
   view_.setupUi(this);
-  SetupAdditionalUI();
   ConnectSignalsToSlots();
   PopulateDataFromAppSettings();
 }
@@ -31,24 +30,6 @@ void AudioSettingsController::UpdateSoundCardList(
     view_.soundCards->addItem(audio_device.description(),
                               QVariant::fromValue(audio_device));
   }
-}
-
-void AudioSettingsController::SetupAdditionalUI() noexcept {
-  view_.volumeSlider->setMinimum(0);
-  view_.volumeSlider->setMaximum(100);
-  view_.volumeSlider->setSingleStep(10);
-
-  view_.volumeSpinBox->setMinimum(0);
-  view_.volumeSpinBox->setMaximum(100);
-  view_.volumeSpinBox->setSingleStep(1);
-
-  view_.frequencySpinBox->setMinimum(0);
-  view_.frequencySpinBox->setMaximum(1000);
-  view_.frequencySpinBox->setSingleStep(1);
-
-  view_.frequencySlider->setMinimum(0);
-  view_.frequencySlider->setMaximum(1000);
-  view_.frequencySlider->setSingleStep(1);
 }
 
 void AudioSettingsController::PopulateDataFromAppSettings() noexcept {

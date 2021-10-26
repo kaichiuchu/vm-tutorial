@@ -10,17 +10,9 @@
 // with this software. If not, see
 // <http://creativecommons.org/publicdomain/zero/1.0/>.
 
-#include <QDateTime>
-#include "logger_window.h"
+#include "logger.h"
 
-LoggerWindowController::LoggerWindowController() noexcept {
-  view_.setupUi(this);
-  view_.plainTextEdit->setReadOnly(true);
-}
-
-void LoggerWindowController::AddCoreMessage(const QString& msg) noexcept {
-  const auto date = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss.zzz");
-  const auto formatted = QString{"[%1]: [core] %2"}.arg(date).arg(msg);
-
-  view_.plainTextEdit->appendPlainText(formatted);
+auto Logger::Get() noexcept -> Logger& {
+  static Logger log;
+  return log;
 }

@@ -31,7 +31,7 @@ namespace instruction_decoders {
 /// The result will be `0x1` (1).
 ///
 /// Please note that it should not be necessary to call this function directly,
-/// it is called implicitly when the `Instruction` struct is instantiated.
+/// it is called implicitly when the \ref Instruction struct is instantiated.
 ///
 /// \returns The group the instruction belongs to, or the actual instruction.
 constexpr auto GetGroup(const uint_fast16_t instruction) noexcept
@@ -50,7 +50,7 @@ constexpr auto GetGroup(const uint_fast16_t instruction) noexcept
 /// The result will be `0x234` (564).
 ///
 /// Please note that it should not be necessary to call this function directly,
-/// it is called implicitly when the `Instruction` struct is instantiated.
+/// it is called implicitly when the \ref Instruction struct is instantiated.
 ///
 /// \returns The lower 12 bits of the instruction.
 constexpr auto GetAddress(const uint_fast16_t instruction) noexcept
@@ -69,7 +69,7 @@ constexpr auto GetAddress(const uint_fast16_t instruction) noexcept
 /// The result will be `0x4` (4).
 ///
 /// Please note that it should not be necessary to call this function directly,
-/// it is called implicitly when the `Instruction` struct is instantiated.
+/// it is called implicitly when the \ref Instruction struct is instantiated.
 ///
 /// \returns The lower 4 bits of the instruction.
 constexpr auto GetNibble(const uint_fast16_t instruction) noexcept
@@ -88,7 +88,7 @@ constexpr auto GetNibble(const uint_fast16_t instruction) noexcept
 /// The result will be `0x2` (2).
 ///
 /// Please note that it should not be necessary to call this function directly,
-/// it is called implicitly when the `Instruction` struct is instantiated.
+/// it is called implicitly when the \ref Instruction struct is instantiated.
 ///
 /// \returns The lower 4 bits of the high byte of the instruction.
 constexpr auto GetX(const uint_fast16_t instruction) noexcept -> size_t {
@@ -106,7 +106,7 @@ constexpr auto GetX(const uint_fast16_t instruction) noexcept -> size_t {
 /// The result will be `0x3` (3).
 ///
 /// Please note that it should not be necessary to call this function directly,
-/// it is called implicitly when the `Instruction` struct is instantiated.
+/// it is called implicitly when the \ref Instruction struct is instantiated.
 ///
 /// \returns The upper 4 bits of the low byte of the instruction.
 constexpr auto GetY(const uint_fast16_t instruction) noexcept -> size_t {
@@ -124,7 +124,7 @@ constexpr auto GetY(const uint_fast16_t instruction) noexcept -> size_t {
 /// The result will be `0x34` (52).
 ///
 /// Please note that it should not be necessary to call this function directly,
-/// it is called implicitly when the `Instruction` struct is instantiated.
+/// it is called implicitly when the \ref Instruction struct is instantiated.
 ///
 /// \returns The lower 8 bits of the instruction.
 constexpr auto GetByte(const uint_fast16_t instruction) noexcept
@@ -176,8 +176,12 @@ struct Instruction {
   const uint_fast16_t value_;
 };
 
+/// Defines the keypad buttons. This is passed to \ref
+/// ImplementationInterface::SetKeyState().
 enum Key { k0, k1, k2, k3, k4, k5, k6, k7, k8, k9, kA, kB, kC, kD, kE, kF };
 
+/// Defines the possible key states. This is passed to \ref
+/// ImplementationInterface::SetKeyState().
 enum KeyState : bool { kPressed = true, kReleased = false };
 
 /// Defines BGRA32 values for pixel colors.
@@ -258,19 +262,30 @@ constexpr auto kFontLength = 5;
 
 /// Defines the limits of various CHIP-8 types.
 namespace data_limits {
+/// The maximum program counter.
 constexpr auto kProgramCounter =
     data_size::kInternalMemory - data_size::kInstructionLength;
 
+/// The minimum random number to generate.
 constexpr auto kMinRandomValue = 0;
+
+/// The maximum random number to generate.
 constexpr auto kMaxRandomValue = 255;
 }  // namespace data_limits
 
+/// Defines the various regions of internal memory.
 namespace memory_region {
+/// The start of the program area.
 constexpr auto kProgramArea = 0x200;
-}
+}  // namespace memory_region
 
+/// Defines timing information. The information here is used to initialize the
+/// virtual machine instance.
 namespace timing {
+/// The default number of instructions to execute per second.
 constexpr auto kDefaultInstructionsPerSecond = 500;
+
+/// The number of frames to output per second.
 constexpr auto kDefaultFrameRate = 60.0;
 }  // namespace timing
 
@@ -281,6 +296,7 @@ constexpr auto kHeight = 32;
 constexpr auto kSize = kWidth * kHeight;
 }  // namespace framebuffer
 
+/// Defines the initial values of virtual machine registers.
 namespace initial_values {
 constexpr auto kProgramCounter = 0x200;
 constexpr auto kStackPointer = -1;
@@ -318,13 +334,29 @@ constexpr std::array kFontSet = {
 
 /// Defines the results of execution steps.
 enum class StepResult {
+  /// No error occurred.
   kSuccess,
+
+  /// The virtual machine is halted until a key press.
   kHaltUntilKeyPress,
+
+  /// An instruction referenced an invalid internal memory location.
   kInvalidMemoryLocation,
+
+  /// An invalid instruction was reached.
   kInvalidInstruction,
+
+  /// An invalid key was specified by an instruction.
   kInvalidKey,
+
+  /// An invalid sprite location was specified by an instruction.
   kInvalidSpriteLocation,
+
+  /// The guest program attempted to return from a subroutine when the guest
+  /// program is not in any subroutine (the call stack is empty).
   kStackUnderflow,
+
+  /// The guest program called too many subroutines.
   kStackOverflow
 };
 }  // namespace chip8

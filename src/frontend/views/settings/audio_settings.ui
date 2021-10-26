@@ -62,6 +62,9 @@
        <layout class="QHBoxLayout" name="horizontalLayout">
         <item>
          <widget class="QSlider" name="frequencySlider">
+          <property name="maximum">
+           <number>1000</number>
+          </property>
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>
@@ -71,6 +74,9 @@
          <widget class="QSpinBox" name="frequencySpinBox">
           <property name="suffix">
            <string>Hz</string>
+          </property>
+          <property name="maximum">
+           <number>1000</number>
           </property>
          </widget>
         </item>
@@ -106,6 +112,9 @@
        <layout class="QHBoxLayout" name="horizontalLayout_2">
         <item>
          <widget class="QSlider" name="volumeSlider">
+          <property name="maximum">
+           <number>100</number>
+          </property>
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>
@@ -115,6 +124,9 @@
          <widget class="QSpinBox" name="volumeSpinBox">
           <property name="suffix">
            <string>%</string>
+          </property>
+          <property name="maximum">
+           <number>100</number>
           </property>
          </widget>
         </item>

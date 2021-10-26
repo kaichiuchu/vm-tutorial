@@ -38,8 +38,8 @@ auto main(int argc, char* argv[]) -> int {
 
   QApplication qt_app_instance(argc, argv);
 
-  qt_app_instance.setApplicationName("vm-tutorial");
-  qt_app_instance.setApplicationVersion("1.0.0");
+  QApplication::setApplicationName("vm-tutorial");
+  QApplication::setApplicationVersion("1.0.0");
 
   VMTutorialApplication app;
   return qt_app_instance.exec();

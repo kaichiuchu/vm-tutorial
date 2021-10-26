@@ -21,15 +21,15 @@ namespace debug {
 /// Converts a CHIP-8 bytecode instruction into human-readable CHIP-8 assembly
 /// language.
 ///
-/// If \p instruction is unknown, this function will return "ILLEGAL" and a base
-/// 16 representation of the instruction.
+/// If \p instruction is unknown, this function will return \p ILLEGAL and a
+/// base 16 representation of the instruction.
 ///
 /// Example usage:
 ///  \code
 ///    const auto disassembly = chip8::debug::DisassembleInstruction(0x00E0);
 ///  \endcode
 ///
-///  The result will be "CLS".
+///  The result will be \p CLS.
 ///
 /// \param instruction The instruction to process.
 ///

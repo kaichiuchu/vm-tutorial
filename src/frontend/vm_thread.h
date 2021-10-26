@@ -24,12 +24,24 @@ class VMThread : public QThread {
   Q_OBJECT
 
  public:
+  /// The average number of frames per second, in milliseconds.
   using AverageFPSInMS = double;
+
+  /// The number of frames per second.
   using CurrentFPS = unsigned int;
+
+  /// The desired frames per second.
   using TargetFPS = unsigned int;
 
+  /// A collection containing the current number of frames per second, the
+  /// average number of frames per second in milliseconds, and the desired
+  /// number of frames per second.
   using PerformanceCounters = std::tuple<CurrentFPS, AverageFPSInMS, TargetFPS>;
 
+  /// Constructs the virtual machine thread.
+  ///
+  /// \param parent_widget The parent object of which this class is a child of
+  /// it.
   explicit VMThread(QObject* parent_object) noexcept;
 
   /// From Qt documentation:
@@ -82,4 +94,9 @@ class VMThread : public QThread {
   /// \param step_result The result of the failure, refer to \ref
   /// chip8::StepResult for more details.
   void ExecutionFailure(chip8::StepResult step_result);
+
+  /// This signal is emitted when a log message has been emitted by the core.
+  ///
+  /// \param msg The message from the core.
+  void LogMessageEmitted(const std::string& msg);
 };

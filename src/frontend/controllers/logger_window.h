@@ -27,6 +27,8 @@ class LoggerWindowController : public QMainWindow {
  public:
   LoggerWindowController() noexcept;
 
+  void AddCoreMessage(const QString& msg) noexcept;
+
  private:
   Ui::LoggerWindow view_;
 };

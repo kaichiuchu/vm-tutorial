@@ -23,6 +23,11 @@
      </item>
      <item>
       <property name="text">
+       <string>Logger Settings</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
        <string>Machine Settings</string>
       </property>
      </item>

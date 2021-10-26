@@ -13,6 +13,7 @@
 #include <core/vm_instance.h>
 
 #include "impl_interpreter.h"
+#include "logger.h"
 
 chip8::VMInstance::VMInstance() noexcept
     : impl_(std::make_unique<InterpreterImplementation>()),
@@ -21,6 +22,15 @@ chip8::VMInstance::VMInstance() noexcept
   SetTiming(chip8::timing::kDefaultInstructionsPerSecond,
             chip8::timing::kDefaultFrameRate);
   Reset();
+}
+
+void chip8::VMInstance::SetLogMessageFunc(
+    const LogMessageFunc& func) const noexcept {
+  Logger::Get().log_message_func_ = func;
+}
+
+void chip8::VMInstance::SetLogLevel(const LogLevel level) noexcept {
+  Logger::Get().level_ = level;
 }
 
 auto chip8::VMInstance::GetTargetFrameRate() const noexcept -> unsigned int {
@@ -47,6 +57,8 @@ void chip8::VMInstance::CheckTimers() noexcept {
 }
 
 void chip8::VMInstance::DecrementTimers() noexcept {
+  auto logger = Logger::Get();
+
   if (impl_->sound_timer_ > 0) {
     // We need a boolean here to make sure we're not calling the play tone
     // function just because the sound timer is >0. We have to check to see if
@@ -55,8 +67,10 @@ void chip8::VMInstance::DecrementTimers() noexcept {
     // sound timer for proper operation of future conditions.
     if (!is_playing_tone_ && play_tone_func_) {
       const auto tone_duration = CalculateDurationOfTone();
-      play_tone_func_(tone_duration);
 
+      logger.Emit(LogLevel::kDebug, "Emitting a {}ms long tone", tone_duration);
+
+      play_tone_func_(tone_duration);
       is_playing_tone_ = true;
     }
     impl_->sound_timer_--;
@@ -73,6 +87,8 @@ void chip8::VMInstance::Reset() noexcept {
   impl_->Reset();
   number_of_steps_executed_ = 0;
   is_playing_tone_ = false;
+
+  Logger::Get().Emit(LogLevel::kInfo, "Virtual machine has been reset");
 }
 
 auto chip8::VMInstance::SetTiming(const unsigned int instructions_per_second,
@@ -95,6 +111,9 @@ auto chip8::VMInstance::SetTiming(const unsigned int instructions_per_second,
   constexpr auto kSecInMs = 1000;
   max_frame_time_ = kSecInMs / desired_frame_rate;
 
+  Logger::Get().Emit(LogLevel::kInfo,
+                     "Timing changed to {}Hz (instructions) within {} frames",
+                     instructions_per_second, desired_frame_rate);
   return true;
 }
 

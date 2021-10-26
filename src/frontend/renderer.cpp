@@ -62,8 +62,8 @@ void Renderer::EnableBilinearFiltering(const bool enabled) noexcept {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
 }
 
-GLuint Renderer::CreateShader(const GLenum type,
-                              const char* const src) noexcept {
+auto Renderer::CreateShader(const GLenum type, const char* const src) noexcept
+    -> GLuint {
   auto shader = glCreateShader(type);
   glShaderSource(shader, 1, &src, nullptr);
   glCompileShader(shader);

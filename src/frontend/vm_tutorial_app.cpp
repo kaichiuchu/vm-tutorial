@@ -136,6 +136,11 @@ void VMTutorialApplication::StartROM(const QString& rom_file_path) noexcept {
 void VMTutorialApplication::DisplayLogger() noexcept {
   if (!logger_window_) {
     logger_window_ = new LoggerWindowController;
+
+    connect(vm_thread_, &VMThread::LogMessageEmitted, this,
+            [this](const std::string& msg) {
+              logger_window_->AddCoreMessage(QString::fromStdString(msg));
+            });
   }
   logger_window_->show();
 }
@@ -147,6 +152,7 @@ void VMTutorialApplication::DisplayProgramSettings() noexcept {
     CreateGeneralSettingsWidget();
     CreateGraphicsSettingsWidget();
     CreateKeypadSettingsWidget();
+    CreateLoggerSettingsWidget();
     CreateMachineSettingsWidget();
     AddSettingsWidgetsToSettingsContainer();
   }
@@ -159,13 +165,15 @@ void VMTutorialApplication::CreateAudioSettingsWidget() noexcept {
   audio_settings_->UpdateSoundCardList(sound_manager_->GetAudioOutputDevices());
 
   connect(audio_settings_, &AudioSettingsController::ToneTypeChanged,
-          sound_manager_, &SoundManager::SetToneType);
+          [this](const ToneType type) { sound_manager_->tone_type_ = type; });
 
   connect(audio_settings_, &AudioSettingsController::VolumeChanged,
           sound_manager_, &SoundManager::SetVolume);
 
   connect(audio_settings_, &AudioSettingsController::FrequencyChanged,
-          sound_manager_, &SoundManager::SetToneFrequency);
+          sound_manager_, [this](const unsigned int freq) {
+            sound_manager_->tone_freq_ = freq;
+          });
 
   connect(audio_settings_, &AudioSettingsController::AudioDeviceChanged,
           sound_manager_, &SoundManager::SetAudioOutputDevice);
@@ -192,8 +200,30 @@ void VMTutorialApplication::CreateKeypadSettingsWidget() noexcept {
   keypad_settings_ = new KeypadSettingsController(settings_dialog_);
 }
 
+void VMTutorialApplication::CreateLoggerSettingsWidget() noexcept {
+  logger_settings_ = new LoggerSettingsController(settings_dialog_);
+}
+
 void VMTutorialApplication::CreateMachineSettingsWidget() noexcept {
   machine_settings_ = new MachineSettingsController(settings_dialog_);
+
+  connect(machine_settings_,
+          &MachineSettingsController::MachineInstructionsPerSecondChanged,
+          [this](const int instructions_per_second) {
+            const auto frame_rate = AppSettingsModel().GetMachineFrameRate();
+
+            vm_thread_->vm_instance_.SetTiming(instructions_per_second,
+                                               frame_rate);
+          });
+
+  connect(
+      machine_settings_, &MachineSettingsController::MachineFrameRateChanged,
+      [this](const double frame_rate) {
+        const auto instructions_per_second =
+            AppSettingsModel().GetMachineInstructionsPerSecond();
+
+        vm_thread_->vm_instance_.SetTiming(instructions_per_second, frame_rate);
+      });
 }
 
 void VMTutorialApplication::ConnectVMThreadSignalsToSlots() noexcept {
@@ -230,6 +260,10 @@ void VMTutorialApplication::AddSettingsWidgetsToSettingsContainer() noexcept {
   settings_dialog_->AddWidgetToSettingsContainer(
       SettingsDialogController::SettingsCategory::kKeypadSettings,
       keypad_settings_);
+
+  settings_dialog_->AddWidgetToSettingsContainer(
+      SettingsDialogController::SettingsCategory::kLoggerSettings,
+      logger_settings_);
 
   settings_dialog_->AddWidgetToSettingsContainer(
       SettingsDialogController::SettingsCategory::kAudioSettings,

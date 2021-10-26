@@ -18,85 +18,87 @@
 #include <tuple>
 
 namespace chip8 {
-/// This class defines the interface for a CHIP-8 implementation.
-///
-/// There is a necessity to this class, for there are many ways to implement a
-/// virtual machine, and we don't want to duplicate code for each
-/// implementation. In addition, we'll want to (at some point) be able to switch
-/// implementations at runtime.
-///
-/// Some common implementations are listed below:
-///
-/// 1) fetch-decode-execute
-///
-///    The fetch-decode-execute implementation is the simplest, most portable,
-///    but also the slowest possible implementation. This type of implementation
-///    is generally the first one to be implemented in a virtual machine as it
-///    allows one to immediately begin testing, and will normally contain many
-///    features that aid in debugging. These are generally just called
-///    "interpreters".
-///
-///    They do exactly what the name implies; it fetches an instruction, decodes
-///    it, and executes the appropriate code to handle this instruction
-///    repeatedly.
-///
-/// 2) computed goto
-///
-///    This is a gcc extension used to implement efficient dispatch tables,
-///    see https://gcc.gnu.org/onlinedocs/gcc/Labels-as-Values.html. This
-///    extension is also supported by clang. Of course, this extension is not
-///    supported by all compilers, rendering this technique non-portable. This
-///    can produce better code generation, however the use of `goto` may violate
-///    structured programming principles.
-///
-///    To be clear: compilers are generally good at determining what constitutes
-///    efficient dispatching, so implementing computed goto can be a hit or
-///    miss. It *may* yield a noticeable benefit, it *may not*. The best thing
-///    to do is implement and profile.
-///
-/// 3) cached interpreter
-///
-///    _removed as of this commit_
-///
-/// 4) Just-in-time compilation (JIT)
-///
-///    A JIT implementation is the most complicated, least portable, but will
-///    almost certainly by the fastest implementation depending on the code
-///    generated.
-///
-///    Simply put: A JIT implementation organizes the code of function
-///    blocks, which are then translated into the host architecture's native
-///    code and optimized. If the function is called again, the native optimized
-///    code will be executed instead.
-///
-///    Blocks are generally referenced by program counter. If a block does not
-///    exist, a fetch-decode-execute loop will have to take place, but the
-///    resulting code generated will be stored as a block. This explains why
-///    JITs are a bit slow at first; there isn't any blocks to start with.
-///
-///    A complication with JITs is the fact the code generated is tied to a
-///    specific host architecture, making it non-portable. Another complication
-///    is the fact one must be intimately familiar with optimization theory and
-///    the host architecture, along with how to generate the most optimal code
-///    for it. Finally, a good JIT implementation must handle self-modifying
-///    code well. The simplest approach is to invalidate the entire block and
-///    recompile it, but as you can probably tell by now, the naive approach
-///    won't be the most efficient.
-///
-///    To maximize performance, JIT implementations sometimes do not generate
-///    code involving error or bounds checking. These can have a decent run-time
-///    cost, and they're pointless if you _know_ what you're running works on
-///    the original hardware.
-///
-///    In many circles, JITs are often referred to as dynamic recompilers.
-///
-/// This class defines the architecture of the virtual machine, providing the
-/// necessary data structures and members to fully implement the virtual
+/// This class defines the interface for a CHIP-8 implementation and provides
+/// the necessary data structures and members to fully implement the virtual
 /// machine.
+///
+/// There are many ways to implement a virtual machine, and we don't want to
+/// duplicate code for each implementation. In addition, at some point we'll
+/// want to be able to switch implementations at runtime.
+///
+/// - Common implementations:
+///
+///    -# fetch-decode-execute
+///
+///       This implementation is the simplest, most portable, but also the
+///       slowest possible implementation. This type of implementation is
+///       generally the first one to be implemented in a virtual machine as it
+///       allows one to immediately begin testing, and will normally contain
+///       many features that aid in debugging. These are generally just called
+///       "interpreters".
+///
+///       It does exactly what the name implies; it fetches an instruction,
+///       decodes it, and executes the appropriate code to handle the
+///       instruction repeatedly and naively.
+///
+///    -# computed goto
+///
+///       This is a gcc extension used to implement efficient dispatch tables,
+///       see https://gcc.gnu.org/onlinedocs/gcc/Labels-as-Values.html. This
+///       extension is also supported by clang. Of course, this extension is
+///       not supported by all compilers, rendering this not portable. This can
+///       produce better code generation, however the use of \p goto may
+///       violate structured programming principles.
+///
+///       To be clear: compilers are generally good at determining what is
+///       efficient dispatching, so implementing computed goto can be a hit or
+///       miss. It *may* yield a noticeable benefit, it *may not*. The best
+///       thing to do is implement and profile.
+///
+///    -# cached interpreter
+///
+///       _removed as of this commit_
+///
+///    -# Just-in-time compilation (JIT)
+///
+///       This implementation is the most complicated, least portable, but will
+///       almost certainly be the fastest implementation depending on the code
+///       generated.
+///
+///       A very simplified explanation: A JIT implementation organizes code
+///       into basic blocks, which are then translated into the host
+///       architecture's native code and optimized. If the function is called
+///       again, the native optimized code will be executed instead.
+///
+///       Basic blocks are generally referenced by program counter. If a block
+///       does not exist, a fetch-decode-execute loop will have to take place,
+///       but the resulting code generated will be stored within a basic block.
+///       JIT implementations have a startup penalty for this reason: there
+///       aren't any basic blocks to reference yet. The initial penalty is a
+///       small price to pay for an overall speed boost over time.
+///
+///       An obvious complication with JITs is the fact the code generated is
+///       tied to a specific host architecture, rendering this non portable.
+///       Another complication is the fact one needs be intimately familiar
+///       with optimization theory and the host architecture. Finally, a good
+///       JIT implementation must handle self-modifying code well. The simplest
+///       approach would be to invalidate the entire basic block and recompile
+///       it, but as you can probably tell by now, the naive approach won't be
+///       the most efficient.
+///
+///       To maximize performance, JIT implementations sometimes do not
+///       generate code involving error or bounds checking. These can have a
+///       decent run-time cost, and they're pointless if you _know_ what you're
+///       running works on the original hardware.
+///
+///       In many circles, JITs are often referred to as dynamic recompilers.
 class ImplementationInterface {
  public:
+  /// Type alias to the framebuffer.
   using Framebuffer = std::array<uint_fast32_t, framebuffer::kSize>;
 
+  /// Classes which contain at least one virtual function should have either a
+  /// public and virtual destructor, or a protected and non-virtual destructor.
   virtual ~ImplementationInterface() noexcept = default;
 
   /// Determines if the implementation should halt, pending a key press.
@@ -120,8 +122,8 @@ class ImplementationInterface {
   ///     impl.Step();
   ///   \endcode
   ///
-  /// It is important to note it should not be necessary to call this method
-  /// outside of a unit test.
+  /// It is not necessary to call this method outside of a unit test; use \ref
+  /// VMInstance::Step() instead.
   ///
   /// \returns The result of the step, refer to the \ref chip8::StepResult
   /// definition for more information.
@@ -135,8 +137,8 @@ class ImplementationInterface {
   ///     impl.Reset();
   ///   \endcode
   ///
-  /// It is important to note it should not be necessary to call this method
-  /// outside of a unit test.
+  /// It is not necessary to call this method outside of a unit test; use \ref
+  /// VMInstance::Reset() instead.
   virtual void Reset() noexcept {
     ResetFramebuffer();
     ResetStack();
@@ -154,10 +156,15 @@ class ImplementationInterface {
   /// fetching an instruction, any value over 0xFFE will lead to an
   /// out-of-bounds array access, and thus is undefined behavior.
   ///
+  /// Example code:
+  ///   \code
+  ///     const auto pc_changed = impl.SetProgramCounter(0x0206);
+  ///   \endcode
+  ///
   /// \param new_program_counter The new program counter to set.
   ///
-  /// \returns true if the program counter was changed, or false if the program
-  /// counter was too large.
+  /// \returns \p true if the program counter was changed, or \p false if the
+  /// program counter was too large.
   auto SetProgramCounter(const size_t new_program_counter) noexcept -> bool {
     if (new_program_counter > chip8::data_limits::kProgramCounter) {
       return false;
@@ -169,7 +176,8 @@ class ImplementationInterface {
 
   /// Sets the delay timer value.
   ///
-  /// The specified value will wraparound from 0..255 if the value is too large.
+  /// The specified value will wraparound from 0..255 if the value is too
+  /// large.
   ///
   /// \param new_delay_timer_value The new delay timer value to set.
   void SetDelayTimerValue(const uint_fast8_t new_delay_timer_value) noexcept {
@@ -187,7 +195,7 @@ class ImplementationInterface {
   ///     SetKeyState(chip8::Key::k1, chip8::KeyState::kPressed);
   ///   \endcode
   ///
-  /// The key "1" on the keypad will be in a pressed state.
+  /// The key \p 1 on the keypad will be in a pressed state.
   ///
   /// \param key The key to update its state for.
   /// \param state The new state of the key.
@@ -208,7 +216,7 @@ class ImplementationInterface {
   }
 
   /// CHIP-8 has 16 general purpose 8-bit registers, conventionally referred to
-  /// as Vx, where `x` is a hexadecimal (base 16) digit between 0 through F.
+  /// as Vx, where \p x is a hexadecimal (base 16) digit between 0 through F.
   std::array<uint_fast8_t, data_size::kV> V_;
 
   /// CHIP-8 contains a full-ascending stack used to store return addresses when
@@ -268,9 +276,19 @@ class ImplementationInterface {
   unsigned int I_;
 
  protected:
+  /// Instantiates the virtual machine instance, automatically resetting it to
+  /// the default startup state.
   ImplementationInterface() noexcept { Reset(); }
 
   /// Signals that the implementation should halt until a key is pressed.
+  ///
+  /// Example code:
+  ///   \code
+  ///     HaltUntilKeyPress(5);
+  ///   \endcode
+  ///
+  /// The implementation will halt until a key is pressed, and once a key is
+  /// pressed the key will be stored in the V5 register.
   ///
   /// \param x The V register destination to store the key value pressed.
   void HaltUntilKeyPress(const size_t x) noexcept {
@@ -280,13 +298,14 @@ class ImplementationInterface {
 
   /// Clears the framebuffer.
   ///
-  /// The framebuffer will contain all black pixels after this method call.
+  /// The entire framebuffer will contain \ref chip8::pixel::kBlack.
   void ResetFramebuffer() noexcept {
     std::fill(framebuffer_.begin(), framebuffer_.end(), chip8::pixel::kBlack);
   }
 
-  /// Sets all of the elements in the internal memory to zero, and copies the
-  /// default font set into internal memory.
+  /// Sets all of the elements in the internal memory to \ref
+  /// chip8::initial_values::kInternalMemory, and copies the default font set
+  /// into internal memory.
   ///
   /// If a guest program was loaded, the program code will be cleared by this
   /// call. It will be necessary to reload the guest program, should one choose.
@@ -298,12 +317,14 @@ class ImplementationInterface {
               chip8::initial_values::kFontSet.cend(), memory_.begin());
   }
 
-  /// Sets all of the elements in the stack to zero.
+  /// Sets all of the elements in the stack to \ref
+  /// chip8::initial_values::kStack.
   void ResetStack() noexcept {
     std::fill(stack_.begin(), stack_.end(), chip8::initial_values::kStack);
   }
 
-  /// Sets all of the key states within the keypad to released.
+  /// Sets all of the key states within the keypad to \ref
+  /// chip8::KeyState::kPressed.
   void ResetKeypad() noexcept {
     std::fill(keypad_.begin(), keypad_.end(), chip8::initial_values::kKeypad);
   }
@@ -319,14 +340,23 @@ class ImplementationInterface {
     halted_until_key_press_ = chip8::initial_values::kKeyPressHaltState;
   }
 
+  /// Sets all of the elements in the general purpose registers to \ref
+  /// chip8::initial_values::kV.
   void ResetGeneralPurposeRegisters() noexcept {
     std::fill(V_.begin(), V_.end(), chip8::initial_values::kV);
   }
 
+  /// The digit in the hundreds place of an integer.
   using HundredsPlace = unsigned int;
+
+  /// The digit in the tens place of an integer.
   using TensPlace = unsigned int;
+
+  /// The digit in the ones place of an integer.
   using OnesPlace = unsigned int;
 
+  /// A collection containing the digits in the hundreds, tens, and ones place
+  /// of an integer.
   using PlaceValues = std::tuple<HundredsPlace, TensPlace, OnesPlace>;
 
   /// Determines the digits located at the hundreds, tens, and ones places.
@@ -343,10 +373,11 @@ class ImplementationInterface {
 
  private:
   /// One instruction requires the virtual machine to stop execution until a key
-  /// is pressed (0xFx0A, "LD Vx, K"). If this is set to true, implementations
-  /// should do nothing when their \ref Step() method is called. The state of
-  /// this variable can be examined through the `IsHaltedUntilKeyPress()` method
-  /// call, and changed through a call to the `HaltUntilKeyPress()` method.
+  /// is pressed (0xFx0A, "LD Vx, K"). If this is set to \p true,
+  /// implementations should do nothing when their \ref Step() method is
+  /// called. The state of this variable can be examined through the
+  /// \ref IsHaltedUntilKeyPress() method call, and changed through a call to
+  /// the \ref HaltUntilKeyPress() method.
   bool halted_until_key_press_;
 
   /// The index to store a pressed key value, assuming the implementation is

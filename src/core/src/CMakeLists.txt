@@ -24,12 +24,14 @@ include(FetchContent)
 # "implementation".
 set(PRIVATE_SRCS private/disasm.cpp
                  private/impl_interpreter.cpp
+                 private/logger.cpp
                  private/vm_instance.cpp)
 
-set(PRIVATE_HDRS private/impl_interpreter.h)
+set(PRIVATE_HDRS private/logger.h private/impl_interpreter.h)
 
 set(PUBLIC_HDRS public/core/disasm.h
                 public/core/impl.h
+                public/core/logger.h
                 public/core/spec.h
                 public/core/vm_instance.h)
 

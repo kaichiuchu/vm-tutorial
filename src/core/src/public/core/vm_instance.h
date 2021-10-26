@@ -16,6 +16,7 @@
 #include <memory>
 
 #include "impl.h"
+#include "logger.h"
 
 namespace chip8 {
 /// This class represents the entire virtual machine. This is the only class
@@ -26,6 +27,21 @@ class VMInstance {
   /// Configures the virtual machine to execute 500 instructions per second
   /// (500Hz) within 60 frames.
   VMInstance() noexcept;
+
+  /// Sets the log message callback function.
+  ///
+  /// \param func The function to call when a log message has been emitted. If
+  /// this parameter is \p nullptr, logging is disabled.
+  void SetLogMessageFunc(const LogMessageFunc& func) const noexcept;
+
+  /// Sets the log level.
+  ///
+  /// The log levels are inclusive; for example, if `level` is LogLevel::Debug,
+  /// then messages from the Info and Warning log levels will be emitted as
+  /// well.
+  ///
+  /// \param level The log level to use.
+  static void SetLogLevel(LogLevel level) noexcept;
 
   /// Retrieves the target number of frames per second.
   ///
@@ -127,7 +143,7 @@ class VMInstance {
  private:
   /// Calculates the duration a tone should be.
   ///
-  /// The duration calculated here is based on the current sound timer value.
+  /// The duration calculated is based on the current sound timer value.
   ///
   /// \returns The duration of a tone in milliseconds.
   auto CalculateDurationOfTone() const noexcept -> double;
@@ -140,7 +156,7 @@ class VMInstance {
   void DecrementTimers() noexcept;
 
   /// The number of steps that constitute one frame. The value of this variable
-  /// is determined by the call to the `SetTiming()` method.
+  /// is determined by the call to the \ref SetTiming() method.
   unsigned int number_of_steps_per_frame_;
 
   /// The total number of steps executed since the last call to the \ref Reset()

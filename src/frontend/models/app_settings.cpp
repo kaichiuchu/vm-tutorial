@@ -90,6 +90,42 @@ auto AppSettingsModel::BilinearFilteringEnabled() const noexcept -> bool {
   return value("graphics/bilinear_filtering", false).toBool();
 }
 
+auto AppSettingsModel::GetLogLevelColor(const QString& level) const noexcept
+    -> QColor {
+  return value(QString{"logger/%1_level_color"}.arg(level), QColor(Qt::white))
+      .value<QColor>();
+}
+
+auto AppSettingsModel::GetLogFont() noexcept -> std::optional<QFont> {
+  const auto font = value("logger/font").toString();
+
+  if (font.isEmpty()) {
+    return std::nullopt;
+  }
+
+  QFont f;
+  f.fromString(font);
+
+  return f;
+}
+
+auto AppSettingsModel::GetMachineFrameRate() const noexcept -> double {
+  return value("machine/frame_rate", 60.0).toDouble();
+}
+
+auto AppSettingsModel::GetMachineInstructionsPerSecond() const noexcept -> int {
+  return value("machine/instructions_per_second", 500).toInt();
+}
+
+void AppSettingsModel::SetMachineFrameRate(double frame_rate) noexcept {
+  setValue("machine/frame_rate", frame_rate);
+}
+
+void AppSettingsModel::SetMachineInstructionsPerSecond(
+    int instructions_per_second) noexcept {
+  setValue("machine/instructions_per_second", instructions_per_second);
+}
+
 void AppSettingsModel::SetProgramFilesPath(const QString& path) noexcept {
   setValue("paths/program_files", path);
 }
@@ -121,4 +157,14 @@ void AppSettingsModel::SetVMKeyBinding(const chip8::Key chip8_key,
       QString{"vm_keys/key_%1"}.arg(QString::number(chip8_key, 16).toUpper());
 
   setValue(key_string, physical_key);
+}
+
+void AppSettingsModel::SetLogFont(const QFont& font) noexcept {
+  setValue("logger/font", font.toString());
+}
+
+void AppSettingsModel::SetLogLevelColor(const QString& level_name,
+                                        const QColor& color) noexcept {
+  const auto level_str = QString{"logger/%1_level_color"}.arg(level_name);
+  setValue(level_str, color.name());
 }

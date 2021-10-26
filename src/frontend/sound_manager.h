@@ -22,11 +22,21 @@ class SoundManager : public QObject {
   Q_OBJECT
 
  public:
+  /// Type alias for the number of bytes required to represent one sample.
   using BytesPerSample = int;
+
+  /// Type alias for the number of bytes required to represent the duration of
+  /// the tone.
   using BytesForDuration = int32_t;
 
+  /// A collection defining the number of bytes required to represent one
+  /// sample, and the number of bytes required for the duration of a tone.
   using SoundBufferInfo = std::pair<BytesPerSample, BytesForDuration>;
 
+  /// Constructs the sound manager.
+  ///
+  /// \param parent_widget The parent object of which this class is a child of
+  /// it.
   explicit SoundManager(QObject* parent_object) noexcept;
 
   /// Plays a tone for the specified period.
@@ -43,16 +53,6 @@ class SoundManager : public QObject {
   /// and if any value over 100 is passed, the volume will be treated as 100.
   void SetVolume(unsigned int volume) noexcept;
 
-  /// Sets the type of tone to generate.
-  ///
-  /// \param tone_type A tone type specified by the \ref ToneType enumeration.
-  void SetToneType(ToneType tone_type) noexcept;
-
-  /// Sets the frequency of the tone to be generated.
-  ///
-  /// \param tone_freq The frequency of the tone to be generated.
-  void SetToneFrequency(int tone_freq) noexcept;
-
   /// Sets the audio output device to use.
   ///
   /// \param audio_device The audio device to send tone output to.
@@ -63,6 +63,13 @@ class SoundManager : public QObject {
   /// \returns A list of available audio output devices.
   auto GetAudioOutputDevices() const noexcept -> QList<QAudioDevice>;
 
+  /// The frequency of a generated tone.
+  unsigned int tone_freq_;
+
+  /// The type of tone to generate.
+  ToneType tone_type_;
+
+ private:
   /// Configures the sound buffer for new audio data.
   ///
   /// \param format The format of the audio device currently in use.
@@ -73,32 +80,21 @@ class SoundManager : public QObject {
   auto ConfigureSoundBuffer(const QAudioFormat& format,
                             double duration) noexcept -> SoundBufferInfo;
 
- private:
   /// Connects signals to slots.
   void ConnectSignalsToSlots() noexcept;
 
+  /// Configures the widget based on the current application settings.
   void SetupFromAppSettings() noexcept;
 
   /// Generates a sine wave.
-  ///
-  /// The frequency of the sine wave is governed by the last call to \ref
-  /// SetToneFrequency().
   ///
   /// The sine wave data is stored into the \ref sound_buffer_ buffer.
   ///
   /// \param duration The duration of the sine wave.
   void GenerateSineWave(double duration) noexcept;
 
-  /// The frequency of a generated tone as determined by the last call to \ref
-  /// SetToneFrequency().
-  int tone_freq_;
-
   /// The buffer which contains the generated sound wave data.
   QByteArray sound_buffer_;
-
-  /// The type of tone to generate as determined by the last call to \ref
-  /// SetToneType().
-  ToneType tone_type_;
 
   /// The current interface to send audio data to an audio output device as
   /// determined by the last call to \ref SetAudioOutputDevice().
@@ -113,5 +109,7 @@ class SoundManager : public QObject {
   QIODevice* audio_io_;
 
  signals:
+  /// Emitted when the system declares a new audio output device, or removes
+  /// one.
   void AudioDevicesUpdated();
 };

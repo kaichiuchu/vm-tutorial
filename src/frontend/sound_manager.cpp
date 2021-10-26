@@ -41,14 +41,6 @@ void SoundManager::SetVolume(const unsigned int volume) noexcept {
   audio_output_->setVolume(linear_volume);
 }
 
-void SoundManager::SetToneType(const ToneType tone_type) noexcept {
-  tone_type_ = tone_type;
-}
-
-void SoundManager::SetToneFrequency(const int tone_freq) noexcept {
-  tone_freq_ = tone_freq;
-}
-
 void SoundManager::SetAudioOutputDevice(
     const QAudioDevice &audio_device) noexcept {
   const auto audio_device_format = audio_device.preferredFormat();
@@ -112,8 +104,8 @@ void SoundManager::SetupFromAppSettings() noexcept {
     }
   }
 
-  SetToneFrequency(app_settings.GetAudioToneFrequency());
-  SetToneType(app_settings.GetAudioToneType());
+  tone_freq_ = app_settings.GetAudioToneFrequency();
+  tone_type_ = app_settings.GetAudioToneType();
   SetVolume(app_settings.GetAudioVolume());
 }
 

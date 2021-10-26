@@ -33,9 +33,6 @@ class AudioSettingsController : public QWidget {
   void UpdateSoundCardList(const QList<QAudioDevice>& audio_devices) noexcept;
 
  private:
-  /// Sets up the remainder of the UI.
-  void SetupAdditionalUI() noexcept;
-
   /// Populates the widget with the current settings.
   void PopulateDataFromAppSettings() noexcept;
 

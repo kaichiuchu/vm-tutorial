@@ -35,6 +35,10 @@ class Renderer : public QOpenGLWidget, public QOpenGLFunctions_4_1_Core {
   void UpdateScreen(
       const chip8::ImplementationInterface::Framebuffer& framebuffer) noexcept;
 
+  /// Controls the state of bilinear filtering.
+  ///
+  /// \param enabled \p true to enable bilinear filtering, or \p false
+  /// otherwise.
   void EnableBilinearFiltering(bool enabled) noexcept;
 
  protected:
@@ -55,7 +59,7 @@ class Renderer : public QOpenGLWidget, public QOpenGLFunctions_4_1_Core {
   /// From Qt documentation:
   ///
   /// Called whenever the widget has been resized.
-  /// The new size is passed in `w` and `h`.
+  /// The new size is passed in \p w and \p h.
   ///
   /// There is no need to call `makeCurrent()` because this has already been
   /// done when this method is called. Additionally, the framebuffer is also
@@ -66,7 +70,7 @@ class Renderer : public QOpenGLWidget, public QOpenGLFunctions_4_1_Core {
   ///
   /// Called whenever the widget needs to be painted.
   ///
-  /// There is no need to call `makeCurrent()` because this has already been
+  /// There is no need to call \p makeCurrent() because this has already been
   /// done when this method is called.
   //
   /// Before invoking this method, the context and the framebuffer are bound,
@@ -75,6 +79,7 @@ class Renderer : public QOpenGLWidget, public QOpenGLFunctions_4_1_Core {
   void paintGL() noexcept override;
 
  private:
+  /// Configures the widget based on the current application settings.
   void SetupFromAppSettings() noexcept;
 
   /// Creates the vertex shader.
@@ -87,7 +92,8 @@ class Renderer : public QOpenGLWidget, public QOpenGLFunctions_4_1_Core {
   /// it.
   void CreateProgram() noexcept;
 
-  /// Destroys the vertex and fragment shaders.
+  /// Destroys the vertex and fragment shaders. This method should only be
+  /// called once said shaders have been attached to an OpenGL program.
   void DestroyShaders() noexcept;
 
   /// Creates the vertex array.
@@ -107,7 +113,7 @@ class Renderer : public QOpenGLWidget, public QOpenGLFunctions_4_1_Core {
   /// \param src The source code for the shader.
   ///
   /// \returns A valid shader object.
-  GLuint CreateShader(GLenum type, const char* const src) noexcept;
+  auto CreateShader(GLenum type, const char* const src) noexcept -> GLuint;
 
   /// The vertex array object created by \ref CreateVertexBufferObject().
   unsigned int vbo_;

@@ -16,21 +16,23 @@
 
 #include <random>
 
-/// This implementation is a fetch-decode-execute loop. Each time the `Step()`
-/// method is called, the interpreter will fetch an instruction, decode it into
-/// its fields, and execute the instruction after being deduced by a switch-case
-/// statement. This is a very common straightforward implementation generally
-/// used to facilitate testing of guest programs and debugging, and it allows
-/// you to get off the ground running very quickly.
+/// This implementation is a fetch-decode-execute loop. Each time the
+/// \ref InterpreterImplementation::Step() method is called, the interpreter
+/// will fetch an instruction, decode it into its fields, and execute the
+/// instruction after being deduced by a switch-case statement. This is a very
+/// common straightforward implementation generally used to facilitate testing
+/// of guest programs and debugging, and it allows you to get off the ground
+/// running very quickly.
 ///
-/// Besides the aforementioned advantages, it's also generally portable. There's
-/// almost never architecture dependent code within a standard interpreter,
-/// however there may be some compiler dependencies to get some speed bumps.
+/// Besides the aforementioned advantages, it's also generally portable.
+/// There's almost never architecture dependent code within a standard
+/// interpreter, however there may be some compiler dependencies to get some
+/// speed bumps.
 ///
-/// The major disadvantage is simply: it's slow. It is going to almost certainly
-/// be the slowest possible implementation, and really should only be used on
-/// host machines for which a JIT has not been targeted to its architecture, or
-/// for debugging purposes. With one exception:
+/// The major disadvantage is simply: it's slow. It is going to almost
+/// certainly be the slowest possible implementation, and really should only be
+/// used on host machines for which a JIT has not been targeted to its
+/// architecture, or for debugging purposes. With one exception:
 ///
 /// Slow does not necessarily mean unusable. In a practical setting, no one
 /// sound of mind would write a JIT for CHIP-8; an interpreter is plenty fast
@@ -52,28 +54,31 @@ class InterpreterImplementation : public chip8::ImplementationInterface {
   ///     impl.Step();
   ///   \endcode
   ///
-  /// It is important to note it should not be necessary to call this method
-  /// outside of a unit test.
+  /// It is not necessary to call this method outside of a unit test; use \ref
+  /// VMInstance::Step() instead.
+  ///
+  /// \returns The result of the step, refer to the \ref chip8::StepResult
+  /// definition for more information.
   chip8::StepResult Step() noexcept override;
 
  private:
   /// We use the default random engine because there's no way in hell a CHIP-8
   /// virtual machine needs anything more sophisticated. This is necessary for
-  /// the `RND` instruction.
+  /// the \p RND instruction.
   std::default_random_engine random_engine_;
 
   /// Likewise, we use a standard uniform integer distribution because as
   /// mentioned, a CHIP-8 virtual machine does not need anything more
-  /// sophisticated. This is necessary for the `RND` instruction.
+  /// sophisticated. This is necessary for the \p RND instruction.
   std::uniform_int_distribution<> random_number_{
       chip8::data_limits::kMinRandomValue, chip8::data_limits::kMaxRandomValue};
 
-  /// This register refers to the V0 register defined within the CHIP-8
+  /// This register refers to the \p V0 register defined within the CHIP-8
   /// documentation. It is here for convenience and easy cross referencing with
   /// documentation.
   uint_fast8_t& V0 = V_[0x0];
 
-  /// This register refers to the VF register defined within the CHIP-8
+  /// This register refers to the \p VF register defined within the CHIP-8
   /// documentation. It is here for convenience and easy cross referencing with
   /// documentation.
   uint_fast8_t& VF = V_[0xF];
@@ -108,10 +113,10 @@ class InterpreterImplementation : public chip8::ImplementationInterface {
   /// \param condition_met The result of a boolean expression.
   void SkipNextInstructionIf(bool condition_met) noexcept;
 
-  /// Type alias for a pair of Vx and Vy registers.
+  /// Type alias for a pair of \p Vx and \p Vy registers.
   using VxVyRegisters = std::pair<uint_fast8_t&, uint_fast8_t&>;
 
-  /// Retrieves a reference to the Vx and Vy registers.
+  /// Retrieves a reference to the \p Vx and \p Vy registers.
   ///
   /// This method exists as a matter of convenience and clarity, and easier
   /// cross referencing with documentation.
@@ -121,7 +126,7 @@ class InterpreterImplementation : public chip8::ImplementationInterface {
   ///     auto [Vx, Vy] = GetVxVyRegisters(0x1234);
   ///   \endcode
   ///
-  /// Vx will point to V_[2], and Vy will point to V_[3].
+  /// Vx will point to \p V_[2], and Vy will point to \p V_[3].
   ///
   /// \param instruction The CHIP-8 instruction to retrieve the register
   /// information from.

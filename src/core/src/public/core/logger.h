@@ -10,17 +10,15 @@
 // with this software. If not, see
 // <http://creativecommons.org/publicdomain/zero/1.0/>.
 
-#include <QDateTime>
-#include "logger_window.h"
+#pragma once
 
-LoggerWindowController::LoggerWindowController() noexcept {
-  view_.setupUi(this);
-  view_.plainTextEdit->setReadOnly(true);
-}
+#include <functional>
 
-void LoggerWindowController::AddCoreMessage(const QString& msg) noexcept {
-  const auto date = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss.zzz");
-  const auto formatted = QString{"[%1]: [core] %2"}.arg(date).arg(msg);
+namespace chip8 {
 
-  view_.plainTextEdit->appendPlainText(formatted);
-}
+/// Defines the various log levels that we support.
+enum class LogLevel { kInfo, kWarning, kDebug };
+
+/// Defines the function prototype that the log message callback must be.
+using LogMessageFunc = std::function<void(const std::string&)>;
+}  // namespace chip8
