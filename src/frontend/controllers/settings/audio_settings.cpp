@@ -1,6 +1,6 @@
 // vm-tutorial - Virtual machine tutorial targeting CHIP-8
 //
-// Written in 2021 by kaichiuchu <kaichiuchu@protonmail.com>
+// Written in 2021 by Michael Rodriguez aka kaichiuchu <mike@kaichiuchu.dev>
 //
 // To the extent possible under law, the author(s) have dedicated all copyright
 // and related and neighboring rights to this software to the public domain

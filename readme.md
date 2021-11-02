@@ -1,20 +1,13 @@
 # vm-tutorial
 
-To the extent possible under law, [kaichiuchu](https://github.com/kaichiuchu)
+To the extent possible under law, [Michael Rodriguez](https://github.com/kaichiuchu)
 has waived all copyright and related or neighboring rights to vm-tutorial.
 
-This repository hosts a work in progress CHIP-8 virtual machine implementation,
-designed in a way to be used for teaching. The code will come first rather than
-the actual plain English tutorial for the moment, for what good would any
-tutorial project be without a reference implementation?
+## Introduction
 
-And thus, you might be asking yourself: "why would kaichiuchu not finish the
-reference implementation first"? And the answer is: I believe in writing code
-entirely in the open from start to production ready, if at all possible. In my
-view, it is good taste to see how a project came to maturity from every stage
-in its development. Furthermore, while I could have done this in private and
-let commit history do its job for anyone curious, not very rational but I
-wouldn't get the same feeling. Surely you can understand that, can't you?
+This repository hosts the reference implementation for a work in progress
+virtual machine tutorial. The entire codebase is documented, and documentation
+can be generated using [Doxygen](https://www.doxygen.nl/index.html).
 
 ![CC0 License Badge](http://i.creativecommons.org/p/zero/1.0/88x31.png)
 

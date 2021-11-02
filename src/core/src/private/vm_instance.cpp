@@ -1,6 +1,6 @@
 // vm-tutorial - Virtual machine tutorial targeting CHIP-8
 //
-// Written in 2021 by kaichiuchu <kaichiuchu@protonmail.com>
+// Written in 2021 by Michael Rodriguez aka kaichiuchu <mike@kaichiuchu.dev>
 //
 // To the extent possible under law, the author(s) have dedicated all copyright
 // and related and neighboring rights to this software to the public domain
@@ -42,8 +42,10 @@ auto chip8::VMInstance::GetMaxFrameTime() const noexcept -> double {
 }
 
 auto chip8::VMInstance::CalculateDurationOfTone() const noexcept -> double {
-  constexpr auto kTimerDecrementRate = 1 / 60.0;
-  return (kTimerDecrementRate * impl_->sound_timer_) * 1000;
+  constexpr auto kTimerDecrementRate = 60;
+  constexpr auto kMilliseconds = 1000;
+
+  return (impl_->sound_timer_ / kTimerDecrementRate) * kMilliseconds;
 }
 
 void chip8::VMInstance::CheckTimers() noexcept {
