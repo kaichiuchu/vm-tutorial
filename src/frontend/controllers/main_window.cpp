@@ -41,6 +41,9 @@ MainWindowController::MainWindowController() noexcept {
   connect(view_.actionReset, &QAction::triggered,
           [this]() { emit ResetEmulation(); });
 
+  connect(view_.actionDisplay_Debugger, &QAction::triggered,
+          [this]() { emit DisplayDebugger(); });
+
   connect(view_.actionDisplayLogger, &QAction::triggered,
           [this]() { emit DisplayLogger(); });
 

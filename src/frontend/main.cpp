@@ -36,11 +36,11 @@ auto main(int argc, char* argv[]) -> int {
   default_surface_format.setProfile(QSurfaceFormat::CoreProfile);
   QSurfaceFormat::setDefaultFormat(default_surface_format);
 
-  QApplication qt_app_instance(argc, argv);
+  QApplication qt_app_instance{argc, argv};
 
   QApplication::setApplicationName("vm-tutorial");
   QApplication::setApplicationVersion("1.0.0");
 
   VMTutorialApplication app;
-  return qt_app_instance.exec();
+  return QApplication::exec();
 }

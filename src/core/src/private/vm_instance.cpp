@@ -42,7 +42,7 @@ auto chip8::VMInstance::GetMaxFrameTime() const noexcept -> double {
 }
 
 auto chip8::VMInstance::CalculateDurationOfTone() const noexcept -> double {
-  constexpr auto kTimerDecrementRate = 60;
+  constexpr auto kTimerDecrementRate = 60.0;
   constexpr auto kMilliseconds = 1000;
 
   return (impl_->sound_timer_ / kTimerDecrementRate) * kMilliseconds;

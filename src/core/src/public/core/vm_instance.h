@@ -36,7 +36,7 @@ class VMInstance {
 
   /// Sets the log level.
   ///
-  /// The log levels are inclusive; for example, if `level` is LogLevel::Debug,
+  /// The log levels are inclusive; for example, if `level` is LogLevel::kDebug,
   /// then messages from the Info and Warning log levels will be emitted as
   /// well.
   ///

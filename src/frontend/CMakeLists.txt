@@ -17,11 +17,27 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(SRCS main.cpp renderer.cpp sound_manager.cpp vm_thread.cpp vm_tutorial_app.cpp)
-set(HDRS renderer.h sound_manager.h vm_thread.h vm_tutorial_app.h types.h)
+set(SRCS main.cpp
+         memory_view.cpp
+         renderer.cpp
+         sound_manager.cpp
+         vm_thread.cpp
+         vm_tutorial_app.cpp)
 
-set(CONTROLLER_SRCS controllers/logger_window.cpp controllers/main_window.cpp)
-set(CONTROLLER_HDRS controllers/logger_window.h controllers/main_window.h)
+set(HDRS memory_view.h
+         renderer.h
+         sound_manager.h
+         vm_thread.h
+         vm_tutorial_app.h
+         types.h)
+
+set(CONTROLLER_SRCS controllers/debugger_window.cpp
+                    controllers/logger_window.cpp
+                    controllers/main_window.cpp)
+
+set(CONTROLLER_HDRS controllers/debugger_window.h
+                    controllers/logger_window.h
+                    controllers/main_window.h)
 
 set(CONTROLLER_SETTINGS_SRCS controllers/settings/audio_settings.cpp
                              controllers/settings/general_settings.cpp
@@ -39,10 +55,17 @@ set(CONTROLLER_SETTINGS_HDRS controllers/settings/audio_settings.h
                              controllers/settings/machine_settings.h
                              controllers/settings/settings_dialog.h)
 
-set(MODELS_SRCS models/app_settings.cpp)
-set(MODELS_HDRS models/app_settings.h)
+set(MODELS_SRCS models/app_settings.cpp
+                models/debugger_registers.cpp
+                models/debugger_stack.cpp)
 
-set(VIEWS_FILES views/logger_window.ui views/main_window.ui)
+set(MODELS_HDRS models/app_settings.h
+                models/debugger_registers.h
+                models/debugger_stack.h)
+
+set(VIEWS_FILES views/debugger_window.ui
+                views/logger_window.ui
+                views/main_window.ui)
 
 set(VIEWS_SETTINGS_FILES views/settings/audio_settings.ui
                          views/settings/general_settings.ui
@@ -72,3 +95,28 @@ target_link_libraries(VMTutorialFrontend core
                                          Qt6::Widgets)
 
 target_include_directories(VMTutorialFrontend PRIVATE ../core/src/public .)
+
+# On Windows, we'll need to execute windeployqt.
+# XXX: I have no idea if this will work outside of vcpkg.
+if (WIN32)
+  get_target_property(_qmake_executable Qt6::qmake IMPORTED_LOCATION)
+  get_filename_component(_qt_bin_dir "${_qmake_executable}" DIRECTORY)
+
+  if (CMAKE_BUILD_TYPE STREQUAL "Release" OR "RelWithDebInfo")
+    find_program(WINDEPLOYQT_EXECUTABLE windeployqt HINTS "${_qt_bin_dir}")
+
+    add_custom_command(TARGET VMTutorialFrontend POST_BUILD
+                       COMMAND "${CMAKE_COMMAND}" -E
+                               env PATH="${_qt_bin_dir}" "${WINDEPLOYQT_EXECUTABLE}"
+                               \"$<TARGET_FILE:VMTutorialFrontend>\"
+                       COMMENT "Deploying Qt...")
+  else()
+    find_program(WINDEPLOYQT_EXECUTABLE windeployqt.debug.bat HINTS "${_qt_bin_dir}")
+
+    add_custom_command(TARGET VMTutorialFrontend POST_BUILD
+                       COMMAND "${CMAKE_COMMAND}" -E
+                               env PATH="${_qt_bin_dir}" "${WINDEPLOYQT_EXECUTABLE}"
+                               \"$<TARGET_FILE:VMTutorialFrontend>\"
+                       COMMENT "Deploying Qt...")
+  endif()
+endif()

@@ -30,6 +30,9 @@ void VMTutorialApplication::ConnectMainWindowSignalsToSlots() noexcept {
   connect(main_window_, &MainWindowController::StartROM, this,
           &VMTutorialApplication::StartROM);
 
+  connect(main_window_, &MainWindowController::DisplayDebugger, this,
+          &VMTutorialApplication::DisplayDebugger);
+
   connect(main_window_, &MainWindowController::DisplayLogger, this,
           &VMTutorialApplication::DisplayLogger);
 
@@ -131,6 +134,15 @@ void VMTutorialApplication::StartROM(const QString& rom_file_path) noexcept {
       QFileInfo(rom_file_path).fileName());
 
   vm_thread_->start();
+}
+
+void VMTutorialApplication::DisplayDebugger() noexcept {
+  if (!debugger_window_) {
+    debugger_window_ = new DebuggerWindowController;
+  }
+
+  debugger_window_->UpdateMemoryView(vm_thread_->vm_instance_.impl_->memory_);
+  debugger_window_->show();
 }
 
 void VMTutorialApplication::DisplayLogger() noexcept {

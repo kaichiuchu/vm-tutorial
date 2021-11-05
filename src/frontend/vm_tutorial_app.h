@@ -12,6 +12,7 @@
 
 #pragma once
 
+#include "controllers/debugger_window.h"
 #include "controllers/logger_window.h"
 #include "controllers/main_window.h"
 #include "controllers/settings/audio_settings.h"
@@ -67,6 +68,10 @@ class VMTutorialApplication : public QObject {
   /// Adds the widgets of settings to the settings dialog.
   void AddSettingsWidgetsToSettingsContainer() noexcept;
 
+  /// The controller for the debugger window. It is \p nullptr by default
+  /// because the debugger is not opened with the main window.
+  DebuggerWindowController* debugger_window_ = nullptr;
+
   /// The controller for the logger window. It is \p nullptr by default because
   /// the logger is not opened with the main window.
   LoggerWindowController* logger_window_ = nullptr;
@@ -118,6 +123,9 @@ class VMTutorialApplication : public QObject {
  private slots:
   /// Called when the user has selected a ROM file to run.
   void StartROM(const QString& rom_file_path) noexcept;
+
+  /// Called when the user wishes to display the debugger.
+  void DisplayDebugger() noexcept;
 
   /// Called when the user wishes to display the logger.
   void DisplayLogger() noexcept;
