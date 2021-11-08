@@ -13,6 +13,7 @@
 #pragma once
 
 #include <functional>
+#include <string>
 
 namespace chip8 {
 

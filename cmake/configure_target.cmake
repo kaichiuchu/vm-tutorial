@@ -46,7 +46,7 @@ function(vmtutorial_configure_target TARGET_NAME)
       set(ADDITIONAL_COMPILER_FLAGS
           "-Wall;-Wextra;-Wno-c++98-compat;-Wno-c++98-compat-pedantic")
     elseif (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-      set(ADDITIONAL_COMPILER_FLAGS "-Wall;-Werror;-Wextra")
+      set(ADDITIONAL_COMPILER_FLAGS "-Wall;-Wextra")
     endif()
   endif()
 

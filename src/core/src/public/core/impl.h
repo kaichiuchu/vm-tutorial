@@ -95,7 +95,7 @@ namespace chip8 {
 class ImplementationInterface {
  public:
   /// Type alias to the framebuffer.
-  using Framebuffer = std::array<uint_fast32_t, framebuffer::kSize>;
+  using Framebuffer = std::array<uint32_t, framebuffer::kSize>;
 
   /// Classes which contain at least one virtual function should have either a
   /// public and virtual destructor, or a protected and non-virtual destructor.
