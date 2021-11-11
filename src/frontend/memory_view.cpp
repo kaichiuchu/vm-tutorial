@@ -15,22 +15,12 @@
 #include <QPainter>
 #include <QScrollBar>
 
+#include "models/app_settings.h"
+
 MemoryViewWidget::MemoryViewWidget(QWidget* parent) noexcept
     : QAbstractScrollArea(parent) {
-  connect(verticalScrollBar(), &QScrollBar::valueChanged, this,
-          &MemoryViewWidget::UpdateContent);
-  connect(horizontalScrollBar(), &QScrollBar::valueChanged, this,
-          &MemoryViewWidget::UpdateContent);
-
-  QFont fixedFont;
-  fixedFont.setFamily(QStringLiteral("Consolas"));
-  fixedFont.setFixedPitch(true);
-  fixedFont.setStyleHint(QFont::TypeWriter);
-  fixedFont.setPointSize(10);
-
-  QAbstractScrollArea::setFont(fixedFont);
-
-  UpdateFontMetrics();
+  ConnectSignalsToSlots();
+  SetupFromAppSettings();
 }
 
 void MemoryViewWidget::SetData(const void* data,
@@ -39,6 +29,11 @@ void MemoryViewWidget::SetData(const void* data,
   current_data_size_ = size;
 
   UpdateContent();
+}
+
+void MemoryViewWidget::SetFont(const QFont& font) noexcept {
+  QAbstractScrollArea::setFont(font);
+  UpdateFontMetrics();
 }
 
 void MemoryViewWidget::paintEvent(QPaintEvent* event) noexcept {
@@ -60,6 +55,25 @@ void MemoryViewWidget::paintEvent(QPaintEvent* event) noexcept {
 
 void MemoryViewWidget::resizeEvent(QResizeEvent* event) noexcept {
   UpdateContent();
+}
+
+void MemoryViewWidget::ConnectSignalsToSlots() noexcept {
+  connect(verticalScrollBar(), &QScrollBar::valueChanged, this,
+          &MemoryViewWidget::UpdateContent);
+  connect(horizontalScrollBar(), &QScrollBar::valueChanged, this,
+          &MemoryViewWidget::UpdateContent);
+}
+
+void MemoryViewWidget::SetupFromAppSettings() noexcept {
+  AppSettingsModel app_settings;
+
+  const auto memory_view_font = app_settings.GetMemoryViewFont();
+
+  if (memory_view_font) {
+    SetFont(memory_view_font.value());
+    return;
+  }
+  UpdateFontMetrics();
 }
 
 auto MemoryViewWidget::GetHexAddressWidth() const noexcept -> unsigned int {
@@ -196,8 +210,8 @@ void MemoryViewWidget::UpdateContent() {
 
   const auto rows_visible = viewport()->height() / char_height_;
   const auto val = verticalScrollBar()->value();
-  start_offset_ = (size_t)val * bytes_per_line_;
-  end_offset_ = start_offset_ + rows_visible * bytes_per_line_ - 1;
+  start_offset_ = val * bytes_per_line_;
+  end_offset_ = start_offset_ + (rows_visible * (bytes_per_line_ - 1));
 
   if (end_offset_ >= current_data_size_) {
     end_offset_ = current_data_size_ - 1;

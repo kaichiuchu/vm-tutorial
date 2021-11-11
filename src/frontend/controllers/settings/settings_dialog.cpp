@@ -14,15 +14,41 @@
 
 SettingsDialogController::SettingsDialogController(
     QWidget* parent_widget) noexcept
-    : QDialog(parent_widget) {
+    : QDialog(parent_widget),
+      audio_settings_(new AudioSettingsController(this)),
+      general_settings_(new GeneralSettingsController(this)),
+      graphics_settings_(new GraphicsSettingsController(this)),
+      keypad_settings_(new KeypadSettingsController(this)),
+      logger_settings_(new LoggerSettingsController(this)),
+      machine_settings_(new MachineSettingsController(this)) {
   view_.setupUi(this);
-
-  connect(view_.settingsList, &QListWidget::currentRowChanged, [this](int row) {
-    view_.selectedSettingsWidget->setCurrentIndex(row);
-  });
+  ConnectSignalsToSlots();
+  AddSettingsToSettingsContainer();
 }
 
-void SettingsDialogController::AddWidgetToSettingsContainer(
-    const SettingsCategory index, QWidget* widget) noexcept {
-  view_.selectedSettingsWidget->insertWidget(index, widget);
+void SettingsDialogController::ConnectSignalsToSlots() noexcept {
+  connect(view_.settingsList, &QListWidget::currentRowChanged,
+          [this](const int row) {
+            view_.selectedSettingsWidget->setCurrentIndex(row);
+          });
+}
+
+void SettingsDialogController::AddSettingsToSettingsContainer() noexcept {
+  view_.selectedSettingsWidget->insertWidget(SettingsCategory::kGeneralSettings,
+                                             general_settings_);
+
+  view_.selectedSettingsWidget->insertWidget(SettingsCategory::kLoggerSettings,
+                                             logger_settings_);
+
+  view_.selectedSettingsWidget->insertWidget(SettingsCategory::kMachineSettings,
+                                             machine_settings_);
+
+  view_.selectedSettingsWidget->insertWidget(
+      SettingsCategory::kGraphicsSettings, graphics_settings_);
+
+  view_.selectedSettingsWidget->insertWidget(SettingsCategory::kKeypadSettings,
+                                             keypad_settings_);
+
+  view_.selectedSettingsWidget->insertWidget(SettingsCategory::kAudioSettings,
+                                             audio_settings_);
 }

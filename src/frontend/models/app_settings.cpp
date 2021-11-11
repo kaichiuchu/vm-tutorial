@@ -117,6 +117,20 @@ auto AppSettingsModel::GetMachineInstructionsPerSecond() const noexcept -> int {
   return value("machine/instructions_per_second", 500).toInt();
 }
 
+auto AppSettingsModel::GetMemoryViewFont() const noexcept
+    -> std::optional<QFont> {
+  const auto font = value("debugger/memory_view_font").toString();
+
+  if (font.isEmpty()) {
+    return std::nullopt;
+  }
+
+  QFont f;
+  f.fromString(font);
+
+  return f;
+}
+
 void AppSettingsModel::SetMachineFrameRate(double frame_rate) noexcept {
   setValue("machine/frame_rate", frame_rate);
 }

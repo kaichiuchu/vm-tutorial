@@ -40,6 +40,11 @@ class MemoryViewWidget : public QAbstractScrollArea {
   /// \param size The size of the data, in bytes.
   void SetData(const void* data, unsigned int size) noexcept;
 
+  /// Sets the font to use to display the widget.
+  ///
+  /// \param font The font to use to display the widget.
+  void SetFont(const QFont& font) noexcept;
+
  protected:
   /// From Qt documentation:
   ///
@@ -98,16 +103,55 @@ class MemoryViewWidget : public QAbstractScrollArea {
   void resizeEvent(QResizeEvent* event) noexcept override;
 
  private:
+  /// Connects signals to slots.
+  void ConnectSignalsToSlots() noexcept;
+
+  /// Sets up the widget from application settings.
+  void SetupFromAppSettings() noexcept;
+
+  /// Determines the width of a full hex address in pixels, based on the current
+  /// font.
+  ///
+  /// \returns The width of a full hex address in pixels, based on the current
+  /// font.
   auto GetHexAddressWidth() const noexcept -> unsigned int;
 
+  /// Determines the width of a hex character in pixels, based on the current
+  /// font.
+  ///
+  /// \returns The width of a hex character in pixels, based on the current
+  /// font.
   auto GetHexCharWidth() const noexcept -> unsigned int;
+
+  /// Determines the width of an ASCII character in pixels, based on the current
+  /// font.
+  ///
+  /// \returns The width of an ASCII character in pixels, based on the current
+  /// font.
   auto GetASCIIWidth() const noexcept -> unsigned int;
 
-  /// Updates the font metrics.
+  /// Updates the font metrics, using the current font.
   void UpdateFontMetrics() noexcept;
 
+  /// Draws the divider separating the addresses from the columns and data.
+  ///
+  /// \param painter The painter to use to draw on the widget.
+  /// \param offset_x The length of the divider, based on the horizontal scroll
+  /// bar value.
   void DrawAddressDivider(QPainter& painter, int offset_x) noexcept;
+
+  /// Draws the divider separating the columns from the data.
+  ///
+  /// \param painter The painter to use to draw on the widget.
+  /// \param offset_x The length of the divider, based on the horizontal scroll
+  /// bar value.
   void DrawHeaderDivider(QPainter& painter, int offset_x) noexcept;
+
+  /// Draws the columns defining the last two characters of an address, and the
+  /// ASCII header.
+  ///
+  /// \param painter The painter to use to draw on the widget.
+  /// \param offset_x based on the horizontal scroll bar value.
   void DrawColumns(QPainter& painter, int offset_x) noexcept;
 
   /// Draws the data.
@@ -118,21 +162,25 @@ class MemoryViewWidget : public QAbstractScrollArea {
   /// The current data from which we are rendering its contents.
   const void* current_data_ = nullptr;
 
-  /// The size of the current data.
+  /// The number of elements within the current data.
   unsigned int current_data_size_ = 0;
 
   /// The distance appropriate for drawing a character after another, based on
   /// the current font.
-  int char_width_;
+  unsigned int char_width_;
 
   /// The height of the current font.
-  int char_height_;
+  unsigned int char_height_;
 
   /// The number of bytes that should be drawn on one line.
   unsigned int bytes_per_line_ = 16;
 
-  int start_offset_;
-  int end_offset_;
+  unsigned int start_offset_;
+  unsigned int end_offset_;
+
+  /// The X position of where the ASCII area was drawn. This is needed to draw
+  /// the ASCII character of a byte in the ASCII area while simultaneously
+  /// rendering the byte in the data area.
   int ascii_start_offset_;
 
  private slots:

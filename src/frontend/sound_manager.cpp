@@ -45,7 +45,8 @@ void SoundManager::SetAudioOutputDevice(
     const QAudioDevice &audio_device) noexcept {
   const auto audio_device_format = audio_device.preferredFormat();
 
-  audio_output_ = new QAudioSink(audio_device, audio_device_format);
+  audio_output_ = new QAudioSink(audio_device, audio_device_format, this);
+
   audio_io_ = audio_output_->start();
 }
 

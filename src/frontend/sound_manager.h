@@ -26,7 +26,7 @@ class SoundManager : public QObject {
   using BytesPerSample = int;
 
   /// Type alias for the number of bytes required to represent the duration of
-  /// the tone.
+  /// a tone.
   using BytesForDuration = int32_t;
 
   /// A collection defining the number of bytes required to represent one
@@ -83,7 +83,7 @@ class SoundManager : public QObject {
   /// Connects signals to slots.
   void ConnectSignalsToSlots() noexcept;
 
-  /// Configures the widget based on the current application settings.
+  /// Sets default settings based on the current application settings.
   void SetupFromAppSettings() noexcept;
 
   /// Generates a sine wave.
@@ -98,7 +98,7 @@ class SoundManager : public QObject {
 
   /// The current interface to send audio data to an audio output device as
   /// determined by the last call to \ref SetAudioOutputDevice().
-  QAudioSink* audio_output_ = nullptr;
+  QAudioSink* audio_output_;
 
   /// The interface to information about the audio devices available on the
   /// system.

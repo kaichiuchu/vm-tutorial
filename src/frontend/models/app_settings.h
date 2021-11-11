@@ -28,7 +28,8 @@ class AppSettingsModel : public QSettings {
   Q_OBJECT
 
  public:
-  using VMKeyBindings = std::unordered_map<QString, int>;
+  // Type alias for the virtual machine key bindings.
+  using VMKeyBindings = std::map<QString, int>;
 
   /// Constructs the application settings model.
   ///
@@ -125,6 +126,12 @@ class AppSettingsModel : public QSettings {
   /// machine, if any, or \p 500 by default.
   auto GetMachineInstructionsPerSecond() const noexcept -> int;
 
+  /// Tries to determine the font of the memory view.
+  ///
+  /// \returns The font of the memory view. If no font was set, a default font
+  /// of Consolas is selected.
+  auto GetMemoryViewFont() const noexcept -> std::optional<QFont>;
+
   /// Sets frame rate within the configuration file.
   ///
   /// \param frame_rate The new desired frame rate of the virtual machine.
@@ -191,7 +198,7 @@ class AppSettingsModel : public QSettings {
 
  private:
   /// Maps the names of virtual machine key binding sections to CHIP-8 keys.
-  const QMap<QString, chip8::Key> chip8_key_mapping_ = {
+  std::map<QString, chip8::Key> chip8_key_mapping_ = {
       {"key_0", chip8::Key::k0}, {"key_1", chip8::Key::k1},
       {"key_2", chip8::Key::k2}, {"key_3", chip8::Key::k3},
       {"key_4", chip8::Key::k4}, {"key_5", chip8::Key::k5},

@@ -26,7 +26,7 @@ void AudioSettingsController::UpdateSoundCardList(
     const QList<QAudioDevice>& audio_devices) noexcept {
   view_.soundCards->clear();
 
-  for (auto& audio_device : audio_devices) {
+  for (const auto& audio_device : audio_devices) {
     view_.soundCards->addItem(audio_device.description(),
                               QVariant::fromValue(audio_device));
   }

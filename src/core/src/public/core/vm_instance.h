@@ -79,6 +79,30 @@ class VMInstance {
   auto SetTiming(unsigned int instructions_per_second,
                  double desired_frame_rate) noexcept -> bool;
 
+  /// Adjust the number of instructions per second, with respect to the current
+  /// frame rate.
+  ///
+  /// This method can be called at any time.
+  ///
+  /// \param instructions_per_second The total number of instructions to execute
+  /// within the current number of desired frames.
+  ///
+  /// \returns \p true if the timing was changed successfully, or \p false if
+  /// not due to a bad parameter.
+  auto SetInstructionsPerSecond(unsigned int instructions_per_second) noexcept
+      -> bool;
+
+  /// Adjust the number of frames per second, with respect to the current
+  /// instructions per second.
+  ///
+  /// This method can be called at any time.
+  ///
+  /// \param frame_rate The number of frames to display within one second.
+  ///
+  /// \returns \p true if the timing was changed successfully, or \p false if
+  /// not due to a bad parameter.
+  auto SetFrameRate(double frame_rate) noexcept -> bool;
+
   /// Attempts to load program code into the current implementation's internal
   /// memory.
   ///
@@ -175,5 +199,12 @@ class VMInstance {
   /// The maximum frame time as determined by the last call to the \ref
   /// SetTiming() method.
   double max_frame_time_;
+
+  /// The current frame rate as set by the last call to \ref SetTiming().
+  double frame_rate_;
+
+  /// The current number of instructions to execute per second as set by the
+  /// last call to \ref SetTiming().
+  unsigned int instructions_per_sec_;
 };
 }  // namespace chip8

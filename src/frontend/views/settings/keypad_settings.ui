@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>473</width>
-    <height>590</height>
+    <height>688</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -30,7 +30,7 @@
       <item row="0" column="1">
        <widget class="QPushButton" name="button_1">
         <property name="text">
-         <string>PushButton</string>
+         <string>Click to bind.</string>
         </property>
        </widget>
       </item>
@@ -44,7 +44,7 @@
       <item row="1" column="1">
        <widget class="QPushButton" name="button_2">
         <property name="text">
-         <string>PushButton</string>
+         <string>Click to bind.</string>
         </property>
        </widget>
       </item>
@@ -58,7 +58,7 @@
       <item row="2" column="1">
        <widget class="QPushButton" name="button_3">
         <property name="text">
-         <string>PushButton</string>
+         <string>Click to bind.</string>
         </property>
        </widget>
       </item>
@@ -72,7 +72,7 @@
       <item row="3" column="1">
        <widget class="QPushButton" name="button_C">
         <property name="text">
-         <string>PushButton</string>
+         <string>Click to bind.</string>
         </property>
        </widget>
       </item>
@@ -86,7 +86,7 @@
       <item row="4" column="1">
        <widget class="QPushButton" name="button_4">
         <property name="text">
-         <string>PushButton</string>
+         <string>Click to bind.</string>
         </property>
        </widget>
       </item>
@@ -100,7 +100,7 @@
       <item row="5" column="1">
        <widget class="QPushButton" name="button_5">
         <property name="text">
-         <string>PushButton</string>
+         <string>Click to bind.</string>
         </property>
        </widget>
       </item>
@@ -114,7 +114,7 @@
       <item row="6" column="1">
        <widget class="QPushButton" name="button_6">
         <property name="text">
-         <string>PushButton</string>
+         <string>Click to bind.</string>
         </property>
        </widget>
       </item>
@@ -128,7 +128,7 @@
       <item row="7" column="1">
        <widget class="QPushButton" name="button_D">
         <property name="text">
-         <string>PushButton</string>
+         <string>Click to bind.</string>
         </property>
        </widget>
       </item>
@@ -142,7 +142,7 @@
       <item row="8" column="1">
        <widget class="QPushButton" name="button_7">
         <property name="text">
-         <string>PushButton</string>
+         <string>Click to bind.</string>
         </property>
        </widget>
       </item>
@@ -156,7 +156,7 @@
       <item row="9" column="1">
        <widget class="QPushButton" name="button_8">
         <property name="text">
-         <string>PushButton</string>
+         <string>Click to bind.</string>
         </property>
        </widget>
       </item>
@@ -170,7 +170,7 @@
       <item row="10" column="1">
        <widget class="QPushButton" name="button_9">
         <property name="text">
-         <string>PushButton</string>
+         <string>Click to bind.</string>
         </property>
        </widget>
       </item>
@@ -184,7 +184,7 @@
       <item row="11" column="1">
        <widget class="QPushButton" name="button_E">
         <property name="text">
-         <string>PushButton</string>
+         <string>Click to bind.</string>
         </property>
        </widget>
       </item>
@@ -198,7 +198,7 @@
       <item row="12" column="1">
        <widget class="QPushButton" name="button_A">
         <property name="text">
-         <string>PushButton</string>
+         <string>Click to bind.</string>
         </property>
        </widget>
       </item>
@@ -212,7 +212,7 @@
       <item row="13" column="1">
        <widget class="QPushButton" name="button_0">
         <property name="text">
-         <string>PushButton</string>
+         <string>Click to bind.</string>
         </property>
        </widget>
       </item>
@@ -226,7 +226,7 @@
       <item row="14" column="1">
        <widget class="QPushButton" name="button_B">
         <property name="text">
-         <string>PushButton</string>
+         <string>Click to bind.</string>
         </property>
        </widget>
       </item>
@@ -240,7 +240,7 @@
       <item row="15" column="1">
        <widget class="QPushButton" name="button_F">
         <property name="text">
-         <string>PushButton</string>
+         <string>Click to bind.</string>
         </property>
        </widget>
       </item>

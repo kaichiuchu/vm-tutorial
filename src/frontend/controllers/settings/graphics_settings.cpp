@@ -28,7 +28,7 @@ void GraphicsSettingsController::ConnectSignalsToSlots() noexcept {
             AppSettingsModel app_settings;
 
             app_settings.SetBilinearFiltering(state);
-            emit EnableBilinearFiltering(state);
+            emit BilinearFilteringStateChanged(state);
           });
 }
 

@@ -26,18 +26,58 @@ VMTutorialApplication::VMTutorialApplication() noexcept
   main_window_->show();
 }
 
+void VMTutorialApplication::ConnectVMThreadSignalsToSlots() noexcept {
+  connect(vm_thread_, &VMThread::PerformanceInfo,
+          [this](const VMThread::PerformanceCounters& perf_counters) {
+            const auto [current_fps, average_fps, target_fps] = perf_counters;
+
+            main_window_->UpdateFPSInfo(current_fps, target_fps, average_fps);
+          });
+
+  connect(vm_thread_, &VMThread::UpdateScreen, main_window_->GetRenderer(),
+          &Renderer::UpdateScreen);
+
+  connect(vm_thread_, &VMThread::PlayTone, sound_manager_,
+          &SoundManager::PlayTone);
+
+  connect(vm_thread_, &VMThread::ExecutionFailure, main_window_,
+          &MainWindowController::ReportExecutionFailure);
+}
+
 void VMTutorialApplication::ConnectMainWindowSignalsToSlots() noexcept {
   connect(main_window_, &MainWindowController::StartROM, this,
           &VMTutorialApplication::StartROM);
 
-  connect(main_window_, &MainWindowController::DisplayDebugger, this,
-          &VMTutorialApplication::DisplayDebugger);
+  connect(main_window_, &MainWindowController::DisplayDebugger, this, [this]() {
+    if (!debugger_window_) {
+      debugger_window_ = new DebuggerWindowController(vm_thread_->vm_instance_);
+    }
+    debugger_window_->show();
+  });
 
-  connect(main_window_, &MainWindowController::DisplayLogger, this,
-          &VMTutorialApplication::DisplayLogger);
+  connect(main_window_, &MainWindowController::DisplayLogger, this, [this]() {
+    if (!logger_window_) {
+      logger_window_ = new LoggerWindowController();
+
+      connect(vm_thread_, &VMThread::LogMessageEmitted, this,
+              [this](const std::string& msg) {
+                logger_window_->AddCoreMessage(QString::fromStdString(msg));
+              });
+    }
+    logger_window_->show();
+  });
 
   connect(main_window_, &MainWindowController::DisplayProgramSettings, this,
-          &VMTutorialApplication::DisplayProgramSettings);
+          [this]() {
+            if (!settings_dialog_) {
+              settings_dialog_ = new SettingsDialogController(main_window_);
+
+              ConnectAudioSettingsSignalsToSlots();
+              ConnectGraphicsSettingsSignalsToSlots();
+              ConnectMachineSettingsSignalsToSlots();
+            }
+            settings_dialog_->show();
+          });
 
   connect(main_window_, &MainWindowController::CHIP8KeyPress,
           [this](const chip8::Key key) {
@@ -136,148 +176,50 @@ void VMTutorialApplication::StartROM(const QString& rom_file_path) noexcept {
   vm_thread_->start();
 }
 
-void VMTutorialApplication::DisplayDebugger() noexcept {
-  if (!debugger_window_) {
-    debugger_window_ = new DebuggerWindowController;
-  }
+void VMTutorialApplication::ConnectAudioSettingsSignalsToSlots() noexcept {
+  settings_dialog_->audio_settings_->UpdateSoundCardList(
+      sound_manager_->GetAudioOutputDevices());
 
-  debugger_window_->UpdateMemoryView(vm_thread_->vm_instance_.impl_->memory_);
-  debugger_window_->show();
-}
-
-void VMTutorialApplication::DisplayLogger() noexcept {
-  if (!logger_window_) {
-    logger_window_ = new LoggerWindowController;
-
-    connect(vm_thread_, &VMThread::LogMessageEmitted, this,
-            [this](const std::string& msg) {
-              logger_window_->AddCoreMessage(QString::fromStdString(msg));
-            });
-  }
-  logger_window_->show();
-}
-
-void VMTutorialApplication::DisplayProgramSettings() noexcept {
-  if (!settings_dialog_) {
-    settings_dialog_ = new SettingsDialogController(main_window_);
-    CreateAudioSettingsWidget();
-    CreateGeneralSettingsWidget();
-    CreateGraphicsSettingsWidget();
-    CreateKeypadSettingsWidget();
-    CreateLoggerSettingsWidget();
-    CreateMachineSettingsWidget();
-    AddSettingsWidgetsToSettingsContainer();
-  }
-  settings_dialog_->show();
-}
-
-void VMTutorialApplication::CreateAudioSettingsWidget() noexcept {
-  audio_settings_ = new AudioSettingsController(settings_dialog_);
-
-  audio_settings_->UpdateSoundCardList(sound_manager_->GetAudioOutputDevices());
-
-  connect(audio_settings_, &AudioSettingsController::ToneTypeChanged,
+  connect(settings_dialog_->audio_settings_,
+          &AudioSettingsController::ToneTypeChanged,
           [this](const ToneType type) { sound_manager_->tone_type_ = type; });
 
-  connect(audio_settings_, &AudioSettingsController::VolumeChanged,
-          sound_manager_, &SoundManager::SetVolume);
+  connect(settings_dialog_->audio_settings_,
+          &AudioSettingsController::VolumeChanged, sound_manager_,
+          &SoundManager::SetVolume);
 
-  connect(audio_settings_, &AudioSettingsController::FrequencyChanged,
-          sound_manager_, [this](const unsigned int freq) {
-            sound_manager_->tone_freq_ = freq;
-          });
+  connect(
+      settings_dialog_->audio_settings_,
+      &AudioSettingsController::FrequencyChanged, sound_manager_,
+      [this](const unsigned int freq) { sound_manager_->tone_freq_ = freq; });
 
-  connect(audio_settings_, &AudioSettingsController::AudioDeviceChanged,
-          sound_manager_, &SoundManager::SetAudioOutputDevice);
+  connect(settings_dialog_->audio_settings_,
+          &AudioSettingsController::AudioDeviceChanged, sound_manager_,
+          &SoundManager::SetAudioOutputDevice);
 
   connect(sound_manager_, &SoundManager::AudioDevicesUpdated, this, [this]() {
-    audio_settings_->UpdateSoundCardList(
+    settings_dialog_->audio_settings_->UpdateSoundCardList(
         sound_manager_->GetAudioOutputDevices());
   });
 }
 
-void VMTutorialApplication::CreateGeneralSettingsWidget() noexcept {
-  general_settings_ = new GeneralSettingsController(settings_dialog_);
-}
-
-void VMTutorialApplication::CreateGraphicsSettingsWidget() noexcept {
-  graphics_settings_ = new GraphicsSettingsController(settings_dialog_);
-
-  connect(graphics_settings_,
-          &GraphicsSettingsController::EnableBilinearFiltering,
+void VMTutorialApplication::ConnectGraphicsSettingsSignalsToSlots() noexcept {
+  connect(settings_dialog_->graphics_settings_,
+          &GraphicsSettingsController::BilinearFilteringStateChanged,
           main_window_->GetRenderer(), &Renderer::EnableBilinearFiltering);
 }
 
-void VMTutorialApplication::CreateKeypadSettingsWidget() noexcept {
-  keypad_settings_ = new KeypadSettingsController(settings_dialog_);
-}
-
-void VMTutorialApplication::CreateLoggerSettingsWidget() noexcept {
-  logger_settings_ = new LoggerSettingsController(settings_dialog_);
-}
-
-void VMTutorialApplication::CreateMachineSettingsWidget() noexcept {
-  machine_settings_ = new MachineSettingsController(settings_dialog_);
-
-  connect(machine_settings_,
+void VMTutorialApplication::ConnectMachineSettingsSignalsToSlots() noexcept {
+  connect(settings_dialog_->machine_settings_,
           &MachineSettingsController::MachineInstructionsPerSecondChanged,
           [this](const int instructions_per_second) {
-            const auto frame_rate = AppSettingsModel().GetMachineFrameRate();
-
-            vm_thread_->vm_instance_.SetTiming(instructions_per_second,
-                                               frame_rate);
+            vm_thread_->vm_instance_.SetInstructionsPerSecond(
+                instructions_per_second);
           });
 
-  connect(
-      machine_settings_, &MachineSettingsController::MachineFrameRateChanged,
-      [this](const double frame_rate) {
-        const auto instructions_per_second =
-            AppSettingsModel().GetMachineInstructionsPerSecond();
-
-        vm_thread_->vm_instance_.SetTiming(instructions_per_second, frame_rate);
-      });
-}
-
-void VMTutorialApplication::ConnectVMThreadSignalsToSlots() noexcept {
-  connect(vm_thread_, &VMThread::PerformanceInfo,
-          [this](const VMThread::PerformanceCounters& perf_counters) {
-            const auto [current_fps, average_fps, target_fps] = perf_counters;
-
-            main_window_->UpdateFPSInfo(current_fps, target_fps, average_fps);
+  connect(settings_dialog_->machine_settings_,
+          &MachineSettingsController::MachineFrameRateChanged,
+          [this](const double frame_rate) {
+            vm_thread_->vm_instance_.SetFrameRate(frame_rate);
           });
-
-  connect(vm_thread_, &VMThread::UpdateScreen, main_window_->GetRenderer(),
-          &Renderer::UpdateScreen);
-
-  connect(vm_thread_, &VMThread::PlayTone, sound_manager_,
-          &SoundManager::PlayTone);
-
-  connect(vm_thread_, &VMThread::ExecutionFailure, main_window_,
-          &MainWindowController::ReportExecutionFailure);
-}
-
-void VMTutorialApplication::AddSettingsWidgetsToSettingsContainer() noexcept {
-  settings_dialog_->AddWidgetToSettingsContainer(
-      SettingsDialogController::SettingsCategory::kGeneralSettings,
-      general_settings_);
-
-  settings_dialog_->AddWidgetToSettingsContainer(
-      SettingsDialogController::SettingsCategory::kMachineSettings,
-      machine_settings_);
-
-  settings_dialog_->AddWidgetToSettingsContainer(
-      SettingsDialogController::SettingsCategory::kGraphicsSettings,
-      graphics_settings_);
-
-  settings_dialog_->AddWidgetToSettingsContainer(
-      SettingsDialogController::SettingsCategory::kKeypadSettings,
-      keypad_settings_);
-
-  settings_dialog_->AddWidgetToSettingsContainer(
-      SettingsDialogController::SettingsCategory::kLoggerSettings,
-      logger_settings_);
-
-  settings_dialog_->AddWidgetToSettingsContainer(
-      SettingsDialogController::SettingsCategory::kAudioSettings,
-      audio_settings_);
 }

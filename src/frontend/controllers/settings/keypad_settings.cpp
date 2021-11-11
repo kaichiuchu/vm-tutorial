@@ -24,13 +24,8 @@ KeypadSettingsController::KeypadSettingsController(
   ConnectKeyBindingSignals();
 }
 
-void KeypadSettingsController::ReportKeyConfliction(
-    const int physical_key) noexcept {
-  QMessageBox::critical(this, tr("Key confliction"), tr("This key conflicts."));
-}
-
 void KeypadSettingsController::PopulateDataFromAppSettings() noexcept {
-  const QMap<QString, QPushButton*> button_map = {
+  std::map<QString, QPushButton*> button_map = {
       {"key_0", view_.button_0}, {"key_1", view_.button_1},
       {"key_2", view_.button_2}, {"key_3", view_.button_3},
       {"key_4", view_.button_4}, {"key_5", view_.button_5},

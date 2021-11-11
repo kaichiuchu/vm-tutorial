@@ -12,12 +12,15 @@
 
 #include "debugger_window.h"
 
-DebuggerWindowController::DebuggerWindowController() noexcept {
+DebuggerWindowController::DebuggerWindowController(
+    chip8::VMInstance& vm_instance) noexcept
+    : vm_instance_(vm_instance),
+      registers_model_(new DebuggerRegistersModel(this, vm_instance)),
+      stack_model_(new DebuggerStackModel(this, vm_instance)) {
   view_.setupUi(this);
-}
 
-void DebuggerWindowController::UpdateMemoryView(
-     std::array<uint_fast8_t, chip8::data_size::kInternalMemory>&
-        mem) noexcept {
-  view_.memoryView->SetData(mem);
+  view_.registerView->setModel(registers_model_);
+  view_.stackView->setModel(stack_model_);
+
+  view_.memoryView->SetData(vm_instance_.impl_->memory_);
 }

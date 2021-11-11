@@ -46,7 +46,7 @@
    <attribute name="dockWidgetArea">
     <number>4</number>
    </attribute>
-   <widget class="QListView" name="disasmView"/>
+   <widget class="QTreeView" name="disasmView"/>
   </widget>
   <widget class="QDockWidget" name="dockWidget_5">
    <property name="maximumSize">
@@ -64,7 +64,7 @@
    <attribute name="dockWidgetArea">
     <number>4</number>
    </attribute>
-   <widget class="QListView" name="registerView"/>
+   <widget class="QTreeView" name="registerView"/>
   </widget>
   <widget class="QDockWidget" name="dockWidget_2">
    <property name="features">
@@ -120,7 +120,7 @@
    <attribute name="dockWidgetArea">
     <number>8</number>
    </attribute>
-   <widget class="QListView" name="stackView"/>
+   <widget class="QTreeView" name="stackView"/>
   </widget>
  </widget>
  <customwidgets>

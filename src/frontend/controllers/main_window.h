@@ -28,6 +28,7 @@ class MainWindowController : public QMainWindow {
   /// Defines the various run states of the virtual machine.
   enum class RunState { kRunning, kPaused };
 
+  /// Constructs the main window controller.
   MainWindowController() noexcept;
 
   /// Activates or deactivates specific buttons, based on the specified run

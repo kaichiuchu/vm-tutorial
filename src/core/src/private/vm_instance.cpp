@@ -116,7 +116,20 @@ auto chip8::VMInstance::SetTiming(const unsigned int instructions_per_second,
   Logger::Get().Emit(LogLevel::kInfo,
                      "Timing changed to {}Hz (instructions) within {} frames",
                      instructions_per_second, desired_frame_rate);
+
+  instructions_per_sec_ = instructions_per_second;
+  frame_rate_ = desired_frame_rate;
+
   return true;
+}
+
+auto chip8::VMInstance::SetInstructionsPerSecond(
+    const unsigned int instructions_per_second) noexcept -> bool {
+  return SetTiming(instructions_per_second, frame_rate_);
+}
+
+auto chip8::VMInstance::SetFrameRate(const double frame_rate) noexcept -> bool {
+  return SetTiming(instructions_per_sec_, frame_rate);
 }
 
 auto chip8::VMInstance::RunForOneFrame() noexcept -> chip8::StepResult {
