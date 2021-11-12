@@ -12,8 +12,10 @@
 
 #pragma once
 
-#include <QAudioSink>
-#include <QMediaDevices>
+#include <SDL2/SDL.h>
+
+#include <QObject>
+#include <optional>
 
 #include "types.h"
 
@@ -22,27 +24,26 @@ class SoundManager : public QObject {
   Q_OBJECT
 
  public:
-  /// Type alias for the number of bytes required to represent one sample.
-  using BytesPerSample = int;
-
-  /// Type alias for the number of bytes required to represent the duration of
-  /// a tone.
-  using BytesForDuration = int32_t;
-
-  /// A collection defining the number of bytes required to represent one
-  /// sample, and the number of bytes required for the duration of a tone.
-  using SoundBufferInfo = std::pair<BytesPerSample, BytesForDuration>;
-
-  /// Constructs the sound manager.
+  /// Attempts to initialize the sound manager.
   ///
-  /// \param parent_widget The parent object of which this class is a child of
+  /// This is required because SDL initialization has the potential to fail, and
+  /// in such case the state of the sound manager would be invalid. It's not a
+  /// fatal program error because no one *needs* sound. If an initialization
+  /// failure occurs, the user can restart the program or attempt to initialize
+  /// sound through the settings dialog.
+  ///
+  /// \param parent_object The parent object of which this class is a child of
   /// it.
-  explicit SoundManager(QObject* parent_object) noexcept;
+  ///
+  /// \param error The error message from SDL, if any.
+  ///
+  /// \returns Either an empty object, or a SoundManager object.
+  static std::optional<SoundManager*> Initialize(QObject* parent_object,
+                                                 QString& error) noexcept;
 
   /// Plays a tone for the specified period.
   ///
-  /// This method will do nothing if a tone generator was not specified, or if
-  /// audio is muted.
+  /// This method will do nothing if the audio is muted.
   ///
   /// \param duration The length of the tone to generate, in milliseconds.
   void PlayTone(double duration) noexcept;
@@ -56,12 +57,12 @@ class SoundManager : public QObject {
   /// Sets the audio output device to use.
   ///
   /// \param audio_device The audio device to send tone output to.
-  void SetAudioOutputDevice(const QAudioDevice& audio_device) noexcept;
+  void SetAudioOutputDevice(const QString& audio_device) noexcept;
 
   /// Retrieves a list of audio outputs available on the system.
   ///
   /// \returns A list of available audio output devices.
-  auto GetAudioOutputDevices() const noexcept -> QList<QAudioDevice>;
+  auto GetAudioOutputDevices() noexcept -> std::vector<QString>;
 
   /// The frequency of a generated tone.
   unsigned int tone_freq_;
@@ -70,45 +71,49 @@ class SoundManager : public QObject {
   ToneType tone_type_;
 
  private:
-  /// Configures the sound buffer for new audio data.
-  ///
-  /// \param format The format of the audio device currently in use.
-  /// \param duration The duration of the tone to generate.
-  ///
-  /// \returns The number of required bytes to represent one sample and the
-  /// number of bytes required to represent the duration of the tone.
-  auto ConfigureSoundBuffer(const QAudioFormat& format,
-                            double duration) noexcept -> SoundBufferInfo;
+  enum GenerationOptions { kDoNotUseCopySign, kUseCopySign };
 
-  /// Connects signals to slots.
-  void ConnectSignalsToSlots() noexcept;
+  /// Constructs the sound manager.
+  ///
+  /// \param parent_widget The parent object of which this class is a child of
+  /// it.
+  explicit SoundManager(QObject* parent_object) noexcept;
 
   /// Sets default settings based on the current application settings.
   void SetupFromAppSettings() noexcept;
 
   /// Generates a sine wave.
   ///
-  /// The sine wave data is stored into the \ref sound_buffer_ buffer.
+  /// This method will push the samples to the current audio device.
   ///
   /// \param duration The duration of the sine wave.
-  void GenerateSineWave(double duration) noexcept;
+  void GenerateSineWave(double duration, GenerationOptions options) noexcept;
 
-  /// The buffer which contains the generated sound wave data.
-  QByteArray sound_buffer_;
+  /// Generates a sawtooth wave.
+  ///
+  /// This method will push the samples to the current audio device.
+  ///
+  /// \param duration The duration of the sawtooth wave.
+  void GenerateSawtoothWave(double duration) noexcept;
+
+  /// Generates a triangle wave.
+  ///
+  /// This method will push the samples to the current audio device.
+  ///
+  /// \param duration The duration of the triangle wave.
+  void GenerateTriangleWave(double duration) noexcept;
 
   /// The current interface to send audio data to an audio output device as
   /// determined by the last call to \ref SetAudioOutputDevice().
-  QAudioSink* audio_output_;
+  SDL_AudioDeviceID audio_output_device_;
 
-  /// The interface to information about the audio devices available on the
-  /// system.
-  QMediaDevices* media_devices_;
-
-  /// The I/O device used to transfer data to the audio output device as
-  /// determined by the last call to \ref SetAudioOutputDevice().
-  QIODevice* audio_io_;
+  /// The default sample rate.
+  const unsigned int kSampleRate = 44100;
 
  signals:
+  /// Emitted when an internal error has been encountered.
+  void ErrorEncountered(const QString& error_str);
+
   /// Emitted when the system declares a new audio output device, or removes
   /// one.
   void AudioDevicesUpdated();

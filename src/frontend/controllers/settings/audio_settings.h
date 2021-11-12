@@ -12,7 +12,6 @@
 
 #pragma once
 
-#include <QAudioDevice>
 #include <QWidget>
 
 #include "types.h"
@@ -38,7 +37,7 @@ class AudioSettingsController : public QWidget {
   ///
   /// \param audio_devices The list of output audio devices present on the
   /// system.
-  void UpdateSoundCardList(const QList<QAudioDevice>& audio_devices) noexcept;
+  void UpdateSoundCardList(const std::vector<QString>& audio_devices) noexcept;
 
  private:
   /// Populates the widget with the current audio settings.
@@ -52,7 +51,7 @@ class AudioSettingsController : public QWidget {
 
  signals:
   /// Emitted when the tone type has been changed by the user.
-  void ToneTypeChanged(ToneType tone_type);
+  void ToneTypeChanged(int tone_type);
 
   /// Emitted when the frequency of the tone has been changed by the user.
   void FrequencyChanged(int value);
@@ -61,5 +60,5 @@ class AudioSettingsController : public QWidget {
   void VolumeChanged(int value);
 
   /// Emitted when the audio device has been changed by the user.
-  void AudioDeviceChanged(const QAudioDevice& device);
+  void AudioDeviceChanged(const QString& device);
 };

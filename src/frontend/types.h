@@ -16,4 +16,4 @@
 /// components of the frontend.
 
 /// Defines the different types of sound waves that we can generate.
-enum class ToneType { kSineWave };
+enum class ToneType { kSineWave, kSawtooth, kSquare, kTriangle };

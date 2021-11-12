@@ -14,16 +14,38 @@
 
 #include <QFile>
 #include <QFileInfo>
+#include <QMessageBox>
 
 #include "models/app_settings.h"
 
 VMTutorialApplication::VMTutorialApplication() noexcept
     : main_window_(new MainWindowController),
-      sound_manager_(new SoundManager(this)),
       vm_thread_(new VMThread(main_window_)) {
+  InitializeAudio();
   ConnectVMThreadSignalsToSlots();
   ConnectMainWindowSignalsToSlots();
   main_window_->show();
+}
+
+void VMTutorialApplication::InitializeAudio() noexcept {
+  QString sound_manager_error;
+  sound_manager_ = SoundManager::Initialize(this, sound_manager_error);
+
+  if (!sound_manager_) {
+    NotifyCriticalAudioFailure(sound_manager_error);
+  }
+}
+
+void VMTutorialApplication::NotifyCriticalAudioFailure(
+    const QString& error_message) noexcept {
+  auto message = QString{tr("The audio subsystem failed to initialize")};
+  message += QString{": %1. "}.arg(error_message);
+  message +=
+      QString{tr("Sound will be disabled. If you wish to try and reinitialize "
+                 "the audio subsystem, navigate to the audio settings and "
+                 "click 'Initialize'. Alternatively, restart the program.")};
+
+  QMessageBox::warning(nullptr, tr("Audio subsystem failure"), message);
 }
 
 void VMTutorialApplication::ConnectVMThreadSignalsToSlots() noexcept {
@@ -37,8 +59,11 @@ void VMTutorialApplication::ConnectVMThreadSignalsToSlots() noexcept {
   connect(vm_thread_, &VMThread::UpdateScreen, main_window_->GetRenderer(),
           &Renderer::UpdateScreen);
 
-  connect(vm_thread_, &VMThread::PlayTone, sound_manager_,
-          &SoundManager::PlayTone);
+  connect(vm_thread_, &VMThread::PlayTone, this, [this](const double duration) {
+    if (sound_manager_) {
+      (*sound_manager_)->PlayTone(duration);
+    }
+  });
 
   connect(vm_thread_, &VMThread::ExecutionFailure, main_window_,
           &MainWindowController::ReportExecutionFailure);
@@ -177,30 +202,37 @@ void VMTutorialApplication::StartROM(const QString& rom_file_path) noexcept {
 }
 
 void VMTutorialApplication::ConnectAudioSettingsSignalsToSlots() noexcept {
+  if (!sound_manager_) {
+    return;
+  }
+
   settings_dialog_->audio_settings_->UpdateSoundCardList(
-      sound_manager_->GetAudioOutputDevices());
+      (*sound_manager_)->GetAudioOutputDevices());
 
   connect(settings_dialog_->audio_settings_,
-          &AudioSettingsController::ToneTypeChanged,
-          [this](const ToneType type) { sound_manager_->tone_type_ = type; });
+          &AudioSettingsController::ToneTypeChanged, [this](const int type) {
+            (*sound_manager_)->tone_type_ = static_cast<ToneType>(type);
+          });
 
   connect(settings_dialog_->audio_settings_,
-          &AudioSettingsController::VolumeChanged, sound_manager_,
+          &AudioSettingsController::VolumeChanged, (*sound_manager_),
           &SoundManager::SetVolume);
 
-  connect(
-      settings_dialog_->audio_settings_,
-      &AudioSettingsController::FrequencyChanged, sound_manager_,
-      [this](const unsigned int freq) { sound_manager_->tone_freq_ = freq; });
+  connect(settings_dialog_->audio_settings_,
+          &AudioSettingsController::FrequencyChanged, (*sound_manager_),
+          [this](const unsigned int freq) {
+            (*sound_manager_)->tone_freq_ = freq;
+          });
 
   connect(settings_dialog_->audio_settings_,
-          &AudioSettingsController::AudioDeviceChanged, sound_manager_,
+          &AudioSettingsController::AudioDeviceChanged, (*sound_manager_),
           &SoundManager::SetAudioOutputDevice);
 
-  connect(sound_manager_, &SoundManager::AudioDevicesUpdated, this, [this]() {
-    settings_dialog_->audio_settings_->UpdateSoundCardList(
-        sound_manager_->GetAudioOutputDevices());
-  });
+  connect((*sound_manager_), &SoundManager::AudioDevicesUpdated, this,
+          [this]() {
+            settings_dialog_->audio_settings_->UpdateSoundCardList(
+                (*sound_manager_)->GetAudioOutputDevices());
+          });
 }
 
 void VMTutorialApplication::ConnectGraphicsSettingsSignalsToSlots() noexcept {

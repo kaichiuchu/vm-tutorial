@@ -67,6 +67,12 @@ class VMThread : public QThread {
   chip8::VMInstance vm_instance_;
 
  private:
+  /// Connects callback from the virtual machine instance to our signals.
+  void ConnectCallbacksToSlots() noexcept;
+
+  /// Configures the virtual machine based on the current application settings.
+  void SetupFromAppSettings() noexcept;
+
   /// The number of frames that have been generated. This is used to calculate
   /// the frame time averaged to 1 second.
   unsigned int num_frames_;

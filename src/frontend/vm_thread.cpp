@@ -14,7 +14,19 @@
 
 #include <thread>
 
+#include "models/app_settings.h"
+
 VMThread::VMThread(QObject* parent_object) noexcept : QThread(parent_object) {
+  ConnectCallbacksToSlots();
+  SetupFromAppSettings();
+}
+
+void VMThread::StopExecution() noexcept {
+  requestInterruption();
+  wait();
+}
+
+void VMThread::ConnectCallbacksToSlots() noexcept {
   vm_instance_.update_screen_func_ =
       [this](const chip8::ImplementationInterface::Framebuffer& framebuffer) {
         emit UpdateScreen(framebuffer);
@@ -28,9 +40,11 @@ VMThread::VMThread(QObject* parent_object) noexcept : QThread(parent_object) {
       [this](const std::string& msg) { emit LogMessageEmitted(msg); });
 }
 
-void VMThread::StopExecution() noexcept {
-  requestInterruption();
-  wait();
+void VMThread::SetupFromAppSettings() noexcept {
+  AppSettingsModel app_settings;
+
+  vm_instance_.SetTiming(app_settings.GetMachineInstructionsPerSecond(),
+                         app_settings.GetMachineFrameRate());
 }
 
 void VMThread::run() noexcept {
@@ -102,7 +116,7 @@ void VMThread::run() noexcept {
 
       // It is not a failure to stop execution until a key has been pressed. We
       // completely stop execution in this case because it would be pointless
-      // to run the thread doing absolutely nothing.
+      // to run the thread doing absolutely nothing but waiting.
       if (step_result != chip8::StepResult::kHaltUntilKeyPress) {
         emit ExecutionFailure(step_result);
       }

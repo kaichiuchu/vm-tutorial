@@ -12,147 +12,187 @@
 
 #include "sound_manager.h"
 
+#include <QDebug>
+
 #include "models/app_settings.h"
 
-SoundManager::SoundManager(QObject *parent_object) noexcept
-    : QObject(parent_object), media_devices_(new QMediaDevices(this)) {
+std::optional<SoundManager*> SoundManager::Initialize(QObject* parent_object,
+                                                      QString& error) noexcept {
+  if (SDL_Init(SDL_INIT_AUDIO) == 0) {
+    return new SoundManager{parent_object};
+  }
+  error = SDL_GetError();
+  return std::nullopt;
+}
+
+SoundManager::SoundManager(QObject* parent_object) noexcept
+    : QObject(parent_object) {
   SetupFromAppSettings();
-  ConnectSignalsToSlots();
 }
 
 void SoundManager::PlayTone(const double duration) noexcept {
-  if (audio_output_->volume() <= 0.0) {
+  switch (tone_type_) {
+    case ToneType::kSineWave:
+      GenerateSineWave(duration, GenerationOptions::kDoNotUseCopySign);
+      break;
+
+    case ToneType::kSawtooth:
+      GenerateSawtoothWave(duration);
+      break;
+
+    case ToneType::kSquare:
+      GenerateSineWave(duration, GenerationOptions::kUseCopySign);
+      break;
+
+    case ToneType::kTriangle:
+      GenerateTriangleWave(duration);
+      break;
+  }
+}
+
+void SoundManager::SetVolume(const unsigned int volume) noexcept {}
+
+void SoundManager::SetAudioOutputDevice(
+    const QString& audio_output_device) noexcept {
+  SDL_AudioSpec audio_spec;
+  memset(&audio_spec, 0, sizeof(SDL_AudioSpec));
+
+  audio_spec.freq = kSampleRate;
+  audio_spec.format = AUDIO_S16SYS;
+  audio_spec.channels = 1;
+
+  const auto audio_output_device_name =
+      audio_output_device.isEmpty() ? nullptr
+                                    : audio_output_device.toLocal8Bit().data();
+
+  const auto audio_device_id_new =
+      SDL_OpenAudioDevice(audio_output_device_name, 0, &audio_spec, nullptr, 0);
+
+  if (audio_device_id_new == 0) {
+    // We won't be able to do anything now, but we can at least still preserve
+    // the current audio output device if there is one.
+    emit ErrorEncountered(SDL_GetError());
     return;
   }
 
-  switch (tone_type_) {
-    case ToneType::kSineWave:
-      GenerateSineWave(duration);
-      break;
+  SDL_CloseAudioDevice(audio_output_device_);
+
+  audio_output_device_ = audio_device_id_new;
+
+  SDL_PauseAudioDevice(audio_output_device_, 0);
+}
+
+auto SoundManager::GetAudioOutputDevices() noexcept -> std::vector<QString> {
+  const auto audio_output_device_count = SDL_GetNumAudioDevices(0);
+
+  // An explicit list cannot be determined.
+  if (audio_output_device_count == -1) {
+    return {};
   }
-  audio_io_->write(sound_buffer_.data(), sound_buffer_.size());
-}
 
-void SoundManager::SetVolume(const unsigned int volume) noexcept {
-  const auto linear_volume =
-      QAudio::convertVolume(volume / qreal(100), QAudio::LogarithmicVolumeScale,
-                            QAudio::LinearVolumeScale);
+  std::vector<QString> audio_output_devices;
 
-  audio_output_->setVolume(linear_volume);
-}
+  for (auto audio_device_output_id = 0;
+       audio_device_output_id < audio_output_device_count;
+       ++audio_device_output_id) {
+    const auto audio_output_device_name =
+        SDL_GetAudioDeviceName(audio_device_output_id, 0);
 
-void SoundManager::SetAudioOutputDevice(
-    const QAudioDevice &audio_device) noexcept {
-  const auto audio_device_format = audio_device.preferredFormat();
+    if (audio_output_device_name == nullptr) {
+      emit ErrorEncountered(SDL_GetError());
 
-  audio_output_ = new QAudioSink(audio_device, audio_device_format, this);
-
-  audio_io_ = audio_output_->start();
-}
-
-auto SoundManager::GetAudioOutputDevices() const noexcept
-    -> QList<QAudioDevice> {
-  return media_devices_->audioOutputs();
-}
-
-auto SoundManager::ConfigureSoundBuffer(const QAudioFormat &format,
-                                        const double duration) noexcept
-    -> SoundBufferInfo {
-  // The bytes per sample is the number of bytes required to represent one
-  // sample.
-  const auto bytes_per_sample = format.bytesPerSample();
-
-  // The \ref QAudioFormat::bytesForDuration() method takes microseconds, and
-  // the duration of a tone is returned as milliseconds from the core, so we
-  // have to convert from milliseconds to microseconds. It returns the number of
-  // bytes necessary to play a tone of `duration` length.
-  const auto bytes_for_duration = format.bytesForDuration(duration * 1000);
-
-  // Adjust the size of the audio buffer.
-  sound_buffer_.resize(bytes_for_duration);
-
-  return {bytes_per_sample, bytes_for_duration};
-}
-
-void SoundManager::ConnectSignalsToSlots() noexcept {
-  connect(media_devices_, &QMediaDevices::audioOutputsChanged, this,
-          [this]() { emit AudioDevicesUpdated(); });
+      // We don't want to stop trying to get audio device names just because one
+      // failed to be retrieved.
+      continue;
+    }
+    audio_output_devices.push_back(audio_output_device_name);
+  }
+  return audio_output_devices;
 }
 
 void SoundManager::SetupFromAppSettings() noexcept {
   AppSettingsModel app_settings;
 
-  const auto audio_output_devices = media_devices_->audioOutputs();
-
-  const auto audio_device_id = app_settings.GetAudioDeviceID();
-
-  const auto result =
-      std::find_if(audio_output_devices.cbegin(), audio_output_devices.cend(),
-                   [audio_device_id](const QAudioDevice &audio_device) {
-                     return audio_device.id() == audio_device_id;
-                   });
-
-  if (result != audio_output_devices.cend()) {
-    SetAudioOutputDevice(*result);
-  } else {
-    const auto default_audio_device = media_devices_->defaultAudioOutput();
-
-    if (!default_audio_device.isNull()) {
-      SetAudioOutputDevice(default_audio_device);
-    } else {
-      // No audio devices on the system; stop.
-      return;
-    }
-  }
+  SetAudioOutputDevice(app_settings.GetAudioDeviceID());
 
   tone_freq_ = app_settings.GetAudioToneFrequency();
-  tone_type_ = app_settings.GetAudioToneType();
+  tone_type_ = static_cast<ToneType>(app_settings.GetAudioToneType());
   SetVolume(app_settings.GetAudioVolume());
 }
 
-void SoundManager::GenerateSineWave(double duration) noexcept {
-  const auto format = audio_output_->format();
+void SoundManager::GenerateSineWave(const double duration,
+                                    const GenerationOptions options) noexcept {
+  const auto output_sample_count =
+      static_cast<int>((duration / 1000) * kSampleRate);
 
-  auto [bytes_per_sample, bytes_for_duration] =
-      ConfigureSoundBuffer(format, duration);
+  for (auto sample_num = 0; sample_num < output_sample_count; ++sample_num) {
+    const auto t = sample_num / static_cast<double>(kSampleRate);
+    auto amplitude = std::sin(M_PI * 2 * t * tone_freq_);
 
-  auto ptr = reinterpret_cast<unsigned char *>(sound_buffer_.data());
-  auto sample_index = 0;
+    if (options == GenerationOptions::kUseCopySign) {
+      amplitude = std::copysign(1.0, amplitude);
+    }
 
-  const auto sample_rate = format.sampleRate();
+    const auto sample =
+        static_cast<int16_t>(amplitude * std::numeric_limits<int16_t>::max());
 
-  while (bytes_for_duration) {
-    const auto amplitude =
-        std::sin(2 * M_PI * tone_freq_ * qreal(sample_index++ % sample_rate) /
-                 sample_rate);
+    const auto return_code =
+        SDL_QueueAudio(audio_output_device_, &sample, sizeof(int16_t));
 
-    for (auto i = 0; i < format.channelCount(); ++i) {
-      switch (format.sampleFormat()) {
-        case QAudioFormat::UInt8:
-          *reinterpret_cast<uint8_t *>(ptr) =
-              static_cast<uint8_t>((1.0 + amplitude) / 2 * 255);
-          break;
+    if (return_code < 0) {
+      emit ErrorEncountered(SDL_GetError());
 
-        case QAudioFormat::Int16:
-          *reinterpret_cast<int16_t *>(ptr) =
-              static_cast<int16_t>(amplitude * 32767);
-          break;
+      // We don't want to stop generating samples just because one sample
+      // wasn't queued properly. The audio may be choppy, but it's better than
+      // nothing.
+    }
+  }
+}
 
-        case QAudioFormat::Int32:
-          *reinterpret_cast<int32_t *>(ptr) = static_cast<int32_t>(
-              amplitude * std::numeric_limits<int32_t>::max());
-          break;
+void SoundManager::GenerateSawtoothWave(const double duration) noexcept {
+  const auto output_sample_count =
+      static_cast<int>((duration / 1000) * kSampleRate);
 
-        case QAudioFormat::Float:
-          *reinterpret_cast<float *>(ptr) = amplitude;
-          break;
+  for (auto sample_num = 0; sample_num < output_sample_count; ++sample_num) {
+    const auto t = sample_num / static_cast<double>(kSampleRate);
 
-        default:
-          break;
-      }
+    const auto sample = static_cast<int16_t>(
+        (-2 / M_PI) * std::atan(1 / std::tan(tone_freq_ * M_PI * t)) *
+        std::numeric_limits<int16_t>::max());
 
-      ptr += bytes_per_sample;
-      bytes_for_duration -= bytes_per_sample;
+    const auto return_code =
+        SDL_QueueAudio(audio_output_device_, &sample, sizeof(int16_t));
+
+    if (return_code < 0) {
+      emit ErrorEncountered(SDL_GetError());
+
+      // We don't want to stop generating samples just because one sample
+      // wasn't queued properly. The audio may be choppy as a result, but it's
+      // better than nothing.
+    }
+  }
+}
+
+void SoundManager::GenerateTriangleWave(const double duration) noexcept {
+  const auto output_sample_count =
+      static_cast<int>((duration / 1000) * kSampleRate);
+
+  for (auto sample_num = 0; sample_num < output_sample_count; ++sample_num) {
+    const auto t = sample_num / static_cast<double>(kSampleRate);
+
+    const auto sample = static_cast<int16_t>(
+        (2 / M_PI) * std::asin(std::sin(tone_freq_ * M_PI * 2 * t)) *
+        std::numeric_limits<int16_t>::max());
+
+    const auto return_code =
+        SDL_QueueAudio(audio_output_device_, &sample, sizeof(int16_t));
+
+    if (return_code < 0) {
+      emit ErrorEncountered(SDL_GetError());
+
+      // We don't want to stop generating samples just because one sample
+      // wasn't queued properly. The audio may be choppy as a result, but it's
+      // better than nothing.
     }
   }
 }

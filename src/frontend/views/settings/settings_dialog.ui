@@ -13,6 +13,9 @@
   <property name="windowTitle">
    <string>vm-tutorial settings</string>
   </property>
+  <property name="modal">
+   <bool>true</bool>
+  </property>
   <layout class="QHBoxLayout" name="horizontalLayout_2">
    <item>
     <widget class="QListWidget" name="settingsList">

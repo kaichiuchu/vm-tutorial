@@ -14,7 +14,6 @@
 
 #include <core/spec.h>
 
-#include <QAudioDevice>
 #include <QColor>
 #include <QFont>
 #include <QSettings>
@@ -81,8 +80,8 @@ class AppSettingsModel : public QSettings {
   /// Tries to find the audio tone type within the configuration file.
   ///
   /// \returns The audio tone type specified within the configuration file, or
-  /// \ref ToneType::kSineWave by default.
-  auto GetAudioToneType() const noexcept -> ToneType;
+  /// \ref ToneType::kSineWave (as an \p int) by default.
+  auto GetAudioToneType() const noexcept -> int;
 
   /// Tries to find the default path of guest program files within the
   /// configuration file.
@@ -168,13 +167,14 @@ class AppSettingsModel : public QSettings {
 
   /// Sets the type of audio tone within the configuration file.
   ///
-  /// \param tone_type The type of audio tone to use.
-  void SetAudioToneType(ToneType tone_type) noexcept;
+  /// \param tone_type The type of audio tone to use. This is one of the
+  /// `ToneType` enums casted to an `int`.
+  void SetAudioToneType(int tone_type) noexcept;
 
   /// Sets the audio device ID within the configuration file.
   ///
   /// \param audio_device_id The ID of the audio device to use.
-  void SetAudioDeviceID(const QByteArray& audio_device_id) noexcept;
+  void SetAudioDeviceID(const QString& audio_device_id) noexcept;
 
   /// Sets the virtual machine key the physical key corresponds to within the
   /// configuration file.

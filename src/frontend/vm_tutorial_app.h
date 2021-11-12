@@ -35,6 +35,16 @@ class VMTutorialApplication : public QObject {
   /// Connects the signals from the main window controller to slots.
   void ConnectMainWindowSignalsToSlots() noexcept;
 
+  /// Attempts to initialize the audio subsystem.
+  ///
+  /// If initialization fails, an error message will be displayed to the user.
+  void InitializeAudio() noexcept;
+
+  /// Notifies the user that the audio subsystem failed to initialize.
+  ///
+  /// \param error_message The error message from the audio subsystem.
+  void NotifyCriticalAudioFailure(const QString& error_message) noexcept;
+
   /// The controller for the debugger window.
   DebuggerWindowController* debugger_window_ = nullptr;
 
@@ -48,13 +58,15 @@ class VMTutorialApplication : public QObject {
   SettingsDialogController* settings_dialog_ = nullptr;
 
   /// The sound manager instance.
-  SoundManager* sound_manager_;
+  std::optional<SoundManager*> sound_manager_ = nullptr;
 
   /// The virtual machine thread.
   VMThread* vm_thread_;
 
   /// The current ROM data being executed. We store a 2nd copy as part of the
-  /// reset functionality.
+  /// reset functionality. The first copy is in the internal memory of the
+  /// virtual machine, but we can't be sure if it's self-modifying. That's why
+  /// we have another copy here for resetting.
   ///
   /// XXX: I think it is awful to store a 2nd copy...
   std::vector<uint_fast8_t> current_rom_data_;

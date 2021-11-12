@@ -10,8 +10,10 @@
 # with this software. If not, see
 # <http://creativecommons.org/publicdomain/zero/1.0/>.
 
-find_package(Qt6 COMPONENTS Multimedia OpenGLWidgets Widgets REQUIRED)
+find_package(Qt6 COMPONENTS OpenGLWidgets Widgets REQUIRED)
 set(CMAKE_AUTOUIC_SEARCH_PATHS views views/settings)
+
+find_package(SDL2 REQUIRED)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
@@ -90,9 +92,9 @@ add_executable(VMTutorialFrontend ${SRCS}
                                   ${ASSET_FILE})
 
 target_link_libraries(VMTutorialFrontend core
-                                         Qt6::Multimedia
                                          Qt6::OpenGLWidgets
-                                         Qt6::Widgets)
+                                         Qt6::Widgets
+                                         SDL2::SDL2)
 
 target_include_directories(VMTutorialFrontend PRIVATE ../core/src/public .)
 

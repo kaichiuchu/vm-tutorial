@@ -23,18 +23,18 @@ AudioSettingsController::AudioSettingsController(
 }
 
 void AudioSettingsController::UpdateSoundCardList(
-    const QList<QAudioDevice>& audio_devices) noexcept {
+    const std::vector<QString>& audio_devices) noexcept {
   view_.soundCards->clear();
 
   for (const auto& audio_device : audio_devices) {
-    view_.soundCards->addItem(audio_device.description(),
-                              QVariant::fromValue(audio_device));
+    view_.soundCards->addItem(audio_device);
   }
 }
 
 void AudioSettingsController::PopulateDataFromAppSettings() noexcept {
   AppSettingsModel app_settings;
 
+  const auto tone_type = app_settings.GetAudioToneType();
   const auto tone_freq = app_settings.GetAudioToneFrequency();
   const auto audio_volume = app_settings.GetAudioVolume();
 
@@ -43,15 +43,15 @@ void AudioSettingsController::PopulateDataFromAppSettings() noexcept {
 
   view_.frequencySlider->setValue(tone_freq);
   view_.frequencySpinBox->setValue(tone_freq);
+
+  view_.waveType->setCurrentIndex(static_cast<int>(tone_type));
 }
 
 void AudioSettingsController::ConnectSignalsToSlots() noexcept {
   connect(view_.waveType, QOverload<int>::of(&QComboBox::activated),
           [this](const int index) {
-            AppSettingsModel().SetAudioToneType(static_cast<ToneType>(index));
-
-            emit ToneTypeChanged(
-                view_.soundCards->itemData(index).value<ToneType>());
+            AppSettingsModel().SetAudioToneType(index);
+            emit ToneTypeChanged(index);
           });
 
   connect(view_.frequencySlider, &QSlider::sliderMoved,
@@ -87,10 +87,9 @@ void AudioSettingsController::ConnectSignalsToSlots() noexcept {
 
   connect(view_.soundCards, QOverload<int>::of(&QComboBox::activated),
           [this](const int index) {
-            const auto audio_device =
-                view_.soundCards->itemData(index).value<QAudioDevice>();
+            const auto audio_device = view_.soundCards->currentText();
 
-            AppSettingsModel().SetAudioDeviceID(audio_device.id());
+            AppSettingsModel().SetAudioDeviceID(audio_device);
             emit AudioDeviceChanged(audio_device);
           });
 }

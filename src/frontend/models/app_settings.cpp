@@ -77,9 +77,9 @@ auto AppSettingsModel::GetAudioVolume() const noexcept -> int {
   return value("audio/volume", 100).toInt();
 }
 
-auto AppSettingsModel::GetAudioToneType() const noexcept -> ToneType {
-  return value("audio/tone_type", static_cast<int>(ToneType::kSineWave))
-      .value<ToneType>();
+auto AppSettingsModel::GetAudioToneType() const noexcept -> int {
+  const auto default_wave = static_cast<int>(ToneType::kSineWave);
+  return value("audio/tone_type", default_wave).toInt();
 }
 
 auto AppSettingsModel::GetProgramFilesPath() const noexcept -> QString {
@@ -156,12 +156,12 @@ void AppSettingsModel::SetAudioVolume(const unsigned int value) noexcept {
   setValue("audio/volume", value);
 }
 
-void AppSettingsModel::SetAudioToneType(const ToneType tone_type) noexcept {
-  setValue("audio/tone_type", static_cast<int>(tone_type));
+void AppSettingsModel::SetAudioToneType(const int tone_type) noexcept {
+  setValue("audio/tone_type", tone_type);
 }
 
 void AppSettingsModel::SetAudioDeviceID(
-    const QByteArray& audio_device_id) noexcept {
+    const QString& audio_device_id) noexcept {
   setValue("audio/default_device", audio_device_id);
 }
 
