@@ -58,10 +58,12 @@ set(CONTROLLER_SETTINGS_HDRS controllers/settings/audio_settings.h
                              controllers/settings/settings_dialog.h)
 
 set(MODELS_SRCS models/app_settings.cpp
+                models/debugger_disasm.cpp
                 models/debugger_registers.cpp
                 models/debugger_stack.cpp)
 
 set(MODELS_HDRS models/app_settings.h
+                models/debugger_disasm.h
                 models/debugger_registers.h
                 models/debugger_stack.h)
 

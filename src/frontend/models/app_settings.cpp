@@ -13,6 +13,7 @@
 #include "app_settings.h"
 
 #include <QDir>
+#include <QFontDatabase>
 
 AppSettingsModel::AppSettingsModel(QObject* parent_object) noexcept
     : QSettings("vm-tutorial.ini", QSettings::IniFormat, parent_object) {}
@@ -117,12 +118,21 @@ auto AppSettingsModel::GetMachineInstructionsPerSecond() const noexcept -> int {
   return value("machine/instructions_per_second", 500).toInt();
 }
 
-auto AppSettingsModel::GetMemoryViewFont() const noexcept
-    -> std::optional<QFont> {
-  const auto font = value("debugger/memory_view_font").toString();
+auto AppSettingsModel::GetDebuggerFont() const noexcept -> QFont {
+  const auto font = value("debugger/font").toString();
 
   if (font.isEmpty()) {
-    return std::nullopt;
+#ifdef __WIN64
+    QFont font;
+    font.setFamily(QStringLiteral("Consolas"));
+    font.setFixedPitch(true);
+    font.setStyleHint(QFont::TypeWriter);
+    font.setPointSize(10);
+
+    return font;
+#else
+    return QFontDatabase::systemFont(QFontDatabase::FixedFont);
+#endif
   }
 
   QFont f;

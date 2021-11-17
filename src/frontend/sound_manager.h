@@ -24,6 +24,8 @@ class SoundManager : public QObject {
   Q_OBJECT
 
  public:
+  ~SoundManager() noexcept;
+
   /// Attempts to initialize the sound manager.
   ///
   /// This is required because SDL initialization has the potential to fail, and
@@ -71,8 +73,6 @@ class SoundManager : public QObject {
   ToneType tone_type_;
 
  private:
-  enum GenerationOptions { kDoNotUseCopySign, kUseCopySign };
-
   /// Constructs the sound manager.
   ///
   /// \param parent_widget The parent object of which this class is a child of
@@ -81,27 +81,6 @@ class SoundManager : public QObject {
 
   /// Sets default settings based on the current application settings.
   void SetupFromAppSettings() noexcept;
-
-  /// Generates a sine wave.
-  ///
-  /// This method will push the samples to the current audio device.
-  ///
-  /// \param duration The duration of the sine wave.
-  void GenerateSineWave(double duration, GenerationOptions options) noexcept;
-
-  /// Generates a sawtooth wave.
-  ///
-  /// This method will push the samples to the current audio device.
-  ///
-  /// \param duration The duration of the sawtooth wave.
-  void GenerateSawtoothWave(double duration) noexcept;
-
-  /// Generates a triangle wave.
-  ///
-  /// This method will push the samples to the current audio device.
-  ///
-  /// \param duration The duration of the triangle wave.
-  void GenerateTriangleWave(double duration) noexcept;
 
   /// The current interface to send audio data to an audio output device as
   /// determined by the last call to \ref SetAudioOutputDevice().

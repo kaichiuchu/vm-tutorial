@@ -12,10 +12,11 @@
 
 #pragma once
 
-#include <core/spec.h>
-
 #include <algorithm>
 #include <tuple>
+
+#include "logger.h"
+#include "spec.h"
 
 namespace chip8 {
 /// This class defines the interface for a CHIP-8 implementation and provides
@@ -52,8 +53,9 @@ namespace chip8 {
 ///
 ///       To be clear: compilers are generally good at determining what is
 ///       efficient dispatching, so implementing computed goto can be a hit or
-///       miss. It *may* yield a noticeable benefit, it *may not*. The best
-///       thing to do is implement and profile.
+///       miss. It *may* yield a noticeable benefit, it *may not*. It *may* be
+///       a waste of time, it *may* not. The best thing to do is implement (if
+///       you really have to), and profile.
 ///
 ///    -# cached interpreter
 ///
@@ -207,6 +209,9 @@ class ImplementationInterface {
       // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
       V_[key_press_dest_] = key;
       halted_until_key_press_ = false;
+
+      Logger::Get().Emit(Logger::LogLevel::kInfo,
+                         "No longer waiting for key press, continuing...");
     }
     // We disable the constant array index warning because we know \ref key
     // *will* be valid.
@@ -294,6 +299,8 @@ class ImplementationInterface {
   void HaltUntilKeyPress(const size_t x) noexcept {
     halted_until_key_press_ = true;
     key_press_dest_ = x;
+
+    Logger::Get().Emit(Logger::LogLevel::kInfo, "Waiting for key press...");
   }
 
   /// Clears the framebuffer.
@@ -301,6 +308,7 @@ class ImplementationInterface {
   /// The entire framebuffer will contain \ref chip8::pixel::kBlack.
   void ResetFramebuffer() noexcept {
     std::fill(framebuffer_.begin(), framebuffer_.end(), chip8::pixel::kBlack);
+    Logger::Get().Emit(Logger::LogLevel::kDebug, "Framebuffer has been reset");
   }
 
   /// Sets all of the elements in the internal memory to \ref
@@ -315,18 +323,24 @@ class ImplementationInterface {
 
     std::copy(chip8::initial_values::kFontSet.cbegin(),
               chip8::initial_values::kFontSet.cend(), memory_.begin());
+
+    Logger::Get().Emit(Logger::LogLevel::kDebug,
+                       "Internal memory has been reset");
   }
 
   /// Sets all of the elements in the stack to \ref
   /// chip8::initial_values::kStack.
   void ResetStack() noexcept {
     std::fill(stack_.begin(), stack_.end(), chip8::initial_values::kStack);
+    Logger::Get().Emit(Logger::LogLevel::kDebug, "Stack has been reset");
   }
 
   /// Sets all of the key states within the keypad to \ref
   /// chip8::KeyState::kPressed.
   void ResetKeypad() noexcept {
     std::fill(keypad_.begin(), keypad_.end(), chip8::initial_values::kKeypad);
+    Logger::Get().Emit(Logger::LogLevel::kDebug,
+                       "All keypad keys set to released");
   }
 
   /// Initializes all of the internal registers with their appropriate values.
@@ -338,12 +352,17 @@ class ImplementationInterface {
     sound_timer_ = chip8::initial_values::kSoundTimer;
     I_ = chip8::initial_values::kI;
     halted_until_key_press_ = chip8::initial_values::kKeyPressHaltState;
+
+    Logger::Get().Emit(Logger::LogLevel::kDebug,
+                       "Registers set to default values");
   }
 
   /// Sets all of the elements in the general purpose registers to \ref
   /// chip8::initial_values::kV.
   void ResetGeneralPurposeRegisters() noexcept {
     std::fill(V_.begin(), V_.end(), chip8::initial_values::kV);
+    Logger::Get().Emit(Logger::LogLevel::kDebug,
+                       "General purpose registers reset to default values");
   }
 
   /// The digit in the hundreds place of an integer.

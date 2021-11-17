@@ -10,9 +10,9 @@
 // with this software. If not, see
 // <http://creativecommons.org/publicdomain/zero/1.0/>.
 
-#include "logger.h"
+#include <core/logger.h>
 
-auto Logger::Get() noexcept -> Logger& {
+auto chip8::Logger::Get() noexcept -> Logger& {
   static Logger log;
   return log;
 }

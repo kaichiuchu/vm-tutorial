@@ -88,18 +88,15 @@ chip8::StepResult InterpreterImplementation::Step() noexcept {
       break;
 
     case chip8::ungrouped_instructions::kCALL_Address:
-      if (std::abs(stack_pointer_) >= stack_.size()) {
-        step_result = chip8::StepResult::kStackOverflow;
+      if (stack_pointer_ < static_cast<ptrdiff_t>(stack_.size() - 1)) {
+        stack_[++stack_pointer_] =
+            program_counter_ + chip8::data_size::kInstructionLength;
+
+        next_program_counter_ = instruction.address_;
         break;
       }
 
-      // We just did bounds checking, so it's safe to directly access the array.
-      //
-      // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
-      stack_[++stack_pointer_] =
-          program_counter_ + chip8::data_size::kInstructionLength;
-
-      next_program_counter_ = instruction.address_;
+      step_result = chip8::StepResult::kStackOverflow;
       break;
 
     case chip8::ungrouped_instructions::kSE_Vx_Imm:

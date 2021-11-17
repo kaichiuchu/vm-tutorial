@@ -45,6 +45,11 @@ class VMTutorialApplication : public QObject {
   /// \param error_message The error message from the audio subsystem.
   void NotifyCriticalAudioFailure(const QString& error_message) noexcept;
 
+  /// Enables or disables the debugger, if it exists.
+  ///
+  /// \param enabled \p true to enable the debugger, or \p false otherwise.
+  void SetDebuggerEnabled(bool enabled) noexcept;
+
   /// The controller for the debugger window.
   DebuggerWindowController* debugger_window_ = nullptr;
 

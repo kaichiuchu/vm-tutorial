@@ -32,7 +32,7 @@ class VMInstance {
   ///
   /// \param func The function to call when a log message has been emitted. If
   /// this parameter is \p nullptr, logging is disabled.
-  void SetLogMessageFunc(const LogMessageFunc& func) const noexcept;
+  void SetLogMessageFunc(const Logger::LogMessageFunc& func) const noexcept;
 
   /// Sets the log level.
   ///
@@ -41,7 +41,7 @@ class VMInstance {
   /// well.
   ///
   /// \param level The log level to use.
-  static void SetLogLevel(LogLevel level) noexcept;
+  static void SetLogLevel(Logger::LogLevel level) noexcept;
 
   /// Retrieves the target number of frames per second.
   ///
@@ -120,16 +120,26 @@ class VMInstance {
             typename = std::enable_if_t<
                 std::is_same_v<typename Container::value_type, uint_fast8_t>>>
   auto LoadProgram(const Container& program_data) noexcept -> bool {
+    auto logger = Logger::Get();
+
     constexpr auto kMaxProgramSize =
         chip8::data_size::kInternalMemory - chip8::memory_region::kProgramArea;
 
     if (program_data.size() > kMaxProgramSize) {
+      logger.Emit(Logger::LogLevel::kError,
+                  "Could not load the requested program as it is too "
+                  "large to fit ({} > {})",
+                  program_data.size(), kMaxProgramSize);
       return false;
     }
 
     Reset();
     std::copy(program_data.cbegin(), program_data.cend(),
               impl_->memory_.begin() + chip8::memory_region::kProgramArea);
+
+    logger.Emit(Logger::LogLevel::kDebug,
+                "Loaded a program of size {} into internal memory",
+                program_data.size());
     return true;
   }
 

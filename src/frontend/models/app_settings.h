@@ -125,11 +125,14 @@ class AppSettingsModel : public QSettings {
   /// machine, if any, or \p 500 by default.
   auto GetMachineInstructionsPerSecond() const noexcept -> int;
 
-  /// Tries to determine the font of the memory view.
+  /// Tries to determine the font of the debugger.
   ///
-  /// \returns The font of the memory view. If no font was set, a default font
-  /// of Consolas is selected.
-  auto GetMemoryViewFont() const noexcept -> std::optional<QFont>;
+  /// \returns The font of the debugger. If no font was set, a default font is
+  /// returned depending on the operating system:
+  ///
+  /// For Windows, a font of `Consolas 10pt` is returned. For all other systems,
+  /// the default fixed font of the system is used.
+  auto GetDebuggerFont() const noexcept -> QFont;
 
   /// Sets frame rate within the configuration file.
   ///

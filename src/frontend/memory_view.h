@@ -136,28 +136,23 @@ class MemoryViewWidget : public QAbstractScrollArea {
   /// Draws the divider separating the addresses from the columns and data.
   ///
   /// \param painter The painter to use to draw on the widget.
-  /// \param offset_x The length of the divider, based on the horizontal scroll
-  /// bar value.
-  void DrawAddressDivider(QPainter& painter, int offset_x) noexcept;
+  void DrawAddressDivider(QPainter& painter) noexcept;
 
   /// Draws the divider separating the columns from the data.
   ///
   /// \param painter The painter to use to draw on the widget.
-  /// \param offset_x The length of the divider, based on the horizontal scroll
-  /// bar value.
-  void DrawHeaderDivider(QPainter& painter, int offset_x) noexcept;
+  void DrawHeaderDivider(QPainter& painter) noexcept;
 
   /// Draws the columns defining the last two characters of an address, and the
   /// ASCII header.
   ///
   /// \param painter The painter to use to draw on the widget.
-  /// \param offset_x based on the horizontal scroll bar value.
-  void DrawColumns(QPainter& painter, int offset_x) noexcept;
+  void DrawColumns(QPainter& painter) noexcept;
 
   /// Draws the data.
   ///
   /// \param painter The painter to use to draw the data.
-  void DrawData(QPainter& painter, int offset_x) noexcept;
+  void DrawData(QPainter& painter) noexcept;
 
   /// The current data from which we are rendering its contents.
   const void* current_data_ = nullptr;
@@ -172,6 +167,12 @@ class MemoryViewWidget : public QAbstractScrollArea {
   /// The height of the current font.
   unsigned int char_height_;
 
+  /// The distance appropriate for drawing a data character after another, based
+  /// on the current font.
+  unsigned int data_width_;
+
+  unsigned int address_width_;
+
   /// The number of bytes that should be drawn on one line.
   unsigned int bytes_per_line_ = 16;
 
@@ -181,7 +182,7 @@ class MemoryViewWidget : public QAbstractScrollArea {
   /// The X position of where the ASCII area was drawn. This is needed to draw
   /// the ASCII character of a byte in the ASCII area while simultaneously
   /// rendering the byte in the data area.
-  int ascii_start_offset_;
+  int ascii_start_x_;
 
  private slots:
   /// Called when the content of the memory view must be changed.

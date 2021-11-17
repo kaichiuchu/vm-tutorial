@@ -27,7 +27,7 @@ set(PRIVATE_SRCS private/disasm.cpp
                  private/logger.cpp
                  private/vm_instance.cpp)
 
-set(PRIVATE_HDRS private/logger.h private/impl_interpreter.h)
+set(PRIVATE_HDRS private/impl_interpreter.h)
 
 set(PUBLIC_HDRS public/core/disasm.h
                 public/core/impl.h

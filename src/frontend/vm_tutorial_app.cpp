@@ -48,6 +48,12 @@ void VMTutorialApplication::NotifyCriticalAudioFailure(
   QMessageBox::warning(nullptr, tr("Audio subsystem failure"), message);
 }
 
+void VMTutorialApplication::SetDebuggerEnabled(const bool enabled) noexcept {
+  if (debugger_window_) {
+    debugger_window_->SetEnabled(enabled);
+  }
+}
+
 void VMTutorialApplication::ConnectVMThreadSignalsToSlots() noexcept {
   connect(vm_thread_, &VMThread::PerformanceInfo,
           [this](const VMThread::PerformanceCounters& perf_counters) {
@@ -126,11 +132,13 @@ void VMTutorialApplication::ConnectMainWindowSignalsToSlots() noexcept {
   connect(main_window_, &MainWindowController::ResumeEmulation, [this]() {
     vm_thread_->start();
     main_window_->SetRunState(MainWindowController::RunState::kRunning);
+    SetDebuggerEnabled(false);
   });
 
   connect(main_window_, &MainWindowController::PauseEmulation, [this]() {
     vm_thread_->StopExecution();
     main_window_->SetRunState(MainWindowController::RunState::kPaused);
+    SetDebuggerEnabled(true);
   });
 
   connect(main_window_, &MainWindowController::ResetEmulation, [this]() {
@@ -138,6 +146,7 @@ void VMTutorialApplication::ConnectMainWindowSignalsToSlots() noexcept {
 
     vm_thread_->vm_instance_.LoadProgram(current_rom_data_);
     vm_thread_->start();
+    SetDebuggerEnabled(true);
   });
 }
 
@@ -154,6 +163,7 @@ void VMTutorialApplication::StartROM(const QString& rom_file_path) noexcept {
     // If a ROM was running, resume it.
     if (vm_thread_was_running) {
       vm_thread_->start();
+      SetDebuggerEnabled(false);
     }
     return;
   }
@@ -175,6 +185,7 @@ void VMTutorialApplication::StartROM(const QString& rom_file_path) noexcept {
     // If a ROM was running, resume it.
     if (vm_thread_was_running) {
       vm_thread_->start();
+      SetDebuggerEnabled(false);
     }
     return;
   }
@@ -188,6 +199,7 @@ void VMTutorialApplication::StartROM(const QString& rom_file_path) noexcept {
     // If a ROM was running, resume it.
     if (vm_thread_was_running) {
       vm_thread_->start();
+      SetDebuggerEnabled(false);
     }
     return;
   }
@@ -199,6 +211,7 @@ void VMTutorialApplication::StartROM(const QString& rom_file_path) noexcept {
       QFileInfo(rom_file_path).fileName());
 
   vm_thread_->start();
+  SetDebuggerEnabled(false);
 }
 
 void VMTutorialApplication::ConnectAudioSettingsSignalsToSlots() noexcept {

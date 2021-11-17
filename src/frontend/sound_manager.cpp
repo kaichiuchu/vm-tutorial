@@ -16,6 +16,8 @@
 
 #include "models/app_settings.h"
 
+SoundManager::~SoundManager() noexcept { SDL_Quit(); }
+
 std::optional<SoundManager*> SoundManager::Initialize(QObject* parent_object,
                                                       QString& error) noexcept {
   if (SDL_Init(SDL_INIT_AUDIO) == 0) {
@@ -31,22 +33,39 @@ SoundManager::SoundManager(QObject* parent_object) noexcept
 }
 
 void SoundManager::PlayTone(const double duration) noexcept {
-  switch (tone_type_) {
-    case ToneType::kSineWave:
-      GenerateSineWave(duration, GenerationOptions::kDoNotUseCopySign);
-      break;
+  const auto output_sample_count =
+      static_cast<int>((duration / 1000) * kSampleRate);
 
-    case ToneType::kSawtooth:
-      GenerateSawtoothWave(duration);
-      break;
+  for (auto sample_num = 0; sample_num < output_sample_count; ++sample_num) {
+    const auto t = sample_num / static_cast<double>(kSampleRate);
+    auto wave = 0.0;
 
-    case ToneType::kSquare:
-      GenerateSineWave(duration, GenerationOptions::kUseCopySign);
-      break;
+    switch (tone_type_) {
+      case ToneType::kSineWave:
+        wave = std::sin(M_PI * 2 * t * tone_freq_);
+        break;
 
-    case ToneType::kTriangle:
-      GenerateTriangleWave(duration);
-      break;
+      case ToneType::kSawtooth:
+        wave = (-2 / M_PI) * std::atan(1 / std::tan(tone_freq_ * M_PI * t));
+        break;
+
+      case ToneType::kSquare:
+        wave = std::copysign(1.0, std::sin(M_PI * 2 * t * tone_freq_));
+        break;
+
+      case ToneType::kTriangle:
+        wave = (2 / M_PI) * std::asin(std::sin(tone_freq_ * M_PI * 2 * t));
+        break;
+    }
+
+    const int16_t sample = wave * std::numeric_limits<int16_t>::max();
+
+    const auto return_code =
+        SDL_QueueAudio(audio_output_device_, &sample, sizeof(int16_t));
+
+    if (return_code < 0) {
+      emit ErrorEncountered(SDL_GetError());
+    }
   }
 }
 
@@ -69,16 +88,19 @@ void SoundManager::SetAudioOutputDevice(
       SDL_OpenAudioDevice(audio_output_device_name, 0, &audio_spec, nullptr, 0);
 
   if (audio_device_id_new == 0) {
-    // We won't be able to do anything now, but we can at least still preserve
-    // the current audio output device if there is one.
+    // We weren't able to open the audio device requested.
     emit ErrorEncountered(SDL_GetError());
     return;
   }
 
+  /// If there was an audio device before, close it now. Whether or not it was
+  /// valid doesn't matter.
   SDL_CloseAudioDevice(audio_output_device_);
 
   audio_output_device_ = audio_device_id_new;
 
+  // Newly-opened audio devices start in the paused state, so we need to disable
+  // the paused state here.
   SDL_PauseAudioDevice(audio_output_device_, 0);
 }
 
@@ -101,8 +123,8 @@ auto SoundManager::GetAudioOutputDevices() noexcept -> std::vector<QString> {
     if (audio_output_device_name == nullptr) {
       emit ErrorEncountered(SDL_GetError());
 
-      // We don't want to stop trying to get audio device names just because one
-      // failed to be retrieved.
+      // We don't want to stop trying to get audio device names just because
+      // one failed to be retrieved.
       continue;
     }
     audio_output_devices.push_back(audio_output_device_name);
@@ -118,81 +140,4 @@ void SoundManager::SetupFromAppSettings() noexcept {
   tone_freq_ = app_settings.GetAudioToneFrequency();
   tone_type_ = static_cast<ToneType>(app_settings.GetAudioToneType());
   SetVolume(app_settings.GetAudioVolume());
-}
-
-void SoundManager::GenerateSineWave(const double duration,
-                                    const GenerationOptions options) noexcept {
-  const auto output_sample_count =
-      static_cast<int>((duration / 1000) * kSampleRate);
-
-  for (auto sample_num = 0; sample_num < output_sample_count; ++sample_num) {
-    const auto t = sample_num / static_cast<double>(kSampleRate);
-    auto amplitude = std::sin(M_PI * 2 * t * tone_freq_);
-
-    if (options == GenerationOptions::kUseCopySign) {
-      amplitude = std::copysign(1.0, amplitude);
-    }
-
-    const auto sample =
-        static_cast<int16_t>(amplitude * std::numeric_limits<int16_t>::max());
-
-    const auto return_code =
-        SDL_QueueAudio(audio_output_device_, &sample, sizeof(int16_t));
-
-    if (return_code < 0) {
-      emit ErrorEncountered(SDL_GetError());
-
-      // We don't want to stop generating samples just because one sample
-      // wasn't queued properly. The audio may be choppy, but it's better than
-      // nothing.
-    }
-  }
-}
-
-void SoundManager::GenerateSawtoothWave(const double duration) noexcept {
-  const auto output_sample_count =
-      static_cast<int>((duration / 1000) * kSampleRate);
-
-  for (auto sample_num = 0; sample_num < output_sample_count; ++sample_num) {
-    const auto t = sample_num / static_cast<double>(kSampleRate);
-
-    const auto sample = static_cast<int16_t>(
-        (-2 / M_PI) * std::atan(1 / std::tan(tone_freq_ * M_PI * t)) *
-        std::numeric_limits<int16_t>::max());
-
-    const auto return_code =
-        SDL_QueueAudio(audio_output_device_, &sample, sizeof(int16_t));
-
-    if (return_code < 0) {
-      emit ErrorEncountered(SDL_GetError());
-
-      // We don't want to stop generating samples just because one sample
-      // wasn't queued properly. The audio may be choppy as a result, but it's
-      // better than nothing.
-    }
-  }
-}
-
-void SoundManager::GenerateTriangleWave(const double duration) noexcept {
-  const auto output_sample_count =
-      static_cast<int>((duration / 1000) * kSampleRate);
-
-  for (auto sample_num = 0; sample_num < output_sample_count; ++sample_num) {
-    const auto t = sample_num / static_cast<double>(kSampleRate);
-
-    const auto sample = static_cast<int16_t>(
-        (2 / M_PI) * std::asin(std::sin(tone_freq_ * M_PI * 2 * t)) *
-        std::numeric_limits<int16_t>::max());
-
-    const auto return_code =
-        SDL_QueueAudio(audio_output_device_, &sample, sizeof(int16_t));
-
-    if (return_code < 0) {
-      emit ErrorEncountered(SDL_GetError());
-
-      // We don't want to stop generating samples just because one sample
-      // wasn't queued properly. The audio may be choppy as a result, but it's
-      // better than nothing.
-    }
-  }
 }

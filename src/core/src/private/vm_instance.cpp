@@ -13,23 +13,24 @@
 #include <core/vm_instance.h>
 
 #include "impl_interpreter.h"
-#include "logger.h"
 
 chip8::VMInstance::VMInstance() noexcept
     : impl_(std::make_unique<InterpreterImplementation>()),
       update_screen_func_(nullptr),
       play_tone_func_(nullptr) {
+  Logger::Get().Emit(Logger::LogLevel::kInfo, "Initializing CHIP-8 core");
+
   SetTiming(chip8::timing::kDefaultInstructionsPerSecond,
             chip8::timing::kDefaultFrameRate);
   Reset();
 }
 
 void chip8::VMInstance::SetLogMessageFunc(
-    const LogMessageFunc& func) const noexcept {
+    const Logger::LogMessageFunc& func) const noexcept {
   Logger::Get().log_message_func_ = func;
 }
 
-void chip8::VMInstance::SetLogLevel(const LogLevel level) noexcept {
+void chip8::VMInstance::SetLogLevel(const Logger::LogLevel level) noexcept {
   Logger::Get().level_ = level;
 }
 
@@ -70,7 +71,8 @@ void chip8::VMInstance::DecrementTimers() noexcept {
     if (!is_playing_tone_ && play_tone_func_) {
       const auto tone_duration = CalculateDurationOfTone();
 
-      logger.Emit(LogLevel::kDebug, "Emitting a {}ms long tone", tone_duration);
+      logger.Emit(Logger::LogLevel::kDebug, "Emitting a {:.2f}ms long tone",
+                  tone_duration);
 
       play_tone_func_(tone_duration);
       is_playing_tone_ = true;
@@ -90,7 +92,7 @@ void chip8::VMInstance::Reset() noexcept {
   number_of_steps_executed_ = 0;
   is_playing_tone_ = false;
 
-  Logger::Get().Emit(LogLevel::kInfo, "Virtual machine has been reset");
+  Logger::Get().Emit(Logger::LogLevel::kInfo, "Virtual machine has been reset");
 }
 
 auto chip8::VMInstance::SetTiming(const unsigned int instructions_per_second,
@@ -113,7 +115,7 @@ auto chip8::VMInstance::SetTiming(const unsigned int instructions_per_second,
   constexpr auto kSecInMs = 1000;
   max_frame_time_ = kSecInMs / desired_frame_rate;
 
-  Logger::Get().Emit(LogLevel::kInfo,
+  Logger::Get().Emit(Logger::LogLevel::kInfo,
                      "Timing changed to {}Hz (instructions) within {} frames",
                      instructions_per_second, desired_frame_rate);
 
@@ -133,7 +135,7 @@ auto chip8::VMInstance::SetFrameRate(const double frame_rate) noexcept -> bool {
 }
 
 auto chip8::VMInstance::RunForOneFrame() noexcept -> chip8::StepResult {
-  for (auto executed_steps = 0; executed_steps < number_of_steps_per_frame_;
+  for (auto executed_steps = 0U; executed_steps < number_of_steps_per_frame_;
        ++executed_steps) {
     const auto step_result = Step();
 
