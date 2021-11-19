@@ -12,8 +12,6 @@
 
 #include "vm_thread.h"
 
-#include <thread>
-
 #include "models/app_settings.h"
 
 VMThread::VMThread(QObject* parent_object) noexcept : QThread(parent_object) {
@@ -24,6 +22,8 @@ VMThread::VMThread(QObject* parent_object) noexcept : QThread(parent_object) {
 void VMThread::StopExecution() noexcept {
   requestInterruption();
   wait();
+
+  emit RunStateChanged(RunState::kStopped);
 }
 
 void VMThread::ConnectCallbacksToSlots() noexcept {
@@ -66,6 +66,8 @@ void VMThread::run() noexcept {
   // No frames have taken place yet, clear the frame counter so we don't report
   // specious results to the user who may care about performance information.
   num_frames_ = 0;
+
+  emit RunStateChanged(RunState::kRunning);
 
   // This thread will continue running until an interrupt is requested by a call
   // to \ref QThread::requestInterruption(). The only time the run loop will be
@@ -119,14 +121,12 @@ void VMThread::run() noexcept {
       // to run the thread doing absolutely nothing but waiting.
       if (step_result != chip8::StepResult::kHaltUntilKeyPress) {
         emit ExecutionFailure(step_result);
+        emit RunStateChanged(RunState::kStopped);
       }
       break;
     }
 
     // We're done here; sleep until the deadline.
-    //
-    // XXX: Removing the frame limiter here will cause Qt's memory usage to
-    // spike dramatically...
     std::this_thread::sleep_until(deadline_time_point);
   }
 }

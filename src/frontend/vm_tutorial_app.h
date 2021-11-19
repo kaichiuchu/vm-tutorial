@@ -45,25 +45,20 @@ class VMTutorialApplication : public QObject {
   /// \param error_message The error message from the audio subsystem.
   void NotifyCriticalAudioFailure(const QString& error_message) noexcept;
 
-  /// Enables or disables the debugger, if it exists.
-  ///
-  /// \param enabled \p true to enable the debugger, or \p false otherwise.
-  void SetDebuggerEnabled(bool enabled) noexcept;
-
   /// The controller for the debugger window.
-  DebuggerWindowController* debugger_window_ = nullptr;
+  QPointer<DebuggerWindowController> debugger_window_;
 
   /// The controller for the logger window.
-  LoggerWindowController* logger_window_ = nullptr;
+  QPointer<LoggerWindowController> logger_window_;
 
   /// The controller for the main window.
   MainWindowController* main_window_;
 
   /// The controller for the settings dialog.
-  SettingsDialogController* settings_dialog_ = nullptr;
+  QPointer<SettingsDialogController> settings_dialog_;
 
   /// The sound manager instance.
-  std::optional<SoundManager*> sound_manager_ = nullptr;
+  std::optional<SoundManager*> sound_manager_;
 
   /// The virtual machine thread.
   VMThread* vm_thread_;

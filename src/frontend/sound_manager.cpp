@@ -12,8 +12,6 @@
 
 #include "sound_manager.h"
 
-#include <QDebug>
-
 #include "models/app_settings.h"
 
 SoundManager::~SoundManager() noexcept { SDL_Quit(); }

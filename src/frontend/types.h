@@ -17,3 +17,6 @@
 
 /// Defines the different types of sound waves that we can generate.
 enum class ToneType { kSineWave, kSawtooth, kSquare, kTriangle };
+
+/// Defines the various run states of the virtual machine.
+enum class RunState { kStopped, kRunning };

@@ -16,6 +16,7 @@
 #include <QLabel>
 #include <QMainWindow>
 
+#include "../types.h"
 #include "ui_main_window.h"
 
 /// This class handles the logic of user actions that take place in the main
@@ -25,9 +26,6 @@ class MainWindowController : public QMainWindow {
   Q_OBJECT
 
  public:
-  /// Defines the various run states of the virtual machine.
-  enum class RunState { kRunning, kPaused };
-
   /// Constructs the main window controller.
   MainWindowController() noexcept;
 

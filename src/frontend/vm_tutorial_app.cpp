@@ -48,12 +48,6 @@ void VMTutorialApplication::NotifyCriticalAudioFailure(
   QMessageBox::warning(nullptr, tr("Audio subsystem failure"), message);
 }
 
-void VMTutorialApplication::SetDebuggerEnabled(const bool enabled) noexcept {
-  if (debugger_window_) {
-    debugger_window_->SetEnabled(enabled);
-  }
-}
-
 void VMTutorialApplication::ConnectVMThreadSignalsToSlots() noexcept {
   connect(vm_thread_, &VMThread::PerformanceInfo,
           [this](const VMThread::PerformanceCounters& perf_counters) {
@@ -65,7 +59,7 @@ void VMTutorialApplication::ConnectVMThreadSignalsToSlots() noexcept {
   connect(vm_thread_, &VMThread::UpdateScreen, main_window_->GetRenderer(),
           &Renderer::UpdateScreen);
 
-  connect(vm_thread_, &VMThread::PlayTone, this, [this](const double duration) {
+  connect(vm_thread_, &VMThread::PlayTone, [this](const double duration) {
     if (sound_manager_) {
       (*sound_manager_)->PlayTone(duration);
     }
@@ -73,6 +67,15 @@ void VMTutorialApplication::ConnectVMThreadSignalsToSlots() noexcept {
 
   connect(vm_thread_, &VMThread::ExecutionFailure, main_window_,
           &MainWindowController::ReportExecutionFailure);
+
+  connect(vm_thread_, &VMThread::RunStateChanged,
+          [this](const RunState run_state) {
+            main_window_->SetRunState(run_state);
+
+            if (debugger_window_) {
+              debugger_window_->SetEnabled(run_state == RunState::kRunning);
+            }
+          });
 }
 
 void VMTutorialApplication::ConnectMainWindowSignalsToSlots() noexcept {
@@ -82,6 +85,9 @@ void VMTutorialApplication::ConnectMainWindowSignalsToSlots() noexcept {
   connect(main_window_, &MainWindowController::DisplayDebugger, this, [this]() {
     if (!debugger_window_) {
       debugger_window_ = new DebuggerWindowController(vm_thread_->vm_instance_);
+      debugger_window_->setAttribute(Qt::WA_DeleteOnClose);
+
+      debugger_window_->SetEnabled(!vm_thread_->isRunning());
     }
     debugger_window_->show();
   });
@@ -89,10 +95,13 @@ void VMTutorialApplication::ConnectMainWindowSignalsToSlots() noexcept {
   connect(main_window_, &MainWindowController::DisplayLogger, this, [this]() {
     if (!logger_window_) {
       logger_window_ = new LoggerWindowController();
+      logger_window_->setAttribute(Qt::WA_DeleteOnClose);
 
       connect(vm_thread_, &VMThread::LogMessageEmitted, this,
               [this](const std::string& msg) {
-                logger_window_->AddCoreMessage(QString::fromStdString(msg));
+                if (logger_window_) {
+                  logger_window_->AddCoreMessage(QString::fromStdString(msg));
+                }
               });
     }
     logger_window_->show();
@@ -102,6 +111,7 @@ void VMTutorialApplication::ConnectMainWindowSignalsToSlots() noexcept {
           [this]() {
             if (!settings_dialog_) {
               settings_dialog_ = new SettingsDialogController(main_window_);
+              settings_dialog_->setAttribute(Qt::WA_DeleteOnClose);
 
               ConnectAudioSettingsSignalsToSlots();
               ConnectGraphicsSettingsSignalsToSlots();
@@ -129,24 +139,15 @@ void VMTutorialApplication::ConnectMainWindowSignalsToSlots() noexcept {
                 key, chip8::KeyState::kReleased);
           });
 
-  connect(main_window_, &MainWindowController::ResumeEmulation, [this]() {
-    vm_thread_->start();
-    main_window_->SetRunState(MainWindowController::RunState::kRunning);
-    SetDebuggerEnabled(false);
-  });
+  connect(main_window_, &MainWindowController::ResumeEmulation,
+          [this]() { vm_thread_->start(); });
 
-  connect(main_window_, &MainWindowController::PauseEmulation, [this]() {
-    vm_thread_->StopExecution();
-    main_window_->SetRunState(MainWindowController::RunState::kPaused);
-    SetDebuggerEnabled(true);
-  });
+  connect(main_window_, &MainWindowController::PauseEmulation,
+          [this]() { vm_thread_->StopExecution(); });
 
   connect(main_window_, &MainWindowController::ResetEmulation, [this]() {
-    vm_thread_->StopExecution();
-
     vm_thread_->vm_instance_.LoadProgram(current_rom_data_);
     vm_thread_->start();
-    SetDebuggerEnabled(true);
   });
 }
 
@@ -163,7 +164,6 @@ void VMTutorialApplication::StartROM(const QString& rom_file_path) noexcept {
     // If a ROM was running, resume it.
     if (vm_thread_was_running) {
       vm_thread_->start();
-      SetDebuggerEnabled(false);
     }
     return;
   }
@@ -185,7 +185,6 @@ void VMTutorialApplication::StartROM(const QString& rom_file_path) noexcept {
     // If a ROM was running, resume it.
     if (vm_thread_was_running) {
       vm_thread_->start();
-      SetDebuggerEnabled(false);
     }
     return;
   }
@@ -199,19 +198,14 @@ void VMTutorialApplication::StartROM(const QString& rom_file_path) noexcept {
     // If a ROM was running, resume it.
     if (vm_thread_was_running) {
       vm_thread_->start();
-      SetDebuggerEnabled(false);
     }
     return;
   }
-
-  // No errors reported, start the virtual machine thread.
-  main_window_->SetRunState(MainWindowController::RunState::kRunning);
 
   main_window_->SetWindowTitleGuestProgramInfo(
       QFileInfo(rom_file_path).fileName());
 
   vm_thread_->start();
-  SetDebuggerEnabled(false);
 }
 
 void VMTutorialApplication::ConnectAudioSettingsSignalsToSlots() noexcept {

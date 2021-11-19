@@ -1,11 +1,20 @@
 <RCC>
-    <qresource prefix="/assets">
-        <file>play_button.png</file>
-        <file>pause_button.png</file>
-        <file>reset_button.png</file>
-        <file>settings_button.png</file>
-        <file>debugger_button.png</file>
-        <file>logger_button.png</file>
-        <file>start_rom_button.png</file>
-    </qresource>
+  <qresource prefix="/assets">
+    <file>save_button.png</file>
+    <file>go_to_address_button.png</file>
+    <file>go_to_pc_button.png</file>
+    <file>run_to_cursor_button.png</file>
+    <file>pause_continue_button.png</file>
+    <file>step_into_button.png</file>
+    <file>step_out_button.png</file>
+    <file>step_over_button.png</file>
+    <file>trace_button.png</file>
+    <file>play_button.png</file>
+    <file>pause_button.png</file>
+    <file>reset_button.png</file>
+    <file>settings_button.png</file>
+    <file>debugger_button.png</file>
+    <file>logger_button.png</file>
+    <file>start_rom_button.png</file>
+  </qresource>
 </RCC>

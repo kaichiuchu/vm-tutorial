@@ -53,17 +53,19 @@ MainWindowController::MainWindowController() noexcept {
 
 void MainWindowController::SetRunState(const RunState run_state) noexcept {
   switch (run_state) {
+    case RunState::kStopped:
+      view_.actionResume->setEnabled(true);
+      view_.actionPause->setEnabled(false);
+      view_.actionReset->setEnabled(true);
+
+      break;
+
     case RunState::kRunning:
       view_.actionResume->setEnabled(false);
       view_.actionPause->setEnabled(true);
       view_.actionReset->setEnabled(true);
 
       break;
-
-    case RunState::kPaused:
-      view_.actionResume->setEnabled(true);
-      view_.actionPause->setEnabled(false);
-      view_.actionReset->setEnabled(true);
 
     default:
       break;

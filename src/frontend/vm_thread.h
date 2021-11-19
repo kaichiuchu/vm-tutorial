@@ -16,6 +16,8 @@
 
 #include <QThread>
 
+#include "types.h"
+
 /// This class defines a separate thread for the virtual machine to live in.
 /// This is the definition of unnecessary as a CHIP-8 virtual machine is so
 /// insignificant to computation time, but we do this anyway to demonstrate how
@@ -78,6 +80,10 @@ class VMThread : public QThread {
   unsigned int num_frames_;
 
  signals:
+  /// This signal is emitted when the run state of the virtual machine has
+  /// changed.
+  void RunStateChanged(const RunState state);
+
   /// This signal is emitted when 1 second has passed within the run loop.
   ///
   /// \param perf_info The performance information of the virtual machine.
