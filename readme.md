@@ -20,4 +20,4 @@ can be generated using [Doxygen](https://www.doxygen.nl/index.html).
 
 ## Demonstrations
 
-![Brix](https://user-images.githubusercontent.com/88908600/142637023-18916e05-4ae2-4e81-b0bf-858001de8ee8.gif)
+![Brix](https://user-images.githubusercontent.com/88908600/142642260-3903de0f-37e7-4673-8d03-1f272f903de4.mov)
