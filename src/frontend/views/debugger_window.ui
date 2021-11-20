@@ -51,7 +51,11 @@
    <attribute name="dockWidgetArea">
     <number>4</number>
    </attribute>
-   <widget class="QTreeView" name="disasmView"/>
+   <widget class="QTreeView" name="disasmView">
+    <attribute name="headerVisible">
+     <bool>false</bool>
+    </attribute>
+   </widget>
   </widget>
   <widget class="QDockWidget" name="dockWidget_5">
    <property name="maximumSize">

@@ -30,6 +30,8 @@ class DebuggerDisasmModel : public QAbstractTableModel {
   explicit DebuggerDisasmModel(QObject* parent_object,
                                chip8::VMInstance& vm_instance) noexcept;
 
+  auto GetRowFromAddress(const unsigned int address) const noexcept -> int;
+
   /// From Qt documentation:
   ///
   /// Returns the number of columns for the children of the given \p parent.
@@ -85,7 +87,13 @@ class DebuggerDisasmModel : public QAbstractTableModel {
 
  private:
   /// Defines each of the headers and their locations.
-  enum Section { kAddress, kRawInstruction, kDisassembly, kResult };
+  enum Section {
+    kBreakpoint,
+    kAddress,
+    kRawInstruction,
+    kDisassembly,
+    kResult
+  };
 
   /// The virtual machine instance.
   chip8::VMInstance& vm_instance_;

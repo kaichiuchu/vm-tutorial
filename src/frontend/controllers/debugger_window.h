@@ -14,6 +14,7 @@
 
 #include <QMainWindow>
 
+#include "../types.h"
 #include "core/impl.h"
 #include "models/debugger_disasm.h"
 #include "models/debugger_registers.h"
@@ -34,16 +35,21 @@ class DebuggerWindowController : public QMainWindow {
   /// \param vm_instance The virtual machine instance.
   explicit DebuggerWindowController(chip8::VMInstance& vm_instance) noexcept;
 
-  /// Enables or disables the debugger window.
+  void NotifyBreakpointHit(uint_fast16_t address) noexcept;
+
+  /// Enables or disables the debugger controls.
   ///
-  /// The debugger should be disabled when the emulator is running, and enabled
-  /// when it is not.
+  /// The debugger controls should be disabled when the emulator is running, and
+  /// enabled when it is not.
   ///
-  /// \param enabled \p true if the debugger should be enabled, or \p false
-  /// otherwise.
-  void SetEnabled(const bool enabled) noexcept;
+  /// \param enabled \p true if the debugger controls should be enabled, or \p
+  /// false otherwise.
+  void EnableControls(const bool enabled) noexcept;
 
  private:
+  /// Connects signals from the interface to slots.
+  void ConnectSignalsToSlots() noexcept;
+
   /// Sets up the widget from application settings.
   void SetupFromAppSettings() noexcept;
 
@@ -61,4 +67,11 @@ class DebuggerWindowController : public QMainWindow {
 
   /// The CHIP-8 virtual machine instance.
   chip8::VMInstance& vm_instance_;
+
+ signals:
+  /// Emitted when a breakpoint should be added.
+  void AddBreakpoint(const uint_fast16_t address, const BreakpointFlags flags);
+
+  /// Emitted when the Pause/Continue button has been pressed.
+  void ToggleRunState();
 };

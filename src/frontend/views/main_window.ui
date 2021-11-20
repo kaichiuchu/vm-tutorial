@@ -166,6 +166,9 @@
    </property>
   </action>
   <action name="actionDisplay_Debugger">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset resource="../assets/assets.qrc">
      <normaloff>:/assets/debugger_button.png</normaloff>:/assets/debugger_button.png</iconset>

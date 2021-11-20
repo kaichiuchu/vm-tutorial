@@ -84,6 +84,9 @@ class VMThread : public QThread {
   /// changed.
   void RunStateChanged(const RunState state);
 
+  /// This signal is emitted when a breakpoint has been hit.
+  void BreakpointHit(const uint_fast16_t address);
+
   /// This signal is emitted when 1 second has passed within the run loop.
   ///
   /// \param perf_info The performance information of the virtual machine.

@@ -12,6 +12,7 @@
 
 #include "vm_tutorial_app.h"
 
+#include <QDebug>
 #include <QFile>
 #include <QFileInfo>
 #include <QMessageBox>
@@ -68,12 +69,19 @@ void VMTutorialApplication::ConnectVMThreadSignalsToSlots() noexcept {
   connect(vm_thread_, &VMThread::ExecutionFailure, main_window_,
           &MainWindowController::ReportExecutionFailure);
 
-  connect(vm_thread_, &VMThread::RunStateChanged,
+  connect(vm_thread_, &VMThread::RunStateChanged, this,
           [this](const RunState run_state) {
             main_window_->SetRunState(run_state);
 
             if (debugger_window_) {
-              debugger_window_->SetEnabled(run_state == RunState::kRunning);
+              debugger_window_->EnableControls(run_state != RunState::kRunning);
+            }
+          });
+
+  connect(vm_thread_, &VMThread::BreakpointHit, this,
+          [this](const uint_fast16_t address) {
+            if (debugger_window_) {
+              debugger_window_->NotifyBreakpointHit(address);
             }
           });
 }
@@ -85,9 +93,11 @@ void VMTutorialApplication::ConnectMainWindowSignalsToSlots() noexcept {
   connect(main_window_, &MainWindowController::DisplayDebugger, this, [this]() {
     if (!debugger_window_) {
       debugger_window_ = new DebuggerWindowController(vm_thread_->vm_instance_);
-      debugger_window_->setAttribute(Qt::WA_DeleteOnClose);
 
-      debugger_window_->SetEnabled(!vm_thread_->isRunning());
+      debugger_window_->setAttribute(Qt::WA_DeleteOnClose);
+      debugger_window_->EnableControls(!vm_thread_->isRunning());
+
+      ConnectDebuggerSignalsToSlots();
     }
     debugger_window_->show();
   });
@@ -189,9 +199,6 @@ void VMTutorialApplication::StartROM(const QString& rom_file_path) noexcept {
     return;
   }
 
-  // We don't need the file anymore.
-  rom_file.close();
-
   if (!vm_thread_->vm_instance_.LoadProgram(current_rom_data_)) {
     main_window_->ReportROMTooLargeError(rom_file_path);
 
@@ -206,6 +213,17 @@ void VMTutorialApplication::StartROM(const QString& rom_file_path) noexcept {
       QFileInfo(rom_file_path).fileName());
 
   vm_thread_->start();
+}
+
+void VMTutorialApplication::ConnectDebuggerSignalsToSlots() noexcept {
+  connect(debugger_window_, &DebuggerWindowController::ToggleRunState, this,
+          [this]() {
+            if (vm_thread_->isRunning()) {
+              vm_thread_->StopExecution();
+            } else {
+              vm_thread_->start();
+            }
+          });
 }
 
 void VMTutorialApplication::ConnectAudioSettingsSignalsToSlots() noexcept {

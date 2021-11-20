@@ -12,9 +12,15 @@
 
 #include "debugger_stack.h"
 
+#include <QIcon>
+
 DebuggerStackModel::DebuggerStackModel(QObject* parent_object,
                                        chip8::VMInstance& vm_instance) noexcept
-    : QAbstractListModel(parent_object), vm_instance_(vm_instance) {}
+    : QAbstractListModel(parent_object),
+      vm_instance_(vm_instance),
+      current_stack_pixmap_(
+          QIcon(QStringLiteral(":/assets/current_pointer.png"))
+              .pixmap(QSize(12, 12))) {}
 
 int DebuggerStackModel::rowCount(const QModelIndex&) const {
   return chip8::data_size::kStack;
@@ -23,19 +29,30 @@ int DebuggerStackModel::rowCount(const QModelIndex&) const {
 int DebuggerStackModel::columnCount(const QModelIndex&) const { return 2; }
 
 QVariant DebuggerStackModel::data(const QModelIndex& index, int role) const {
-  if (role == Qt::DisplayRole) {
-    const auto row = index.row();
+  switch (role) {
+    case Qt::DisplayRole: {
+      const auto row = index.row();
 
-    switch (index.column()) {
-      case Columns::kEntry:
-        return row;
+      switch (index.column()) {
+        case Columns::kEntry:
+          return row;
 
-      case Columns::kValue:
-        return QString{"%1"}
-            .arg(vm_instance_.impl_->stack_[row], 1, 16)
-            .rightJustified(4, '0')
-            .toUpper();
+        case Columns::kValue:
+          return QString{"%1"}
+              .arg(vm_instance_.impl_->stack_[row], 1, 16)
+              .rightJustified(4, '0')
+              .toUpper();
+      }
     }
+
+    case Qt::DecorationRole:
+      if ((index.column() == Columns::kEntry) &&
+          (index.row() == vm_instance_.impl_->stack_pointer_)) {
+        return current_stack_pixmap_;
+      }
+
+    default:
+      return {};
   }
   return {};
 }

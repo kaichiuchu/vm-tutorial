@@ -14,6 +14,7 @@
 
 #include <functional>
 #include <memory>
+#include <vector>
 
 #include "impl.h"
 #include "logger.h"
@@ -156,6 +157,26 @@ class VMInstance {
   /// operation; refer to \ref chip8::StepResult for details.
   auto Step() noexcept -> chip8::StepResult;
 
+  /// Executes the virtual machine and breaks when the first line of the nearest
+  /// subroutine is reached.
+  ///
+  /// \returns A step result which could be indicative of an error or normal
+  /// operation; refer to \ref chip8::StepResult for details.
+  auto PrepareForStepInto() noexcept -> chip8::StepResult;
+
+  /// Executes the virtual machine and breaks when the first line which is not a
+  /// subroutine call instruction is reached.
+  ///
+  /// \returns A step result which could be indicative of an error or normal
+  /// operation; refer to \ref chip8::StepResult for details.
+  auto PrepareForStepOver() noexcept -> chip8::StepResult;
+
+  /// Executes the virtual machine until the current subroutine returns.
+  ///
+  /// \returns A step result which could be indicative of an error or normal
+  /// operation; refer to \ref chip8::StepResult for details.
+  auto PrepareForStepOut() noexcept -> chip8::StepResult;
+
   /// Direct access to the underlying implementation. Accessing the underlying
   /// implementation is only important for debugging purposes, and under no
   /// circumstances should one call the \ref ImplementationInterface::Step() or
@@ -175,6 +196,11 @@ class VMInstance {
   std::function<void(const double)> play_tone_func_;
 
  private:
+  using ProgramCounter = uint_fast16_t;
+  using ClearAfterTrigger = bool;
+
+  using BreakpointInfo = std::pair<ProgramCounter, ClearAfterTrigger>;
+
   /// Calculates the duration a tone should be.
   ///
   /// The duration calculated is based on the current sound timer value.
@@ -188,6 +214,8 @@ class VMInstance {
   /// Decrements the timers. This method should be called every 60Hz (also known
   /// as 8 machine steps).
   void DecrementTimers() noexcept;
+
+  std::vector<BreakpointInfo> breakpoints_;
 
   /// The number of steps that constitute one frame. The value of this variable
   /// is determined by the call to the \ref SetTiming() method.

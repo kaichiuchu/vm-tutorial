@@ -52,6 +52,8 @@ MainWindowController::MainWindowController() noexcept {
 }
 
 void MainWindowController::SetRunState(const RunState run_state) noexcept {
+  view_.actionDisplay_Debugger->setEnabled(true);
+
   switch (run_state) {
     case RunState::kStopped:
       view_.actionResume->setEnabled(true);

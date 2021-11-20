@@ -12,6 +12,8 @@
 
 #include "vm_thread.h"
 
+#include <QDebug>
+
 #include "models/app_settings.h"
 
 VMThread::VMThread(QObject* parent_object) noexcept : QThread(parent_object) {
@@ -80,16 +82,16 @@ void VMThread::run() noexcept {
     // The length of a frame in milliseconds can be retrieved by a call to the
     // \ref chip8::VMInstance::GetMaxFrameTime() method.
     //
-    // We want the thread to stop sleeping after one frame. Update the deadline
-    // accordingly.
+    // We want the thread to stop sleeping after one frame. Update the
+    // deadline accordingly.
     deadline_time_point += std::chrono::milliseconds(
         static_cast<unsigned int>(vm_instance_.GetMaxFrameTime()));
 
     // We need to retrieve the current point in time...
     auto current_time_point = std::chrono::steady_clock::now();
 
-    // ...to determine the difference between the current point in time and the
-    // last time we checked if we emitted performance information.
+    // ...to determine the difference between the current point in time and
+    // the last time we checked if we emitted performance information.
     const auto fps_update_delta =
         std::chrono::duration_cast<std::chrono::milliseconds>(
             current_time_point - fps_time_point);
@@ -116,9 +118,16 @@ void VMThread::run() noexcept {
       // virtual machine.
       quit();
 
-      // It is not a failure to stop execution until a key has been pressed. We
-      // completely stop execution in this case because it would be pointless
-      // to run the thread doing absolutely nothing but waiting.
+      if (step_result == chip8::StepResult::kBreakpointReached) {
+        emit BreakpointHit(vm_instance_.impl_->program_counter_);
+        emit RunStateChanged(RunState::kStopped);
+
+        break;
+      }
+
+      // It is not a failure to stop execution until a key has been pressed.
+      // We completely stop execution in this case because it would be
+      // pointless to run the thread doing absolutely nothing but waiting.
       if (step_result != chip8::StepResult::kHaltUntilKeyPress) {
         emit ExecutionFailure(step_result);
         emit RunStateChanged(RunState::kStopped);

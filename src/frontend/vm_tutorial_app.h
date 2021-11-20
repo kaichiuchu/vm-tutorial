@@ -77,6 +77,9 @@ class VMTutorialApplication : public QObject {
   /// \param rom_file_path The ROM file the user selected.
   void StartROM(const QString& rom_file_path) noexcept;
 
+  /// Connects the signals from the debugger to slots.
+  void ConnectDebuggerSignalsToSlots() noexcept;
+
   /// Connects the signals from the audio settings widget to slots.
   void ConnectAudioSettingsSignalsToSlots() noexcept;
 

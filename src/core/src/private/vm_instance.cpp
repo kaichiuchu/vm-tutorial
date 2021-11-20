@@ -12,6 +12,8 @@
 
 #include <core/vm_instance.h>
 
+#include <algorithm>
+
 #include "impl_interpreter.h"
 
 chip8::VMInstance::VMInstance() noexcept
@@ -147,6 +149,18 @@ auto chip8::VMInstance::RunForOneFrame() noexcept -> chip8::StepResult {
 }
 
 auto chip8::VMInstance::Step() noexcept -> chip8::StepResult {
+  const auto bp_found =
+      std::find_if(breakpoints_.cbegin(), breakpoints_.cend(),
+                   [this](const BreakpointInfo breakpoint) {
+                     return breakpoint.first == impl_->program_counter_;
+                   });
+
+  if (bp_found != breakpoints_.cend()) {
+    if ((*bp_found).second) {
+      breakpoints_.erase(bp_found);
+    }
+    return chip8::StepResult::kBreakpointReached;
+  }
   CheckTimers();
 
   const auto result = impl_->Step();
@@ -158,4 +172,53 @@ auto chip8::VMInstance::Step() noexcept -> chip8::StepResult {
     update_screen_func_(impl_->framebuffer_);
   }
   return result;
+}
+
+auto chip8::VMInstance::PrepareForStepInto() noexcept -> chip8::StepResult {
+  auto stop_pc = -1;
+
+  for (auto pc = impl_->program_counter_;
+       pc < chip8::data_size::kInternalMemory;
+       pc += chip8::data_size::kInstructionLength) {
+    const auto hi = impl_->memory_[pc + 0];
+    const auto lo = impl_->memory_[pc + 1];
+
+    const chip8::Instruction instruction((hi << 8) | lo);
+
+    if (instruction.group_ == chip8::ungrouped_instructions::kCALL_Address) {
+      stop_pc = instruction.address_;
+      break;
+    }
+  }
+
+  if (stop_pc == -1) {
+    return chip8::StepResult::kNoSubroutine;
+  }
+  breakpoints_.push_back({stop_pc, true});
+  return chip8::StepResult::kSuccess;
+}
+
+auto chip8::VMInstance::PrepareForStepOver() noexcept -> chip8::StepResult {
+  auto stop_pc = 0;
+
+  const auto pc =
+      impl_->program_counter_ + chip8::data_size::kInstructionLength;
+
+  chip8::Instruction instruction(pc);
+
+  if (instruction.group_ == chip8::ungrouped_instructions::kCALL_Address) {
+    stop_pc = instruction.address_ + chip8::data_size::kInstructionLength;
+  } else {
+    stop_pc = pc;
+  }
+  breakpoints_.push_back({stop_pc, true});
+  return chip8::StepResult::kSuccess;
+}
+
+auto chip8::VMInstance::PrepareForStepOut() noexcept -> chip8::StepResult {
+  if (impl_->stack_pointer_ < 0) {
+    return chip8::StepResult::kNotInSubroutine;
+  }
+  breakpoints_.push_back({impl_->stack_[impl_->stack_pointer_], true});
+  return chip8::StepResult::kSuccess;
 }

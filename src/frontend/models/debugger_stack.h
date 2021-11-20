@@ -15,6 +15,7 @@
 #include <core/vm_instance.h>
 
 #include <QAbstractListModel>
+#include <QPixmap>
 
 /// This class provides a model to display the current CHIP-8 stack data.
 class DebuggerStackModel : public QAbstractListModel {
@@ -84,6 +85,8 @@ class DebuggerStackModel : public QAbstractListModel {
   QVariant data(const QModelIndex& index, int role) const override;
 
  private:
+  QPixmap current_stack_pixmap_;
+
   /// Defines the column locations within a tree widget.
   enum Columns { kEntry, kValue };
 

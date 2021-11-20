@@ -1,5 +1,7 @@
 <RCC>
   <qresource prefix="/assets">
+    <file>bp_indicator.png</file>
+    <file>current_pointer.png</file>
     <file>save_button.png</file>
     <file>go_to_address_button.png</file>
     <file>go_to_pc_button.png</file>

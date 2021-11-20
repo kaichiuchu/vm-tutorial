@@ -18,8 +18,13 @@ DebuggerDisasmModel::DebuggerDisasmModel(
     QObject* parent_object, chip8::VMInstance& vm_instance) noexcept
     : QAbstractTableModel(parent_object), vm_instance_(vm_instance) {}
 
+auto DebuggerDisasmModel::GetRowFromAddress(
+    const unsigned int address) const noexcept -> int {
+  return static_cast<int>(address / 2);
+}
+
 int DebuggerDisasmModel::columnCount(const QModelIndex& parent) const noexcept {
-  return 4;
+  return 5;
 }
 
 int DebuggerDisasmModel::rowCount(const QModelIndex& parent) const noexcept {
@@ -31,6 +36,9 @@ QVariant DebuggerDisasmModel::data(const QModelIndex& index,
                                    int role) const noexcept {
   if (role == Qt::DisplayRole) {
     switch (index.column()) {
+      case 0:
+        return {};
+
       case Section::kAddress:
         return QString::asprintf("0x%04X", (2 * index.row()));
 
