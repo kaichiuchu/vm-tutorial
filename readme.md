@@ -21,3 +21,7 @@ can be generated using [Doxygen](https://www.doxygen.nl/index.html).
 ## Demonstrations
 
 ![Brix](https://user-images.githubusercontent.com/88908600/142642260-3903de0f-37e7-4673-8d03-1f272f903de4.mov)
+
+## Screenshots
+
+![Debugger](https://user-images.githubusercontent.com/88908600/142782895-b2fbfbe2-aabf-4d98-926c-5e04f2d98da1.png)
