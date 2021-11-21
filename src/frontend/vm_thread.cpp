@@ -12,8 +12,6 @@
 
 #include "vm_thread.h"
 
-#include <QDebug>
-
 #include "models/app_settings.h"
 
 VMThread::VMThread(QObject* parent_object) noexcept : QThread(parent_object) {
@@ -117,11 +115,10 @@ void VMThread::run() noexcept {
       // A condition has been met in which we have to stop execution of the
       // virtual machine.
       quit();
+      emit RunStateChanged(RunState::kStopped);
 
       if (step_result == chip8::StepResult::kBreakpointReached) {
         emit BreakpointHit(vm_instance_.impl_->program_counter_);
-        emit RunStateChanged(RunState::kStopped);
-
         break;
       }
 
@@ -130,7 +127,7 @@ void VMThread::run() noexcept {
       // pointless to run the thread doing absolutely nothing but waiting.
       if (step_result != chip8::StepResult::kHaltUntilKeyPress) {
         emit ExecutionFailure(step_result);
-        emit RunStateChanged(RunState::kStopped);
+        break;
       }
       break;
     }

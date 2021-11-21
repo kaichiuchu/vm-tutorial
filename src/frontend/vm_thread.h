@@ -19,9 +19,12 @@
 #include "types.h"
 
 /// This class defines a separate thread for the virtual machine to live in.
-/// This is the definition of unnecessary as a CHIP-8 virtual machine is so
-/// insignificant to computation time, but we do this anyway to demonstrate how
-/// a real virtual machine might operate.
+/// A separate thread is used to allow the virtual machine to run at varying
+/// speeds without risk of blocking the UI thread.
+///
+/// While it is extremely unlikely that we would ever have a scenario where
+/// the virtual machine runs fast enough that Qt's event queue can't keep up,
+/// we use a thread anyway to demonstrate strictly separating the two run loops.
 class VMThread : public QThread {
   Q_OBJECT
 
@@ -48,9 +51,9 @@ class VMThread : public QThread {
 
   /// From Qt documentation:
   ///
-  /// The starting point for the thread. After calling start(), the newly
-  /// created thread calls this function. The default implementation simply
-  /// calls exec().
+  /// The starting point for the thread. After calling \ref QThread::start(),
+  /// the newly created thread calls this function. The default implementation
+  /// simply calls \ref QThread::exec().
   ///
   /// You can reimplement this function to facilitate advanced thread
   /// management. Returning from this method will end the execution of the
@@ -63,13 +66,16 @@ class VMThread : public QThread {
   void run() noexcept override;
 
   /// Stops the execution of the thread.
+  ///
+  /// This method has no effect if the thread is not running.
   void StopExecution() noexcept;
 
   /// The virtual machine instance.
   chip8::VMInstance vm_instance_;
 
  private:
-  /// Connects callback from the virtual machine instance to our signals.
+  /// Connects callback from the virtual machine instance to slots, which in
+  /// turn emit our signals.
   void ConnectCallbacksToSlots() noexcept;
 
   /// Configures the virtual machine based on the current application settings.
@@ -80,38 +86,40 @@ class VMThread : public QThread {
   unsigned int num_frames_;
 
  signals:
-  /// This signal is emitted when the run state of the virtual machine has
-  /// changed.
+  /// Emitted when the run state of the virtual machine has changed.
+  ///
+  /// \param state The new run state of the virtual machine.
   void RunStateChanged(const RunState state);
 
-  /// This signal is emitted when a breakpoint has been hit.
+  /// Emitted when a breakpoint has been hit.
+  ///
+  /// \param address The address of the breakpoint.
   void BreakpointHit(const uint_fast16_t address);
 
-  /// This signal is emitted when 1 second has passed within the run loop.
+  /// Emitted when 1 second has passed within the run loop.
   ///
   /// \param perf_info The performance information of the virtual machine.
   void PerformanceInfo(const PerformanceCounters& perf_info);
 
-  /// This signal is emitted when it is time to update the screen.
+  /// Emitted when a full frame has been completed.
   ///
   /// \param framebuffer The screen data to render, containing BGRA32 values.
   void UpdateScreen(
       const chip8::ImplementationInterface::Framebuffer& framebuffer);
 
-  /// This signal is emitted when it is time to play a tone.
+  /// Emitted when the guest program is requesting to play a tone.
   ///
   /// \param tone_duration The duration of the tone in milliseconds.
-  void PlayTone(double tone_duration);
+  void PlayTone(const double tone_duration);
 
-  /// This signal is emitted when a fatal error has occurred within the virtual
-  /// machine.
+  /// Emitted when a fatal error has occurred within the virtual machine.
   ///
   /// \param step_result The result of the failure, refer to \ref
   /// chip8::StepResult for more details.
-  void ExecutionFailure(chip8::StepResult step_result);
+  void ExecutionFailure(const chip8::StepResult step_result);
 
-  /// This signal is emitted when a log message has been emitted by the core.
+  /// Emitted when a log message has been emitted by the virtual machine.
   ///
-  /// \param msg The message from the core.
+  /// \param msg The message from the virtual machine.
   void LogMessageEmitted(const std::string& msg);
 };

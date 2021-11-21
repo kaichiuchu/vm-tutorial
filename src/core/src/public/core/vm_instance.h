@@ -25,6 +25,11 @@ namespace chip8 {
 /// benchmarks.
 class VMInstance {
  public:
+  using ProgramCounter = uint_fast16_t;
+  using ClearAfterTrigger = bool;
+
+  using BreakpointInfo = std::pair<ProgramCounter, ClearAfterTrigger>;
+
   /// Configures the virtual machine to execute 500 instructions per second
   /// (500Hz) within 60 frames.
   VMInstance() noexcept;
@@ -195,12 +200,9 @@ class VMInstance {
   /// about sound.
   std::function<void(const double)> play_tone_func_;
 
+  std::vector<BreakpointInfo> breakpoints_;
+
  private:
-  using ProgramCounter = uint_fast16_t;
-  using ClearAfterTrigger = bool;
-
-  using BreakpointInfo = std::pair<ProgramCounter, ClearAfterTrigger>;
-
   /// Calculates the duration a tone should be.
   ///
   /// The duration calculated is based on the current sound timer value.
@@ -214,8 +216,6 @@ class VMInstance {
   /// Decrements the timers. This method should be called every 60Hz (also known
   /// as 8 machine steps).
   void DecrementTimers() noexcept;
-
-  std::vector<BreakpointInfo> breakpoints_;
 
   /// The number of steps that constitute one frame. The value of this variable
   /// is determined by the call to the \ref SetTiming() method.

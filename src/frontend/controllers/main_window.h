@@ -20,8 +20,10 @@
 #include "ui_main_window.h"
 
 /// This class handles the logic of user actions that take place in the main
-/// window. Additionally, it contains methods to report to the user various
-/// events that take place.
+/// window.
+///
+/// The main window is the window that the user first sees upon starting the
+/// program.
 class MainWindowController : public QMainWindow {
   Q_OBJECT
 
@@ -102,13 +104,12 @@ class MainWindowController : public QMainWindow {
   Renderer* GetRenderer() const noexcept;
 
  private:
-  /// This widget is part of the status bar, which displays the average, worst,
-  /// and best frame times in milliseconds.
-  QLabel* frame_time_info_;
+  /// This widget is part of the status bar, which displays the number of frames
+  /// per second, the desired number of frames per second, and the average
+  /// number of frames in milliseconds.
   QLabel* fps_info_;
 
-  /// Creates the status bar widgets, which will display the FPS, average
-  /// frame time in milliseconds, best and worst frame times.
+  /// Creates the status bar widgets.
   void CreateStatusBarWidgets() noexcept;
 
   /// From Qt documentation (with minor changes):

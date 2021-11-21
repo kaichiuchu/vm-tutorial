@@ -27,20 +27,16 @@ GeneralSettingsController::GeneralSettingsController(
 void GeneralSettingsController::ConnectSignalsToSlots() noexcept {
   connect(view_.programFilesPath, &QPushButton::clicked, [this]() {
     const auto dir = QFileDialog::getExistingDirectory(
-        this, tr("Open Directory"), "/home",
+        this, tr("Open Directory"), QStringLiteral("/home"),
         QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
 
-    if (dir.isEmpty()) {
-      return;
+    if (!dir.isEmpty()) {
+      AppSettingsModel().SetProgramFilesPath(dir);
+      view_.programFilesPath->setText(dir);
     }
-
-    AppSettingsModel app_settings;
-    app_settings.SetProgramFilesPath(dir);
-    view_.programFilesPath->setText(dir);
   });
 }
 
 void GeneralSettingsController::PopulateDataFromAppSettings() noexcept {
-  AppSettingsModel app_settings;
-  view_.programFilesPath->setText(app_settings.GetProgramFilesPath());
+  view_.programFilesPath->setText(AppSettingsModel().GetProgramFilesPath());
 }

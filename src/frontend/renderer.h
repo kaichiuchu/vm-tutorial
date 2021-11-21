@@ -54,6 +54,8 @@ class Renderer : public QOpenGLWidget, public QOpenGLFunctions_4_1_Core {
   /// framebuffer is not yet available at this stage, so avoid issuing draw
   /// calls from here. Defer such calls to \ref QOpenGLWidget::paintGL()
   /// instead.
+  ///
+  /// We override this method to initialize the context for our purposes.
   void initializeGL() noexcept override;
 
   /// From Qt documentation:
@@ -61,25 +63,32 @@ class Renderer : public QOpenGLWidget, public QOpenGLFunctions_4_1_Core {
   /// Called whenever the widget has been resized.
   /// The new size is passed in \p w and \p h.
   ///
-  /// There is no need to call `makeCurrent()` because this has already been
-  /// done when this method is called. Additionally, the framebuffer is also
-  /// bound.
+  /// There is no need to call \ref QOpenGLWidget::makeCurrent() because this
+  /// has already been done when this method is called. Additionally, the
+  /// framebuffer is also bound.
+  ///
+  /// We override this method to handle adjusting the viewport.
+  ///
+  /// \param w The new width of the viewport.
+  /// \param h The new height of the viewport.
   void resizeGL(int w, int h) noexcept override;
 
   /// From Qt documentation:
   ///
   /// Called whenever the widget needs to be painted.
   ///
-  /// There is no need to call \p makeCurrent() because this has already been
-  /// done when this method is called.
+  /// There is no need to call \ref QOpenGLWidget::makeCurrent() because this
+  /// has already been done when this method is called.
   //
   /// Before invoking this method, the context and the framebuffer are bound,
-  /// and the viewport is set up by a call to `glViewport()`. No other state is
+  /// and the viewport is set up by a call to \p glViewport(). No other state is
   /// set and no clearing or drawing is performed.
+  ///
+  /// We override this method to handle rendering of graphics.
   void paintGL() noexcept override;
 
  private:
-  /// Configures the widget based on the current application settings.
+  /// Configures the renderer based on the current application settings.
   void SetupFromAppSettings() noexcept;
 
   /// Creates the vertex shader.
@@ -92,8 +101,10 @@ class Renderer : public QOpenGLWidget, public QOpenGLFunctions_4_1_Core {
   /// it.
   void CreateProgram() noexcept;
 
-  /// Destroys the vertex and fragment shaders. This method should only be
-  /// called once said shaders have been attached to an OpenGL program.
+  /// Destroys the vertex and fragment shaders.
+  ///
+  /// This method should only be called once said shaders have been attached to
+  /// an OpenGL program.
   void DestroyShaders() noexcept;
 
   /// Creates the vertex array.
@@ -102,7 +113,7 @@ class Renderer : public QOpenGLWidget, public QOpenGLFunctions_4_1_Core {
   /// Creates the element array.
   void CreateElementArray() noexcept;
 
-  /// Creates the texture that the CHIP-8 framebuffer will be displayed to.
+  /// Creates the texture that the CHIP-8 framebuffer will be rendered to.
   void CreateTexture() noexcept;
 
   /// Creates a shader.

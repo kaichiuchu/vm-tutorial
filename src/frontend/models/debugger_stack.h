@@ -28,21 +28,22 @@ class DebuggerStackModel : public QAbstractListModel {
   /// it.
   ///
   /// \param vm_instance The virtual machine instance.
-  explicit DebuggerStackModel(QObject* parent_object,
-                              chip8::VMInstance& vm_instance) noexcept;
+  DebuggerStackModel(QObject* parent_object,
+                     chip8::VMInstance& vm_instance) noexcept;
 
+ private:
   /// From Qt documentation:
   ///
   /// Returns the number of rows under the given \p parent. When the parent is
   /// valid it means that rowCount is returning the number of children of
   /// parent.
   ///
-  /// Note: When implementing a table based model, rowCount() should return 0
-  /// when the parent is valid.
+  /// Note: When implementing a table based model, \ref
+  /// QAbstractItemModel::rowCount() should return 0 when the parent is valid.
   ///
   /// Note: This function can be invoked via the meta-object system and from
-  /// QML. See Q_INVOKABLE.
-  int rowCount(const QModelIndex& parent = {}) const override;
+  /// QML. See \ref Q_INVOKABLE.
+  auto rowCount(const QModelIndex& parent = {}) const noexcept -> int override;
 
   /// From Qt documentation:
   ///
@@ -51,12 +52,14 @@ class DebuggerStackModel : public QAbstractListModel {
   /// In most subclasses, the number of columns is independent of the
   /// \p parent.
   ///
-  /// Note: When implementing a table based model, \ref columnCount() should
-  /// return 0 when the parent is valid.
+  /// Note: When implementing a table based model, \ref
+  /// QAbstractItemModel::columnCount() should return 0 when the parent is
+  /// valid.
   ///
   /// Note: This function can be invoked via the meta-object system and from
-  /// QML. See Q_INVOKABLE.
-  int columnCount(const QModelIndex& parent = {}) const override;
+  /// QML. See \ref Q_INVOKABLE.
+  auto columnCount(const QModelIndex& parent = {}) const noexcept
+      -> int override;
 
   /// From Qt documentation:
   ///
@@ -68,9 +71,10 @@ class DebuggerStackModel : public QAbstractListModel {
   /// to the row number.
   ///
   /// Note: This function can be invoked via the meta-object system and from
-  /// QML. See Q_INVOKABLE.
-  QVariant headerData(int section, Qt::Orientation orientation,
-                      int role = Qt::DisplayRole) const noexcept override;
+  /// QML. See \ref Q_INVOKABLE.
+  auto headerData(int section, Qt::Orientation orientation,
+                  int role = Qt::DisplayRole) const noexcept
+      -> QVariant override;
 
   /// From Qt documentation:
   ///
@@ -82,9 +86,10 @@ class DebuggerStackModel : public QAbstractListModel {
   ///
   /// Note: This function can be invoked via the meta-object system and from
   /// QML. See Q_INVOKABLE.
-  QVariant data(const QModelIndex& index, int role) const override;
+  auto data(const QModelIndex& index, int role) const noexcept
+      -> QVariant override;
 
- private:
+  /// The pixmap used to point to the current stack pointer.
   QPixmap current_stack_pixmap_;
 
   /// Defines the column locations within a tree widget.

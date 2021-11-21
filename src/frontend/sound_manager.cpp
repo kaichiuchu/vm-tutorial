@@ -133,7 +133,7 @@ auto SoundManager::GetAudioOutputDevices() noexcept -> std::vector<QString> {
 void SoundManager::SetupFromAppSettings() noexcept {
   AppSettingsModel app_settings;
 
-  SetAudioOutputDevice(app_settings.GetAudioDeviceID());
+  SetAudioOutputDevice(app_settings.GetAudioDeviceName());
 
   tone_freq_ = app_settings.GetAudioToneFrequency();
   tone_type_ = static_cast<ToneType>(app_settings.GetAudioToneType());

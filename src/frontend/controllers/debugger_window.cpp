@@ -40,6 +40,9 @@ void DebuggerWindowController::NotifyBreakpointHit(
 
   view_.statusbar->showMessage(QString{"%1 %2."}.arg(message, address_str),
                                10000);
+
+  const auto row = disasm_model_->GetRowFromAddress(address);
+  view_.disasmView->scrollTo(disasm_model_->index(row, 0));
 }
 
 void DebuggerWindowController::EnableControls(const bool enabled) noexcept {
@@ -47,6 +50,7 @@ void DebuggerWindowController::EnableControls(const bool enabled) noexcept {
   view_.registerView->setEnabled(enabled);
   view_.stackView->setEnabled(enabled);
   view_.memoryView->setEnabled(enabled);
+  view_.breakpointsWidget->setEnabled(enabled);
 
   view_.actionGo_to_Address->setEnabled(enabled);
   view_.actionGo_to_PC->setEnabled(enabled);
@@ -67,7 +71,7 @@ void DebuggerWindowController::ConnectSignalsToSlots() noexcept {
     const auto indices = model->selectedIndexes();
 
     if (!indices.empty()) {
-      emit AddBreakpoint(indices[0].row() * 2, BreakpointFlags::kSingleShot);
+      vm_instance_.breakpoints_.push_back({indices[0].row() * 2, true});
       emit ToggleRunState();
     }
   });
@@ -77,7 +81,8 @@ void DebuggerWindowController::ConnectSignalsToSlots() noexcept {
     const auto result = vm_instance_.PrepareForStepInto();
 
     if (result == chip8::StepResult::kNoSubroutine) {
-      view_.statusbar->showMessage("No subroutines in this scope were found.");
+      view_.statusbar->showMessage(
+          tr("No subroutines in this scope were found."));
 
       EnableControls(true);
       return;
@@ -91,7 +96,7 @@ void DebuggerWindowController::ConnectSignalsToSlots() noexcept {
 
     if (result == chip8::StepResult::kBadProgram) {
       view_.statusbar->showMessage(
-          "Only CALL instructions are present in the guest program?");
+          tr("Only CALL instructions are present in the guest program?"));
 
       EnableControls(true);
       return;
@@ -105,7 +110,7 @@ void DebuggerWindowController::ConnectSignalsToSlots() noexcept {
 
     if (result == chip8::StepResult::kNotInSubroutine) {
       view_.statusbar->showMessage(
-          "The guest program is not in any subroutine.");
+          tr("The guest program is not in any subroutine."));
 
       EnableControls(true);
       return;
@@ -129,4 +134,5 @@ void DebuggerWindowController::SetupFromAppSettings() noexcept {
   view_.disasmView->setFont(font);
   view_.registerView->setFont(font);
   view_.stackView->setFont(font);
+  view_.breakpointsWidget->setFont(font);
 }

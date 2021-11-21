@@ -30,20 +30,28 @@ class DebuggerDisasmModel : public QAbstractTableModel {
   explicit DebuggerDisasmModel(QObject* parent_object,
                                chip8::VMInstance& vm_instance) noexcept;
 
-  auto GetRowFromAddress(const unsigned int address) const noexcept -> int;
+  /// Determines the row within the model based on the address passed.
+  ///
+  /// \returns The row, if any.
+  auto GetRowFromAddress(const uint_fast16_t address) const noexcept -> int;
 
+ private:
   /// From Qt documentation:
   ///
   /// Returns the number of columns for the children of the given \p parent.
   ///
   /// In most subclasses, the number of columns is independent of the \p parent.
   ///
-  /// Note: When implementing a table based model, \ref columnCount() should
-  /// return 0 when the parent is valid.
+  /// Note: When implementing a table based model, \ref
+  /// QAbstractItemModel::columnCount() should return 0 when the parent is
+  /// valid.
   ///
   /// Note: This function can be invoked via the meta-object system and from
   /// QML. See \ref Q_INVOKABLE.
-  int columnCount(const QModelIndex& parent = {}) const noexcept override;
+  ///
+  /// We override this method to return the number of columns we have.
+  auto columnCount(const QModelIndex& parent = {}) const noexcept
+      -> int override;
 
   /// From Qt documentation:
   ///
@@ -51,12 +59,12 @@ class DebuggerDisasmModel : public QAbstractTableModel {
   /// valid it means that rowCount is returning the number of children of
   /// parent.
   ///
-  /// Note: When implementing a table based model, \ref rowCount() should
-  /// return 0 when the parent is valid.
+  /// Note: When implementing a table based model, \ref
+  /// QAbstractItemModel::rowCount() should return 0 when the parent is valid.
   ///
   /// Note: This function can be invoked via the meta-object system and from
   /// QML. See \ref Q_INVOKABLE.
-  int rowCount(const QModelIndex& parent = {}) const noexcept override;
+  auto rowCount(const QModelIndex& parent = {}) const noexcept -> int override;
 
   /// From Qt documentation:
   ///
@@ -69,8 +77,9 @@ class DebuggerDisasmModel : public QAbstractTableModel {
   ///
   /// Note: This function can be invoked via the meta-object system and from
   /// QML. See \ref Q_INVOKABLE.
-  QVariant headerData(int section, Qt::Orientation orientation,
-                      int role = Qt::DisplayRole) const noexcept override;
+  auto headerData(int section, Qt::Orientation orientation,
+                  int role = Qt::DisplayRole) const noexcept
+      -> QVariant override;
 
   /// From Qt documentation:
   ///
@@ -82,10 +91,9 @@ class DebuggerDisasmModel : public QAbstractTableModel {
   ///
   /// Note: This function can be invoked via the meta-object system and from
   /// QML. See \ref Q_INVOKABLE.
-  QVariant data(const QModelIndex& index,
-                int role = Qt::DisplayRole) const noexcept override;
+  auto data(const QModelIndex& index, int role = Qt::DisplayRole) const noexcept
+      -> QVariant override;
 
- private:
   /// Defines each of the headers and their locations.
   enum Section {
     kBreakpoint,

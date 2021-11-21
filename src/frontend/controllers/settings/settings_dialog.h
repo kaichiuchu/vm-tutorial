@@ -28,13 +28,14 @@ class SettingsDialogController : public QDialog {
   Q_OBJECT
 
  public:
+  /// The settings categories in order.
   enum SettingsCategory {
-    kGeneralSettings = 0,
-    kLoggerSettings = 1,
-    kMachineSettings = 2,
-    kGraphicsSettings = 3,
-    kKeypadSettings = 4,
-    kAudioSettings = 5
+    kGeneralSettings,
+    kLoggerSettings,
+    kMachineSettings,
+    kGraphicsSettings,
+    kKeypadSettings,
+    kAudioSettings
   };
 
   /// Constructs the settings dialog controller.

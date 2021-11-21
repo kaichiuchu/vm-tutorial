@@ -34,7 +34,9 @@ void Renderer::initializeGL() noexcept {
   SetupFromAppSettings();
 }
 
-void Renderer::resizeGL(int w, int h) noexcept { glViewport(0, 0, w, h); }
+void Renderer::resizeGL(const int w, const int h) noexcept {
+  glViewport(0, 0, w, h);
+}
 
 void Renderer::paintGL() noexcept {
   glClearColor(0.0F, 0.0F, 0.0F, 1.0F);

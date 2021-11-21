@@ -16,17 +16,13 @@
 #include <QFontDatabase>
 
 AppSettingsModel::AppSettingsModel(QObject* parent_object) noexcept
-    : QSettings("vm-tutorial.ini", QSettings::IniFormat, parent_object) {}
-
-auto AppSettingsModel::KeyBindingExists(const int physical_key) noexcept
-    -> bool {
-  return GetVMKeyBinding(physical_key).has_value();
-}
+    : QSettings(QStringLiteral("vm-tutorial.ini"), QSettings::IniFormat,
+                parent_object) {}
 
 auto AppSettingsModel::GetVMKeyBindings() noexcept -> VMKeyBindings {
   VMKeyBindings bindings;
 
-  beginGroup("vm_keys");
+  beginGroup(QStringLiteral("vm_keys"));
 
   for (const auto& key : childKeys()) {
     bindings[key] = value(key).toInt();
@@ -66,29 +62,30 @@ auto AppSettingsModel::GetVMKeyBinding(const int physical_key) noexcept
   return std::nullopt;
 }
 
-auto AppSettingsModel::GetAudioDeviceID() const noexcept -> QByteArray {
-  return value("audio/default_device").toByteArray();
+auto AppSettingsModel::GetAudioDeviceName() const noexcept -> QString {
+  return value(QStringLiteral("audio/default_device")).toString();
 }
 
 auto AppSettingsModel::GetAudioToneFrequency() const noexcept -> int {
-  return value("audio/tone_freq", 500).toInt();
+  return value(QStringLiteral("audio/tone_freq"), 500).toInt();
 }
 
 auto AppSettingsModel::GetAudioVolume() const noexcept -> int {
-  return value("audio/volume", 100).toInt();
+  return value(QStringLiteral("audio/volume"), 100).toInt();
 }
 
 auto AppSettingsModel::GetAudioToneType() const noexcept -> int {
   const auto default_wave = static_cast<int>(ToneType::kSineWave);
-  return value("audio/tone_type", default_wave).toInt();
+  return value(QStringLiteral("audio/tone_type"), default_wave).toInt();
 }
 
 auto AppSettingsModel::GetProgramFilesPath() const noexcept -> QString {
-  return value("paths/program_files", QDir::currentPath()).toString();
+  return value(QStringLiteral("paths/program_files"), QDir::currentPath())
+      .toString();
 }
 
 auto AppSettingsModel::BilinearFilteringEnabled() const noexcept -> bool {
-  return value("graphics/bilinear_filtering", false).toBool();
+  return value(QStringLiteral("graphics/bilinear_filtering"), false).toBool();
 }
 
 auto AppSettingsModel::GetLogLevelColor(const QString& level) const noexcept
@@ -98,7 +95,7 @@ auto AppSettingsModel::GetLogLevelColor(const QString& level) const noexcept
 }
 
 auto AppSettingsModel::GetLogFont() noexcept -> std::optional<QFont> {
-  const auto font = value("logger/font").toString();
+  const auto font = value(QStringLiteral("logger/font")).toString();
 
   if (font.isEmpty()) {
     return std::nullopt;
@@ -111,15 +108,15 @@ auto AppSettingsModel::GetLogFont() noexcept -> std::optional<QFont> {
 }
 
 auto AppSettingsModel::GetMachineFrameRate() const noexcept -> double {
-  return value("machine/frame_rate", 60.0).toDouble();
+  return value(QStringLiteral("machine/frame_rate"), 60.0).toDouble();
 }
 
 auto AppSettingsModel::GetMachineInstructionsPerSecond() const noexcept -> int {
-  return value("machine/instructions_per_second", 500).toInt();
+  return value(QStringLiteral("machine/instructions_per_second"), 500).toInt();
 }
 
 auto AppSettingsModel::GetDebuggerFont() const noexcept -> QFont {
-  const auto font = value("debugger/font").toString();
+  const auto font = value(QStringLiteral("debugger/font")).toString();
 
   if (font.isEmpty()) {
 #ifdef __WIN64
@@ -142,37 +139,38 @@ auto AppSettingsModel::GetDebuggerFont() const noexcept -> QFont {
 }
 
 void AppSettingsModel::SetMachineFrameRate(double frame_rate) noexcept {
-  setValue("machine/frame_rate", frame_rate);
+  setValue(QStringLiteral("machine/frame_rate"), frame_rate);
 }
 
 void AppSettingsModel::SetMachineInstructionsPerSecond(
     int instructions_per_second) noexcept {
-  setValue("machine/instructions_per_second", instructions_per_second);
+  setValue(QStringLiteral("machine/instructions_per_second"),
+           instructions_per_second);
 }
 
 void AppSettingsModel::SetProgramFilesPath(const QString& path) noexcept {
-  setValue("paths/program_files", path);
+  setValue(QStringLiteral("paths/program_files"), path);
 }
 
 void AppSettingsModel::SetBilinearFiltering(const bool enabled) noexcept {
-  setValue("graphics/bilinear_filtering", enabled);
+  setValue(QStringLiteral("graphics/bilinear_filtering"), enabled);
 }
 
 void AppSettingsModel::SetAudioToneFrequency(const unsigned int freq) noexcept {
-  setValue("audio/tone_freq", freq);
+  setValue(QStringLiteral("audio/tone_freq"), freq);
 }
 
 void AppSettingsModel::SetAudioVolume(const unsigned int value) noexcept {
-  setValue("audio/volume", value);
+  setValue(QStringLiteral("audio/volume"), value);
 }
 
 void AppSettingsModel::SetAudioToneType(const int tone_type) noexcept {
-  setValue("audio/tone_type", tone_type);
+  setValue(QStringLiteral("audio/tone_type"), tone_type);
 }
 
-void AppSettingsModel::SetAudioDeviceID(
-    const QString& audio_device_id) noexcept {
-  setValue("audio/default_device", audio_device_id);
+void AppSettingsModel::SetDefaultAudioDeviceName(
+    const QString& audio_device_name) noexcept {
+  setValue(QStringLiteral("audio/default_device"), audio_device_name);
 }
 
 void AppSettingsModel::SetVMKeyBinding(const chip8::Key chip8_key,
@@ -184,7 +182,7 @@ void AppSettingsModel::SetVMKeyBinding(const chip8::Key chip8_key,
 }
 
 void AppSettingsModel::SetLogFont(const QFont& font) noexcept {
-  setValue("logger/font", font.toString());
+  setValue(QStringLiteral("logger/font"), font.toString());
 }
 
 void AppSettingsModel::SetLogLevelColor(const QString& level_name,

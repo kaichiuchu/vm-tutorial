@@ -25,16 +25,12 @@ GraphicsSettingsController::GraphicsSettingsController(
 void GraphicsSettingsController::ConnectSignalsToSlots() noexcept {
   connect(view_.enableBilinearFiltering, &QCheckBox::stateChanged,
           [this](const int state) {
-            AppSettingsModel app_settings;
-
-            app_settings.SetBilinearFiltering(state);
+            AppSettingsModel().SetBilinearFiltering(state);
             emit BilinearFilteringStateChanged(state);
           });
 }
 
 void GraphicsSettingsController::PopulateDataFromAppSettings() noexcept {
-  AppSettingsModel app_settings;
-
   view_.enableBilinearFiltering->setChecked(
-      app_settings.BilinearFilteringEnabled());
+      AppSettingsModel().BilinearFilteringEnabled());
 }

@@ -12,8 +12,6 @@
 
 #include "keypad_settings.h"
 
-#include <QMessageBox>
-
 #include "models/app_settings.h"
 
 KeypadSettingsController::KeypadSettingsController(
@@ -25,15 +23,23 @@ KeypadSettingsController::KeypadSettingsController(
 }
 
 void KeypadSettingsController::PopulateDataFromAppSettings() noexcept {
-  std::map<QString, QPushButton*> button_map = {
-      {"key_0", view_.button_0}, {"key_1", view_.button_1},
-      {"key_2", view_.button_2}, {"key_3", view_.button_3},
-      {"key_4", view_.button_4}, {"key_5", view_.button_5},
-      {"key_6", view_.button_6}, {"key_7", view_.button_7},
-      {"key_8", view_.button_8}, {"key_9", view_.button_9},
-      {"key_A", view_.button_A}, {"key_B", view_.button_B},
-      {"key_C", view_.button_C}, {"key_D", view_.button_D},
-      {"key_E", view_.button_E}, {"key_F", view_.button_F}};
+  static std::map<QString, QPushButton*> button_map = {
+      {QStringLiteral("key_0"), view_.button_0},
+      {QStringLiteral("key_1"), view_.button_1},
+      {QStringLiteral("key_2"), view_.button_2},
+      {QStringLiteral("key_3"), view_.button_3},
+      {QStringLiteral("key_4"), view_.button_4},
+      {QStringLiteral("key_5"), view_.button_5},
+      {QStringLiteral("key_6"), view_.button_6},
+      {QStringLiteral("key_7"), view_.button_7},
+      {QStringLiteral("key_8"), view_.button_8},
+      {QStringLiteral("key_9"), view_.button_9},
+      {QStringLiteral("key_A"), view_.button_A},
+      {QStringLiteral("key_B"), view_.button_B},
+      {QStringLiteral("key_C"), view_.button_C},
+      {QStringLiteral("key_D"), view_.button_D},
+      {QStringLiteral("key_E"), view_.button_E},
+      {QStringLiteral("key_F"), view_.button_F}};
 
   const auto current_key_bindings = AppSettingsModel().GetVMKeyBindings();
 
@@ -146,7 +152,7 @@ void KeypadSettingsController::HandleKeyBindingCountdown() noexcept {
     return;
   }
 
-  auto binding_text =
+  const auto binding_text =
       QString{"Press any key... [%1]"}.arg(countdown_.seconds_remaining_);
   selected_key_.button_->setText(binding_text);
 };
@@ -163,8 +169,10 @@ void KeypadSettingsController::keyPressEvent(QKeyEvent* event) noexcept {
   countdown_.timer_ = nullptr;
   releaseKeyboard();
 
-  AppSettingsModel().SetVMKeyBinding(selected_key_.chip8_key_, event->key());
+  const auto physical_key = event->key();
 
-  selected_key_.button_->setText(QKeySequence(event->key()).toString());
+  AppSettingsModel().SetVMKeyBinding(selected_key_.chip8_key_, physical_key);
+
+  selected_key_.button_->setText(QKeySequence(physical_key).toString());
   selected_key_.button_->setEnabled(true);
 }

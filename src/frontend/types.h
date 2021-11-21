@@ -20,5 +20,3 @@ enum class ToneType { kSineWave, kSawtooth, kSquare, kTriangle };
 
 /// Defines the various run states of the virtual machine.
 enum class RunState { kStopped, kRunning };
-
-enum class BreakpointFlags { kSingleShot, kExecuteAndRemove };

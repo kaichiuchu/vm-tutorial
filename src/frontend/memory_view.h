@@ -15,7 +15,7 @@
 #include <QAbstractScrollArea>
 
 /// This class defines a memory view widget. It allows a user to inspect, but
-/// not modify, the contents of data in a hexadecimal/ASCII fashion.
+/// not modify, the contents of data in a hexadecimal and ASCII fashion.
 class MemoryViewWidget : public QAbstractScrollArea {
   Q_OBJECT
 
@@ -40,9 +40,9 @@ class MemoryViewWidget : public QAbstractScrollArea {
   /// \param size The size of the data, in bytes.
   void SetData(const void* data, unsigned int size) noexcept;
 
-  /// Sets the font to use to display the widget.
+  /// Sets the font to use when drawing the data.
   ///
-  /// \param font The font to use to display the widget.
+  /// \param font The font to use when draawing the data.
   void SetFont(const QFont& font) noexcept;
 
  protected:
@@ -54,59 +54,68 @@ class MemoryViewWidget : public QAbstractScrollArea {
   /// A paint event is a request to repaint all or part of a widget. It can
   /// happen for one of the following reasons:
   ///
-  /// repaint() or update() was invoked,
-  /// the widget was obscured and has now been uncovered, or
-  /// many other reasons.
+  /// - \ref QWidget::repaint() or \ref QWidget::update() was invoked,
+  /// - the widget was obscured and has now been uncovered, or
+  ///   many other reasons.
   ///
   /// Many widgets can simply repaint their entire surface when asked to, but
   /// some slow widgets need to optimize by painting only the requested region:
-  /// QPaintEvent::region(). This speed optimization does not change the
+  /// \ref QPaintEvent::region(). This speed optimization does not change the
   /// result, as painting is clipped to that region during event processing.
-  /// QListView and QTableView do this, for example.
+  /// \ref QListView and \ref QTableView do this, for example.
   ///
   /// Qt also tries to speed up painting by merging multiple paint events into
-  /// one. When update() is called several times or the window system sends
-  /// several paint events, Qt merges these events into one event with a larger
-  /// region (see QRegion::united()). The repaint() function does not permit
-  /// this optimization, so we suggest using update() whenever possible.
+  /// one. When \ref QWidget::update() is called several times or the window
+  /// system sends several paint events, Qt merges these events into one event
+  /// with a larger region (see \ref QRegion::united()). The \ref
+  /// QWidget::repaint() function does not permit this optimization, so we
+  /// suggest using \ref QWidget::update() whenever possible.
   ///
   /// When the paint event occurs, the update region has normally been erased,
   /// so you are painting on the widget's background.
   ///
-  /// The background can be set using setBackgroundRole() and setPalette().
+  /// The background can be set using \ref QWidget::setBackgroundRole() and \ref
+  /// QWidget::setPalette().
   ///
   /// Since Qt 4.0, QWidget automatically double-buffers its painting, so there
   /// is no need to write double-buffering code in paintEvent() to avoid
   /// flicker.
   ///
-  /// Note: Generally, you should refrain from calling update() or repaint()
-  /// inside a paintEvent(). For example, calling update() or repaint() on
-  /// children inside a paintEvent() results in undefined behavior; the child
-  /// may or may not get a paint event.
+  /// \b Note: Generally, you should refrain from calling \ref QWidget::update()
+  /// or \ref QWidget::repaint() \b inside a paintEvent(). For example, calling
+  /// \ref QWidget::update() or \ref QWidget::repaint() on children inside a
+  /// paintEvent() results in undefined behavior; the child may or may not get a
+  /// paint event.
   ///
-  /// Warning: If you are using a custom paint engine without Qt's
-  /// backingstore, \p Qt::WA_PaintOnScreen must be set. Otherwise,
+  /// \b Warning: If you are using a custom paint engine without Qt's
+  /// backingstore, \ref Qt::WA_PaintOnScreen must be set. Otherwise,
   /// QWidget::paintEngine() will never be called; the backingstore will be
   /// used instead.
+  ///
+  /// We override this event here to draw the widget.
   void paintEvent(QPaintEvent* event) noexcept override;
 
   /// From Qt documentation:
   ///
   /// This event handler can be reimplemented in a subclass to receive widget
-  /// resize events which are passed in the event parameter. When resizeEvent()
-  /// is called, the widget already has its new geometry. The old size is
-  /// accessible through QResizeEvent::oldSize().
+  /// resize events which are passed in the \p event parameter. When
+  /// resizeEvent() is called, the widget already has its new geometry. The old
+  /// size is accessible through \ref QResizeEvent::oldSize().
   ///
   /// The widget will be erased and receive a paint event immediately after
   /// processing the resize event. No drawing need be (or should be) done
   /// inside this handler.
+  ///
+  /// We override this event here to adjust the content of the memory view
+  /// widget, insofar as to what extent the widget is drawn.
   void resizeEvent(QResizeEvent* event) noexcept override;
 
  private:
-  /// Connects signals to slots.
+  /// Connects signals from various widgets to slots.
   void ConnectSignalsToSlots() noexcept;
 
-  /// Sets up the widget from application settings.
+  /// Configures the memory view widget based on the current application
+  /// settings.
   void SetupFromAppSettings() noexcept;
 
   /// Determines the width of a full hex address in pixels, based on the current
@@ -122,13 +131,6 @@ class MemoryViewWidget : public QAbstractScrollArea {
   /// \returns The width of a hex character in pixels, based on the current
   /// font.
   auto GetHexCharWidth() const noexcept -> unsigned int;
-
-  /// Determines the width of an ASCII character in pixels, based on the current
-  /// font.
-  ///
-  /// \returns The width of an ASCII character in pixels, based on the current
-  /// font.
-  auto GetASCIIWidth() const noexcept -> unsigned int;
 
   /// Updates the font metrics, using the current font.
   void UpdateFontMetrics() noexcept;
@@ -160,29 +162,33 @@ class MemoryViewWidget : public QAbstractScrollArea {
   /// The number of elements within the current data.
   unsigned int current_data_size_ = 0;
 
-  /// The distance appropriate for drawing a character after another, based on
-  /// the current font.
-  unsigned int char_width_;
+  /// This struct contains information regarding pixel distances from a
+  /// character or multiple characters. This is adjusted based on the current
+  /// font.
+  struct {
+    /// The distance appropriate for drawing a character after another.
+    unsigned int char_width_;
 
-  /// The height of the current font.
-  unsigned int char_height_;
+    /// The height of a character.
+    unsigned int char_height_;
 
-  /// The distance appropriate for drawing a data character after another, based
-  /// on the current font.
-  unsigned int data_width_;
+    /// The distance appropriate for drawing a data character (e.g. FF) after
+    /// another.
+    unsigned int data_width_;
 
-  unsigned int address_width_;
+    /// The distance appropriate for drawing an address (e.g. FFFF) after
+    /// another.
+    unsigned int address_width_;
 
-  /// The number of bytes that should be drawn on one line.
-  unsigned int bytes_per_line_ = 16;
+    /// The X position of the ASCII area.
+    unsigned int ascii_start_x_;
+  } font_metrics_;
 
   unsigned int start_offset_;
   unsigned int end_offset_;
 
-  /// The X position of where the ASCII area was drawn. This is needed to draw
-  /// the ASCII character of a byte in the ASCII area while simultaneously
-  /// rendering the byte in the data area.
-  int ascii_start_x_;
+  /// The number of bytes that should be drawn on one line.
+  const unsigned int bytes_per_line_ = 16;
 
  private slots:
   /// Called when the content of the memory view must be changed.

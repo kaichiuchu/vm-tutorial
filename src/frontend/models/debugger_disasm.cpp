@@ -19,28 +19,33 @@ DebuggerDisasmModel::DebuggerDisasmModel(
     : QAbstractTableModel(parent_object), vm_instance_(vm_instance) {}
 
 auto DebuggerDisasmModel::GetRowFromAddress(
-    const unsigned int address) const noexcept -> int {
+    const uint_fast16_t address) const noexcept -> int {
   return static_cast<int>(address / 2);
 }
 
-int DebuggerDisasmModel::columnCount(const QModelIndex& parent) const noexcept {
+auto DebuggerDisasmModel::columnCount(const QModelIndex& parent) const noexcept
+    -> int {
   return 5;
 }
 
-int DebuggerDisasmModel::rowCount(const QModelIndex& parent) const noexcept {
+auto DebuggerDisasmModel::rowCount(const QModelIndex& parent) const noexcept
+    -> int {
   return chip8::data_size::kInternalMemory /
          chip8::data_size::kInstructionLength;
 }
 
-QVariant DebuggerDisasmModel::data(const QModelIndex& index,
-                                   int role) const noexcept {
+auto DebuggerDisasmModel::data(const QModelIndex& index,
+                               int role) const noexcept -> QVariant {
   if (role == Qt::DisplayRole) {
     switch (index.column()) {
-      case 0:
+      case Section::kBreakpoint:
         return {};
 
       case Section::kAddress:
-        return QString::asprintf("0x%04X", (2 * index.row()));
+        return QString{"$%1"}
+            .arg(2 * index.row(), 1, 16)
+            .rightJustified(2, '0')
+            .toUpper();
 
       case Section::kRawInstruction: {
         const auto address = (2 * index.row());
@@ -48,7 +53,12 @@ QVariant DebuggerDisasmModel::data(const QModelIndex& index,
         const auto hi = vm_instance_.impl_->memory_[address + 0];
         const auto lo = vm_instance_.impl_->memory_[address + 1];
 
-        return QString::asprintf("%04X", (hi << 8) | lo);
+        const auto result = (hi << 8) | lo;
+
+        return QString{"$%1"}
+            .arg(result, 1, 16)
+            .rightJustified(2, '0')
+            .toUpper();
       }
 
       case Section::kDisassembly: {
@@ -73,9 +83,8 @@ QVariant DebuggerDisasmModel::data(const QModelIndex& index,
   return {};
 }
 
-QVariant DebuggerDisasmModel::headerData(int section,
-                                         Qt::Orientation orientation,
-                                         int role) const noexcept {
+auto DebuggerDisasmModel::headerData(int section, Qt::Orientation orientation,
+                                     int role) const noexcept -> QVariant {
   if ((role == Qt::DisplayRole) && (orientation == Qt::Horizontal)) {
     switch (section) {
       case Section::kAddress:

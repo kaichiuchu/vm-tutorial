@@ -22,13 +22,16 @@ DebuggerStackModel::DebuggerStackModel(QObject* parent_object,
           QIcon(QStringLiteral(":/assets/current_pointer.png"))
               .pixmap(QSize(12, 12))) {}
 
-int DebuggerStackModel::rowCount(const QModelIndex&) const {
+auto DebuggerStackModel::rowCount(const QModelIndex&) const noexcept -> int {
   return chip8::data_size::kStack;
 }
 
-int DebuggerStackModel::columnCount(const QModelIndex&) const { return 2; }
+auto DebuggerStackModel::columnCount(const QModelIndex&) const noexcept -> int {
+  return 2;
+}
 
-QVariant DebuggerStackModel::data(const QModelIndex& index, int role) const {
+auto DebuggerStackModel::data(const QModelIndex& index, int role) const noexcept
+    -> QVariant {
   switch (role) {
     case Qt::DisplayRole: {
       const auto row = index.row();
@@ -42,6 +45,9 @@ QVariant DebuggerStackModel::data(const QModelIndex& index, int role) const {
               .arg(vm_instance_.impl_->stack_[row], 1, 16)
               .rightJustified(4, '0')
               .toUpper();
+
+        default:
+          return {};
       }
     }
 
@@ -50,6 +56,7 @@ QVariant DebuggerStackModel::data(const QModelIndex& index, int role) const {
           (index.row() == vm_instance_.impl_->stack_pointer_)) {
         return current_stack_pixmap_;
       }
+      return {};
 
     default:
       return {};
@@ -57,9 +64,8 @@ QVariant DebuggerStackModel::data(const QModelIndex& index, int role) const {
   return {};
 }
 
-QVariant DebuggerStackModel::headerData(int section,
-                                        Qt::Orientation orientation,
-                                        int role) const noexcept {
+auto DebuggerStackModel::headerData(int section, Qt::Orientation orientation,
+                                    int role) const noexcept -> QVariant {
   if ((role == Qt::DisplayRole) && (orientation == Qt::Horizontal)) {
     switch (section) {
       case Columns::kEntry:

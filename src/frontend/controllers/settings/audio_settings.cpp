@@ -89,7 +89,7 @@ void AudioSettingsController::ConnectSignalsToSlots() noexcept {
           [this](const int index) {
             const auto audio_device = view_.soundCards->currentText();
 
-            AppSettingsModel().SetAudioDeviceID(audio_device);
+            AppSettingsModel().SetDefaultAudioDeviceName(audio_device);
             emit AudioDeviceChanged(audio_device);
           });
 }

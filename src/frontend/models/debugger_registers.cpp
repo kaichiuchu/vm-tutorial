@@ -16,16 +16,20 @@ DebuggerRegistersModel::DebuggerRegistersModel(
     QObject* parent_object, chip8::VMInstance& vm_instance) noexcept
     : QAbstractListModel(parent_object), vm_instance_(vm_instance) {}
 
-int DebuggerRegistersModel::rowCount(const QModelIndex&) const {
+auto DebuggerRegistersModel::rowCount(const QModelIndex&) const noexcept
+    -> int {
   /// The additional rows are for the program counter and the stack pointer.
   constexpr auto kAdditionalRows = 2;
   return chip8::data_size::kV + kAdditionalRows;
 }
 
-int DebuggerRegistersModel::columnCount(const QModelIndex&) const { return 2; }
+auto DebuggerRegistersModel::columnCount(const QModelIndex&) const noexcept
+    -> int {
+  return 2;
+}
 
-QVariant DebuggerRegistersModel::data(const QModelIndex& index,
-                                      int role) const {
+auto DebuggerRegistersModel::data(const QModelIndex& index,
+                                  int role) const noexcept -> QVariant {
   if (role == Qt::DisplayRole) {
     const auto row = index.row();
 
@@ -36,16 +40,16 @@ QVariant DebuggerRegistersModel::data(const QModelIndex& index,
             return QString{"V%1"}.arg(row, 1, 16).toUpper();
 
           case Rows::kSP:
-            return QString{"SP"};
+            return QStringLiteral("SP");
 
           case Rows::kPC:
-            return QString{"PC"};
+            return QStringLiteral("PC");
         }
 
       case Columns::kValue:
         switch (row) {
           case Rows::kV0... Rows::kVF:
-            return QString{"%1"}
+            return QString{"$%1"}
                 .arg(vm_instance_.impl_->V_[row], 1, 16)
                 .rightJustified(2, '0')
                 .toUpper();
@@ -54,7 +58,7 @@ QVariant DebuggerRegistersModel::data(const QModelIndex& index,
             return QString::number(vm_instance_.impl_->stack_pointer_);
 
           case Rows::kPC:
-            return QString{"%1"}
+            return QString{"$%1"}
                 .arg(vm_instance_.impl_->program_counter_, 1, 16)
                 .rightJustified(4, '0')
                 .toUpper();
@@ -64,9 +68,9 @@ QVariant DebuggerRegistersModel::data(const QModelIndex& index,
   return {};
 }
 
-QVariant DebuggerRegistersModel::headerData(int section,
-                                            Qt::Orientation orientation,
-                                            int role) const noexcept {
+auto DebuggerRegistersModel::headerData(int section,
+                                        Qt::Orientation orientation,
+                                        int role) const noexcept -> QVariant {
   if ((role == Qt::DisplayRole) && (orientation == Qt::Horizontal)) {
     switch (section) {
       case Columns::kName:

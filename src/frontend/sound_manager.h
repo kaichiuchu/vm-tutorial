@@ -79,7 +79,7 @@ class SoundManager : public QObject {
   /// it.
   explicit SoundManager(QObject* parent_object) noexcept;
 
-  /// Sets default settings based on the current application settings.
+  /// Configures the sound manager based on the current application settings.
   void SetupFromAppSettings() noexcept;
 
   /// The current interface to send audio data to an audio output device as
@@ -93,7 +93,7 @@ class SoundManager : public QObject {
   /// Emitted when an internal error has been encountered.
   void ErrorEncountered(const QString& error_str);
 
-  /// Emitted when the system declares a new audio output device, or removes
+  /// Emitted when the system declares a new audio output device or removes
   /// one.
   void AudioDevicesUpdated();
 };

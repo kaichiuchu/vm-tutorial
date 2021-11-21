@@ -33,10 +33,10 @@ class LoggerSettingsController : public QWidget {
   explicit LoggerSettingsController(QWidget* parent_object) noexcept;
 
  private:
-  /// Connects various signals from the interface to slots.
+  /// Connects signals from various widgets to slots.
   void ConnectSignalsToSlots() noexcept;
 
-  /// Populates the widget with the current logger settings.
+  /// Populates the logger settings with the current graphics settings.
   void PopulateDataFromAppSettings() noexcept;
 
   /// Changes the text of the font select button to display the name and size of

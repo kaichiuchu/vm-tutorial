@@ -183,11 +183,8 @@ Renderer* MainWindowController::GetRenderer() const noexcept {
 }
 
 void MainWindowController::CreateStatusBarWidgets() noexcept {
-  frame_time_info_ = new QLabel(view_.statusBar);
   fps_info_ = new QLabel(view_.statusBar);
-
   view_.statusBar->addPermanentWidget(fps_info_);
-  view_.statusBar->addPermanentWidget(frame_time_info_);
 }
 
 void MainWindowController::keyPressEvent(QKeyEvent* key_event) noexcept {

@@ -38,6 +38,7 @@ class VMTutorialApplication : public QObject {
   /// Attempts to initialize the audio subsystem.
   ///
   /// If initialization fails, an error message will be displayed to the user.
+  /// It is not a fatal error.
   void InitializeAudio() noexcept;
 
   /// Notifies the user that the audio subsystem failed to initialize.
@@ -45,25 +46,30 @@ class VMTutorialApplication : public QObject {
   /// \param error_message The error message from the audio subsystem.
   void NotifyCriticalAudioFailure(const QString& error_message) noexcept;
 
-  /// The controller for the debugger window.
-  QPointer<DebuggerWindowController> debugger_window_;
-
-  /// The controller for the logger window.
-  QPointer<LoggerWindowController> logger_window_;
-
   /// The controller for the main window.
   MainWindowController* main_window_;
 
-  /// The controller for the settings dialog.
+  /// The controller for the debugger window. It is encapsulated in a QPointer
+  /// because the debugger window is optional.
+  QPointer<DebuggerWindowController> debugger_window_;
+
+  /// The controller for the logger window. It is encapsulated in a QPointer
+  /// because the logger window is optional.
+  QPointer<LoggerWindowController> logger_window_;
+
+  /// The controller for the settings dialog. It is encapsulated in a QPointer
+  /// because the settings dialog is optional.
   QPointer<SettingsDialogController> settings_dialog_;
 
-  /// The sound manager instance.
+  /// The sound manager instance. This may or may not be valid due to an
+  /// initialization error, so it is imperative that before usage the validity
+  /// of this object is valid.
   std::optional<SoundManager*> sound_manager_;
 
-  /// The virtual machine thread.
+  /// The virtual machine thread manager.
   VMThread* vm_thread_;
 
-  /// The current ROM data being executed. We store a 2nd copy as part of the
+  /// The current ROM data being executed. We store a 2nd copy to handle the
   /// reset functionality. The first copy is in the internal memory of the
   /// virtual machine, but we can't be sure if it's self-modifying. That's why
   /// we have another copy here for resetting.

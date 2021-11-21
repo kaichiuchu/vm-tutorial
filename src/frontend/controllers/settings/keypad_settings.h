@@ -37,7 +37,7 @@ class KeypadSettingsController : public QWidget {
   explicit KeypadSettingsController(QWidget* parent_widget) noexcept;
 
  private:
-  /// Populates the widget with the current keypad settings.
+  /// Populates the keypad settings with the current graphics settings.
   void PopulateDataFromAppSettings() noexcept;
 
   /// Updates the text of a CHIP-8 key association button.
