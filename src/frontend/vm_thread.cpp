@@ -12,6 +12,8 @@
 
 #include "vm_thread.h"
 
+#include <thread>
+
 #include "models/app_settings.h"
 
 VMThread::VMThread(QObject* parent_object) noexcept : QThread(parent_object) {
