@@ -185,22 +185,22 @@ void Inject_SNE_Vx_Vy(chip8::ImplementationInterface& impl,
 
 void Inject_SKP_Vx(chip8::ImplementationInterface& impl,
                    const opcode_state state) noexcept {
-  impl.SetKeyState(chip8::Key::k1, state == opcode_state::kBranch
+  impl.SetKeyState(chip8::Key::k0, state == opcode_state::kBranch
                                        ? chip8::KeyState::kPressed
                                        : chip8::KeyState::kReleased);
 
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
-  InjectInstruction(impl, 0xE1, 0x9E);
+  InjectInstruction(impl, 0xE0, 0x9E);
 }
 
 void Inject_SKNP_Vx(chip8::ImplementationInterface& impl,
                     const opcode_state state) noexcept {
-  impl.SetKeyState(chip8::Key::k1, state == opcode_state::kBranch
+  impl.SetKeyState(chip8::Key::k0, state == opcode_state::kBranch
                                        ? chip8::KeyState::kReleased
                                        : chip8::KeyState::kPressed);
 
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
-  InjectInstruction(impl, 0xE1, 0xA1);
+  InjectInstruction(impl, 0xE0, 0xA1);
 }
 }  // namespace
 
@@ -722,7 +722,7 @@ TYPED_TEST(ImplementationTest, Opcode_SKP_Vx_DetectInvalidKey) {
   Inject_SKP_Vx(this->impl_, opcode_state::kBranch);
 
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
-  this->impl_.V_[1] = 0xFE;
+  this->impl_.V_[0] = 0xFE;
 
   // The instruction should fail.
   ASSERT_EQ(this->impl_.Step(), chip8::StepResult::kInvalidKey);
@@ -759,7 +759,7 @@ TYPED_TEST(ImplementationTest, Opcode_SKNP_Vx_DetectInvalidKey) {
   Inject_SKNP_Vx(this->impl_, opcode_state::kBranch);
 
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
-  this->impl_.V_[1] = 0xFE;
+  this->impl_.V_[0] = 0xFE;
 
   // The instruction should fail.
   ASSERT_EQ(this->impl_.Step(), chip8::StepResult::kInvalidKey);

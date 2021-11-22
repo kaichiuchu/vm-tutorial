@@ -38,7 +38,7 @@ class DisassemblerTest : public testing::TestWithParam<TestDataInfo> {};
 // Work on optimizing things that actually matter.
 const std::vector<TestDataInfo> test_data{
     {0x00E0, "CLS"},           {0x00EE, "RET"},
-    {0x1123, "JP $123"},       {0x2123, "CALL $123"},
+    {0x1123, "JP $0123"},      {0x2123, "CALL $0123"},
     {0x3456, "SE V4, $56"},    {0x4567, "SNE V5, $67"},
     {0x5678, "SE V6, V7"},     {0x6244, "LD V2, $44"},
     {0x7123, "ADD V1, $23"},   {0x8121, "OR V1, V2"},
@@ -46,7 +46,7 @@ const std::vector<TestDataInfo> test_data{
     {0x8124, "ADD V1, V2"},    {0x8125, "SUB V1, V2"},
     {0x8126, "SHR V1"},        {0x8127, "SUBN V1, V2"},
     {0x812E, "SHL V1"},        {0x9120, "SNE V1, V2"},
-    {0xA123, "LD I, $123"},    {0xBEE6, "JP V0, $EE6"},
+    {0xA123, "LD I, $0123"},   {0xBEE6, "JP V0, $0EE6"},
     {0xC123, "RND V1, $23"},   {0xD123, "DRW V1, V2, 3"},
     {0xE19E, "SKP V1"},        {0xE1A1, "SKNP V1"},
     {0xF107, "LD V1, DT"},     {0xF10A, "LD V1, K"},

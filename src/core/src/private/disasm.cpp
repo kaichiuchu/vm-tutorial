@@ -98,7 +98,7 @@ auto chip8::debug::DisassembleInstruction(
       return fmt::format("LD I, ${:04X}", instruction.address_);
 
     case chip8::ungrouped_instructions::kJP_V0_Addr:
-      return fmt::format("JP V0, ${:03X}", instruction.address_);
+      return fmt::format("JP V0, ${:04X}", instruction.address_);
 
     case chip8::ungrouped_instructions::kRND:
       return fmt::format("RND V{:X}, ${:02X}", instruction.x_,
