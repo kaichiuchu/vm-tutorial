@@ -29,25 +29,29 @@ auto chip8::debug::DisassembleInstruction(
       }
 
     case chip8::ungrouped_instructions::kJP_Address:
-      return fmt::format("JP ${:X}", instruction.address_);
+      return fmt::format("JP ${:04X}", instruction.address_);
 
     case chip8::ungrouped_instructions::kCALL_Address:
-      return fmt::format("CALL ${:X}", instruction.address_);
+      return fmt::format("CALL ${:04X}", instruction.address_);
 
     case chip8::ungrouped_instructions::kSE_Vx_Imm:
-      return fmt::format("SE V{:X}, ${:X}", instruction.x_, instruction.byte_);
+      return fmt::format("SE V{:X}, ${:02X}", instruction.x_,
+                         instruction.byte_);
 
     case chip8::ungrouped_instructions::kSNE_Vx_Imm:
-      return fmt::format("SNE V{:X}, ${:X}", instruction.x_, instruction.byte_);
+      return fmt::format("SNE V{:X}, ${:02X}", instruction.x_,
+                         instruction.byte_);
 
     case chip8::ungrouped_instructions::kSE_Vx_Vy:
       return fmt::format("SE V{:X}, V{:X}", instruction.x_, instruction.y_);
 
     case chip8::ungrouped_instructions::kLD_Vx_Imm:
-      return fmt::format("LD V{:X}, ${:X}", instruction.x_, instruction.byte_);
+      return fmt::format("LD V{:X}, ${:02X}", instruction.x_,
+                         instruction.byte_);
 
     case chip8::ungrouped_instructions::kADD:
-      return fmt::format("ADD V{:X}, ${:X}", instruction.x_, instruction.byte_);
+      return fmt::format("ADD V{:X}, ${:02X}", instruction.x_,
+                         instruction.byte_);
 
     case chip8::instruction_groups::kMath:
       switch (instruction.nibble_) {
@@ -91,13 +95,14 @@ auto chip8::debug::DisassembleInstruction(
       return fmt::format("SNE V{:X}, V{:X}", instruction.x_, instruction.y_);
 
     case chip8::ungrouped_instructions::kLD_I_Addr:
-      return fmt::format("LD I, ${:X}", instruction.address_);
+      return fmt::format("LD I, ${:04X}", instruction.address_);
 
     case chip8::ungrouped_instructions::kJP_V0_Addr:
-      return fmt::format("JP V0, ${:X}", instruction.address_);
+      return fmt::format("JP V0, ${:03X}", instruction.address_);
 
     case chip8::ungrouped_instructions::kRND:
-      return fmt::format("RND V{:X}, ${:X}", instruction.x_, instruction.byte_);
+      return fmt::format("RND V{:X}, ${:02X}", instruction.x_,
+                         instruction.byte_);
 
     case chip8::ungrouped_instructions::kDRW:
       return fmt::format("DRW V{:X}, V{:X}, {:#}", instruction.x_,
