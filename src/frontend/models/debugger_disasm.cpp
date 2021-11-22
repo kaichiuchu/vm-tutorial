@@ -42,9 +42,8 @@ auto DebuggerDisasmModel::data(const QModelIndex& index,
         return {};
 
       case Section::kAddress:
-        return QString{"$%1"}
-            .arg(2 * index.row(), 1, 16)
-            .rightJustified(2, '0')
+        return QStringLiteral("$%1")
+            .arg(2 * index.row(), 4, 16, QLatin1Char('0'))
             .toUpper();
 
       case Section::kRawInstruction: {
@@ -55,9 +54,8 @@ auto DebuggerDisasmModel::data(const QModelIndex& index,
 
         const auto result = (hi << 8) | lo;
 
-        return QString{"$%1"}
-            .arg(result, 1, 16)
-            .rightJustified(2, '0')
+        return QStringLiteral("%1")
+            .arg(result, 4, 16, QLatin1Char('0'))
             .toUpper();
       }
 

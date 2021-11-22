@@ -37,7 +37,7 @@ auto DebuggerRegistersModel::data(const QModelIndex& index,
       case Columns::kName:
         switch (row) {
           case Rows::kV0... Rows::kVF:
-            return QString{"V%1"}.arg(row, 1, 16).toUpper();
+            return QStringLiteral("V%1").arg(row, 1, 16).toUpper();
 
           case Rows::kSP:
             return QStringLiteral("SP");
@@ -49,18 +49,17 @@ auto DebuggerRegistersModel::data(const QModelIndex& index,
       case Columns::kValue:
         switch (row) {
           case Rows::kV0... Rows::kVF:
-            return QString{"$%1"}
-                .arg(vm_instance_.impl_->V_[row], 1, 16)
-                .rightJustified(2, '0')
+            return QStringLiteral("$%1")
+                .arg(vm_instance_.impl_->V_[row], 2, 16, QLatin1Char('0'))
                 .toUpper();
 
           case Rows::kSP:
             return QString::number(vm_instance_.impl_->stack_pointer_);
 
           case Rows::kPC:
-            return QString{"$%1"}
-                .arg(vm_instance_.impl_->program_counter_, 1, 16)
-                .rightJustified(4, '0')
+            return QStringLiteral("$%1")
+                .arg(vm_instance_.impl_->program_counter_, 4, 16,
+                     QLatin1Char('0'))
                 .toUpper();
         }
     }

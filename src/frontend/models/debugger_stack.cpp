@@ -41,9 +41,8 @@ auto DebuggerStackModel::data(const QModelIndex& index, int role) const noexcept
           return row;
 
         case Columns::kValue:
-          return QString{"%1"}
-              .arg(vm_instance_.impl_->stack_[row], 1, 16)
-              .rightJustified(4, '0')
+          return QStringLiteral("$%1")
+              .arg(vm_instance_.impl_->stack_[row], 4, 16, QLatin1Char('0'))
               .toUpper();
 
         default:
