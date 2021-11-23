@@ -12,6 +12,8 @@
 
 #pragma once
 
+// XXX: This is *REQUIRED* for the frontend to compile.
+#define SDL_MAIN_HANDLED
 #include <SDL2/SDL.h>
 
 #include <QObject>
