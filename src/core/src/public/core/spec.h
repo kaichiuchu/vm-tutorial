@@ -360,9 +360,10 @@ enum class StepResult {
   /// The guest program called too many subroutines.
   kStackOverflow,
 
+  /// The guest program is not in a subroutine, and a step out was requested.
   kNotInSubroutine,
-  kNoSubroutine,
-  kBreakpointReached,
-  kBadProgram
+
+  /// A breakpoint was reached during execution.
+  kBreakpointReached
 };
 }  // namespace chip8

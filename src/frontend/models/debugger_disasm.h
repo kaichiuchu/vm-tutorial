@@ -15,6 +15,7 @@
 #include <core/vm_instance.h>
 
 #include <QAbstractTableModel>
+#include <QPixmap>
 
 /// This class provides a model to display CHIP-8 disassembly.
 class DebuggerDisasmModel : public QAbstractTableModel {
@@ -33,9 +34,14 @@ class DebuggerDisasmModel : public QAbstractTableModel {
   /// Determines the row within the model based on the address passed.
   ///
   /// \returns The row, if any.
-  auto GetRowFromAddress(const uint_fast16_t address) const noexcept -> int;
+  auto GetRowFromAddress(uint_fast16_t address) const noexcept -> int;
 
  private:
+  /// Determines the address associated with a row.
+  ///
+  /// \returns The address associated with a row.
+  auto GetAddressFromRow(unsigned int row) const noexcept -> uint_fast16_t;
+
   /// From Qt documentation:
   ///
   /// Returns the number of columns for the children of the given \p parent.
@@ -102,6 +108,11 @@ class DebuggerDisasmModel : public QAbstractTableModel {
     kDisassembly,
     kResult
   };
+
+  /// The pixmap used to indicate that a breakpoint is set on an address.
+  QPixmap breakpoint_pixmap_;
+
+  QPixmap current_address_pixmap_;
 
   /// The virtual machine instance.
   chip8::VMInstance& vm_instance_;

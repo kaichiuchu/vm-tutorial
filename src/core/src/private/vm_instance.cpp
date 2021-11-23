@@ -27,21 +27,26 @@ chip8::VMInstance::VMInstance() noexcept
   Reset();
 }
 
-void chip8::VMInstance::SetLogMessageFunc(
-    const Logger::LogMessageFunc& func) const noexcept {
-  Logger::Get().log_message_func_ = func;
-}
-
-void chip8::VMInstance::SetLogLevel(const Logger::LogLevel level) noexcept {
-  Logger::Get().level_ = level;
-}
-
 auto chip8::VMInstance::GetTargetFrameRate() const noexcept -> unsigned int {
   return target_frame_rate_;
 }
 
 auto chip8::VMInstance::GetMaxFrameTime() const noexcept -> double {
   return max_frame_time_;
+}
+
+auto chip8::VMInstance::FindBreakpoint(const uint_fast16_t address) noexcept
+    -> std::optional<BreakpointsIterator> {
+  const auto bp_found =
+      std::find_if(breakpoints_.begin(), breakpoints_.end(),
+                   [address](const BreakpointInfo breakpoint) {
+                     return breakpoint.first == address;
+                   });
+
+  if (bp_found != breakpoints_.end()) {
+    return bp_found;
+  }
+  return std::nullopt;
 }
 
 auto chip8::VMInstance::CalculateDurationOfTone() const noexcept -> double {
@@ -73,7 +78,7 @@ void chip8::VMInstance::DecrementTimers() noexcept {
     if (!is_playing_tone_ && play_tone_func_) {
       const auto tone_duration = CalculateDurationOfTone();
 
-      logger.Emit(Logger::LogLevel::kDebug, "Emitting a {:.2f}ms long tone",
+      logger.Emit(Logger::LogLevel::kDebug, "Emitting a {:.2f}ms long tone.",
                   tone_duration);
 
       play_tone_func_(tone_duration);
@@ -94,7 +99,8 @@ void chip8::VMInstance::Reset() noexcept {
   number_of_steps_executed_ = 0;
   is_playing_tone_ = false;
 
-  Logger::Get().Emit(Logger::LogLevel::kInfo, "Virtual machine has been reset");
+  Logger::Get().Emit(Logger::LogLevel::kInfo,
+                     "Virtual machine has been reset.");
 }
 
 auto chip8::VMInstance::SetTiming(const unsigned int instructions_per_second,
@@ -149,15 +155,15 @@ auto chip8::VMInstance::RunForOneFrame() noexcept -> chip8::StepResult {
 }
 
 auto chip8::VMInstance::Step() noexcept -> chip8::StepResult {
-  const auto bp_found =
-      std::find_if(breakpoints_.cbegin(), breakpoints_.cend(),
-                   [this](const BreakpointInfo breakpoint) {
-                     return breakpoint.first == impl_->program_counter_;
-                   });
+  // Check to see if we have a breakpoint corresponding to the current program
+  // counter.
+  const auto breakpoint = FindBreakpoint(impl_->program_counter_);
 
-  if (bp_found != breakpoints_.cend()) {
-    if ((*bp_found).second) {
-      breakpoints_.erase(bp_found);
+  if (breakpoint) {
+    if ((*breakpoint.value()).second == BreakpointFlags::kClearAfterTrigger) {
+      // The breakpoint is to be removed after it's been triggered once, so do
+      // that here.
+      breakpoints_.erase(breakpoint.value());
     }
     return chip8::StepResult::kBreakpointReached;
   }
@@ -174,51 +180,31 @@ auto chip8::VMInstance::Step() noexcept -> chip8::StepResult {
   return result;
 }
 
-auto chip8::VMInstance::PrepareForStepInto() noexcept -> chip8::StepResult {
-  auto stop_pc = -1;
-
-  for (auto pc = impl_->program_counter_;
-       pc < chip8::data_size::kInternalMemory;
-       pc += chip8::data_size::kInstructionLength) {
-    const auto hi = impl_->memory_[pc + 0];
-    const auto lo = impl_->memory_[pc + 1];
-
-    const chip8::Instruction instruction((hi << 8) | lo);
-
-    if (instruction.group_ == chip8::ungrouped_instructions::kCALL_Address) {
-      stop_pc = instruction.address_;
-      break;
-    }
-  }
-
-  if (stop_pc == -1) {
-    return chip8::StepResult::kNoSubroutine;
-  }
-  breakpoints_.push_back({stop_pc, true});
-  return chip8::StepResult::kSuccess;
-}
-
-auto chip8::VMInstance::PrepareForStepOver() noexcept -> chip8::StepResult {
-  auto stop_pc = 0;
-
+void chip8::VMInstance::PrepareForStepOver() noexcept {
   const auto pc =
       impl_->program_counter_ + chip8::data_size::kInstructionLength;
 
   chip8::Instruction instruction(pc);
 
-  if (instruction.group_ == chip8::ungrouped_instructions::kCALL_Address) {
-    stop_pc = instruction.address_ + chip8::data_size::kInstructionLength;
-  } else {
-    stop_pc = pc;
+  switch (instruction.group_) {
+    case chip8::ungrouped_instructions::kJP_Address:
+    case chip8::ungrouped_instructions::kCALL_Address:
+    case chip8::ungrouped_instructions::kJP_V0_Addr:
+      breakpoints_.push_back(
+          {instruction.address_, BreakpointFlags::kClearAfterTrigger});
+      return;
+
+    default:
+      breakpoints_.push_back({pc, BreakpointFlags::kClearAfterTrigger});
+      return;
   }
-  breakpoints_.push_back({stop_pc, true});
-  return chip8::StepResult::kSuccess;
 }
 
 auto chip8::VMInstance::PrepareForStepOut() noexcept -> chip8::StepResult {
   if (impl_->stack_pointer_ < 0) {
     return chip8::StepResult::kNotInSubroutine;
   }
-  breakpoints_.push_back({impl_->stack_[impl_->stack_pointer_], true});
+  breakpoints_.push_back({impl_->stack_[impl_->stack_pointer_],
+                          BreakpointFlags::kClearAfterTrigger});
   return chip8::StepResult::kSuccess;
 }

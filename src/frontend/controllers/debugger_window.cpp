@@ -71,36 +71,25 @@ void DebuggerWindowController::ConnectSignalsToSlots() noexcept {
     const auto indices = model->selectedIndexes();
 
     if (!indices.empty()) {
-      vm_instance_.breakpoints_.push_back({indices[0].row() * 2, true});
+      vm_instance_.breakpoints_.push_back(
+          {indices[0].row() * 2,
+           chip8::VMInstance::BreakpointFlags::kClearAfterTrigger});
       emit ToggleRunState();
     }
   });
 
   connect(view_.actionStep_Into, &QAction::triggered, [this]() {
     EnableControls(false);
-    const auto result = vm_instance_.PrepareForStepInto();
+    const auto result = vm_instance_.Step();
 
-    if (result == chip8::StepResult::kNoSubroutine) {
-      view_.statusbar->showMessage(
-          tr("No subroutines in this scope were found."));
-
-      EnableControls(true);
-      return;
-    }
-    emit ToggleRunState();
+    EnableControls(true);
+    NotifyBreakpointHit(vm_instance_.impl_->program_counter_);
   });
 
   connect(view_.actionStep_Over, &QAction::triggered, [this]() {
     EnableControls(false);
-    const auto result = vm_instance_.PrepareForStepOver();
+    vm_instance_.PrepareForStepOver();
 
-    if (result == chip8::StepResult::kBadProgram) {
-      view_.statusbar->showMessage(
-          tr("Only CALL instructions are present in the guest program?"));
-
-      EnableControls(true);
-      return;
-    }
     emit ToggleRunState();
   });
 

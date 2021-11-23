@@ -38,8 +38,9 @@ void VMThread::ConnectCallbacksToSlots() noexcept {
     emit PlayTone(tone_duration);
   };
 
-  vm_instance_.SetLogMessageFunc(
-      [this](const std::string& msg) { emit LogMessageEmitted(msg); });
+  chip8::Logger::Get().log_message_func_ = [this](const std::string& msg) {
+    emit LogMessageEmitted(msg);
+  };
 }
 
 void VMThread::SetupFromAppSettings() noexcept {

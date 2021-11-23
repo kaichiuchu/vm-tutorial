@@ -14,6 +14,7 @@
 
 #include <functional>
 #include <memory>
+#include <optional>
 #include <vector>
 
 #include "impl.h"
@@ -25,29 +26,24 @@ namespace chip8 {
 /// benchmarks.
 class VMInstance {
  public:
+  /// Alias to enhance readability in template arguments.
   using ProgramCounter = uint_fast16_t;
-  using ClearAfterTrigger = bool;
 
-  using BreakpointInfo = std::pair<ProgramCounter, ClearAfterTrigger>;
+  /// Defines the behavior of the breakpoint after it is triggered.
+  enum class BreakpointFlags {
+    // The breakpoint should be removed from the breakpoint list after it is
+    // triggered.
+    kClearAfterTrigger
+  };
+
+  /// Defines a pair containing information necessary to define a breakpoint.
+  using BreakpointInfo = std::pair<ProgramCounter, BreakpointFlags>;
+
+  using BreakpointsIterator = std::vector<BreakpointInfo>::iterator;
 
   /// Configures the virtual machine to execute 500 instructions per second
   /// (500Hz) within 60 frames.
   VMInstance() noexcept;
-
-  /// Sets the log message callback function.
-  ///
-  /// \param func The function to call when a log message has been emitted. If
-  /// this parameter is \p nullptr, logging is disabled.
-  void SetLogMessageFunc(const Logger::LogMessageFunc& func) const noexcept;
-
-  /// Sets the log level.
-  ///
-  /// The log levels are inclusive; for example, if `level` is LogLevel::kDebug,
-  /// then messages from the Info and Warning log levels will be emitted as
-  /// well.
-  ///
-  /// \param level The log level to use.
-  static void SetLogLevel(Logger::LogLevel level) noexcept;
 
   /// Retrieves the target number of frames per second.
   ///
@@ -62,6 +58,15 @@ class VMInstance {
   /// \returns The maximum frame time in milliseconds as determined by the last
   /// call to \ref SetTiming().
   auto GetMaxFrameTime() const noexcept -> double;
+
+  /// Checks to see if a breakpoint exists.
+  ///
+  /// \param address The address to search for.
+  ///
+  /// \returns \p An iterator to the breakpoint if it was found, or \p
+  /// std::nullopt otherwise.
+  auto FindBreakpoint(uint_fast16_t address) noexcept
+      -> std::optional<BreakpointsIterator>;
 
   /// Resets the virtual machine to a well-defined startup state.
   ///
@@ -162,21 +167,11 @@ class VMInstance {
   /// operation; refer to \ref chip8::StepResult for details.
   auto Step() noexcept -> chip8::StepResult;
 
-  /// Executes the virtual machine and breaks when the first line of the nearest
-  /// subroutine is reached.
-  ///
-  /// \returns A step result which could be indicative of an error or normal
-  /// operation; refer to \ref chip8::StepResult for details.
-  auto PrepareForStepInto() noexcept -> chip8::StepResult;
+  /// Adds a breakpoint corresponding to the address of the first non CALL
+  /// instruction in the current scope.
+  auto PrepareForStepOver() noexcept -> void;
 
-  /// Executes the virtual machine and breaks when the first line which is not a
-  /// subroutine call instruction is reached.
-  ///
-  /// \returns A step result which could be indicative of an error or normal
-  /// operation; refer to \ref chip8::StepResult for details.
-  auto PrepareForStepOver() noexcept -> chip8::StepResult;
-
-  /// Executes the virtual machine until the current subroutine returns.
+  /// Adds a breakpoint corresponding to the return address of a subroutine.
   ///
   /// \returns A step result which could be indicative of an error or normal
   /// operation; refer to \ref chip8::StepResult for details.
@@ -200,6 +195,7 @@ class VMInstance {
   /// about sound.
   std::function<void(const double)> play_tone_func_;
 
+  // Defines a list of breakpoints.
   std::vector<BreakpointInfo> breakpoints_;
 
  private:
