@@ -14,6 +14,9 @@
 
 #include <models/app_settings.h>
 
+#include <QInputDialog>
+#include <QMessageBox>
+
 DebuggerWindowController::DebuggerWindowController(
     chip8::VMInstance& vm_instance) noexcept
     : vm_instance_(vm_instance),
@@ -114,7 +117,38 @@ void DebuggerWindowController::ConnectSignalsToSlots() noexcept {
     view_.disasmView->scrollTo(disasm_model_->index(row, 0));
   });
 
-  connect(view_.actionGo_to_Address, &QAction::triggered, [this]() {});
+  connect(view_.actionGo_to_Address, &QAction::triggered, [this]() {
+    QInputDialog address_dialog;
+    address_dialog.setInputMode(QInputDialog::TextInput);
+    address_dialog.setWindowTitle(tr("Go to address"));
+
+    auto text_edit = address_dialog.findChild<QLineEdit*>();
+    text_edit->setInputMask("$HHHH");
+
+    if (address_dialog.exec() == QInputDialog::Accepted) {
+      // We'll have to remove the prefix from the text to get the correct value.
+      const auto address_text = text_edit->text().mid(1);
+
+      if (!address_text.isEmpty()) {
+        bool ok;
+        const auto value = address_text.toUInt(&ok, 16);
+
+        if (ok) {
+          const auto row = disasm_model_->GetRowFromAddress(value);
+          view_.disasmView->scrollTo(disasm_model_->index(row, 0));
+
+          return;
+        }
+
+        auto str = QString(tr("Unable to convert "));
+        str += QString("%1").arg(address_text);
+        str += QString(
+            tr(" to an integer. This is an internal fault, please report it."));
+
+        QMessageBox::critical(this, tr("Value conversion error"), str);
+      }
+    }
+  });
 }
 
 void DebuggerWindowController::SetupFromAppSettings() noexcept {

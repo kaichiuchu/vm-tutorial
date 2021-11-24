@@ -323,6 +323,14 @@ void VMTutorialApplication::StartROM(const QString& rom_file_path) noexcept {
 }
 
 void VMTutorialApplication::ConnectDebuggerSignalsToSlots() noexcept {
+  connect(debugger_window_, &DebuggerWindowController::destroyed, this,
+          [this](QObject*) {
+            // The user doesn't care about the debugger anymore, so we need to
+            // clear any breakpoints that may still be set so as to not cause
+            // the thread to suddenly stop.
+            vm_thread_->vm_instance_.breakpoints_.clear();
+          });
+
   connect(debugger_window_, &DebuggerWindowController::ToggleRunState, this,
           [this]() {
             if (vm_thread_->isRunning()) {

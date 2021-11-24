@@ -85,9 +85,7 @@ void Renderer::CreateTexture() noexcept {
 }
 
 void Renderer::SetupFromAppSettings() noexcept {
-  AppSettingsModel app_settings;
-
-  EnableBilinearFiltering(app_settings.BilinearFilteringEnabled());
+  EnableBilinearFiltering(AppSettingsModel().BilinearFilteringEnabled());
 }
 
 void Renderer::CreateVertexArray() noexcept {
