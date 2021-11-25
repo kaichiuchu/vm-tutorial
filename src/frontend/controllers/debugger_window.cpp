@@ -35,6 +35,37 @@ DebuggerWindowController::DebuggerWindowController(
   SetupFromAppSettings();
 }
 
+auto DebuggerWindowController::ScrollToAddress(
+    const uint_fast16_t address) noexcept -> bool {
+  if (!disasm_model_->SetStartAddress(address)) {
+    return false;
+  }
+
+  const auto row = disasm_model_->GetRowFromAddress(address);
+  view_.disasmView->scrollTo(disasm_model_->index(row, 0));
+
+  return true;
+}
+
+void DebuggerWindowController::NotifyInvalidJumpAddress(
+    const uint_fast16_t address) noexcept {
+  const auto translated = tr("is not a valid address.");
+  const auto address_str =
+      QStringLiteral("$%1").arg(address, 4, 16, QLatin1Char('0')).toUpper();
+  auto str = QString{"%1 %2"}.arg(address_str).arg(translated);
+
+  QMessageBox::critical(this, tr("Invalid address"), str);
+}
+
+void DebuggerWindowController::NotifyValueConversionError(
+    const QString& address_text) noexcept {
+  const auto translated =
+      tr("The value was unable to be converted due to an internal fault, "
+         "please report this.");
+
+  QMessageBox::critical(this, tr("Value conversion error"), translated);
+}
+
 void DebuggerWindowController::NotifyBreakpointHit(
     const uint_fast16_t address) noexcept {
   const auto message = tr("Breakpoint reached at");
@@ -44,8 +75,7 @@ void DebuggerWindowController::NotifyBreakpointHit(
   view_.statusbar->showMessage(QString{"%1 %2."}.arg(message, address_str),
                                10000);
 
-  const auto row = disasm_model_->GetRowFromAddress(address);
-  view_.disasmView->scrollTo(disasm_model_->index(row, 0));
+  ScrollToAddress(address);
 }
 
 void DebuggerWindowController::EnableControls(const bool enabled) noexcept {
@@ -62,6 +92,10 @@ void DebuggerWindowController::EnableControls(const bool enabled) noexcept {
   view_.actionStep_Out->setEnabled(enabled);
   view_.actionStep_Over->setEnabled(enabled);
   view_.actionTrace->setEnabled(enabled);
+
+  if (enabled) {
+    ScrollToAddress(vm_instance_.impl_->program_counter_);
+  }
 }
 
 void DebuggerWindowController::ConnectSignalsToSlots() noexcept {
@@ -110,12 +144,8 @@ void DebuggerWindowController::ConnectSignalsToSlots() noexcept {
     emit ToggleRunState();
   });
 
-  connect(view_.actionGo_to_PC, &QAction::triggered, [this]() {
-    const auto row =
-        disasm_model_->GetRowFromAddress(vm_instance_.impl_->program_counter_);
-
-    view_.disasmView->scrollTo(disasm_model_->index(row, 0));
-  });
+  connect(view_.actionGo_to_PC, &QAction::triggered,
+          [this]() { ScrollToAddress(vm_instance_.impl_->program_counter_); });
 
   connect(view_.actionGo_to_Address, &QAction::triggered, [this]() {
     QInputDialog address_dialog;
@@ -129,23 +159,20 @@ void DebuggerWindowController::ConnectSignalsToSlots() noexcept {
       // We'll have to remove the prefix from the text to get the correct value.
       const auto address_text = text_edit->text().mid(1);
 
-      if (!address_text.isEmpty()) {
-        bool ok;
-        const auto value = address_text.toUInt(&ok, 16);
+      if (address_text.isEmpty()) {
+        return;
+      }
 
-        if (ok) {
-          const auto row = disasm_model_->GetRowFromAddress(value);
-          view_.disasmView->scrollTo(disasm_model_->index(row, 0));
+      bool ok;
+      const auto address = address_text.toUInt(&ok, 16);
 
-          return;
-        }
+      if (!ok) {
+        NotifyValueConversionError(address_text);
+        return;
+      }
 
-        auto str = QString(tr("Unable to convert "));
-        str += QString("%1").arg(address_text);
-        str += QString(
-            tr(" to an integer. This is an internal fault, please report it."));
-
-        QMessageBox::critical(this, tr("Value conversion error"), str);
+      if (!ScrollToAddress(address)) {
+        NotifyInvalidJumpAddress(address);
       }
     }
   });

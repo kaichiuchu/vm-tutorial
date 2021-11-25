@@ -33,8 +33,17 @@ class DebuggerDisasmModel : public QAbstractTableModel {
 
   /// Determines the row within the model based on the address passed.
   ///
+  /// \param address The memory address associated with some row.
+  ///
   /// \returns The row, if any.
   auto GetRowFromAddress(uint_fast16_t address) const noexcept -> int;
+
+  /// Sets the address to start disassembling from.
+  ///
+  /// \param address The address to disassemble from.
+  ///
+  /// \returns \p true if the address was valid, or \p false otherwise.
+  auto SetStartAddress(uint_fast16_t address) noexcept -> bool;
 
  private:
   /// Determines the address associated with a row.
@@ -109,9 +118,15 @@ class DebuggerDisasmModel : public QAbstractTableModel {
     kResult
   };
 
+  /// The address to start disassembling from. This is necessary because CHIP-8
+  /// instructions are sadly not byte-aligned.
+  uint_fast16_t start_address_;
+
   /// The pixmap used to indicate that a breakpoint is set on an address.
   QPixmap breakpoint_pixmap_;
 
+  /// The pixmap used to indicate what the current program counter is, or the
+  /// current stack pointer.
   QPixmap current_address_pixmap_;
 
   /// The virtual machine instance.

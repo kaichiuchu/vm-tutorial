@@ -51,6 +51,26 @@ class DebuggerWindowController : public QMainWindow {
   void EnableControls(const bool enabled) noexcept;
 
  private:
+  /// Attempts to scroll to an address on the disassembler view.
+  ///
+  /// \param address The address to scroll to.
+  ///
+  /// \returns \p true if the address was valid and the view was scrolled, or \p
+  /// false otherwise.
+  auto ScrollToAddress(uint_fast16_t address) noexcept -> bool;
+
+  /// Notifies the user that the value provided in the address input dialog
+  /// could not be converted due to an internal Qt fault.
+  ///
+  /// \param address_text The address the user entered.
+  void NotifyValueConversionError(const QString& address_text) noexcept;
+
+  /// Notifies the user that the value provided in the address input dialog is
+  /// not a valid address.
+  ///
+  /// \param address The address the user entered.
+  void NotifyInvalidJumpAddress(uint_fast16_t address) noexcept;
+
   /// Connects signals from various widgets to slots.
   void ConnectSignalsToSlots() noexcept;
 

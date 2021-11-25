@@ -29,12 +29,26 @@ DebuggerDisasmModel::DebuggerDisasmModel(
 
 auto DebuggerDisasmModel::GetRowFromAddress(
     const uint_fast16_t address) const noexcept -> int {
-  return static_cast<int>(address / 2);
+  return static_cast<int>((start_address_ - address) /
+                          chip8::data_size::kInstructionLength);
 }
 
 auto DebuggerDisasmModel::GetAddressFromRow(
     const unsigned int row) const noexcept -> uint_fast16_t {
-  return 2 * row;
+  return start_address_ + (chip8::data_size::kInstructionLength * row);
+}
+
+auto DebuggerDisasmModel::SetStartAddress(uint_fast16_t address) noexcept
+    -> bool {
+  if (address >= chip8::data_size::kInternalMemory) {
+    return false;
+  }
+
+  beginResetModel();
+  start_address_ = address;
+  endResetModel();
+
+  return true;
 }
 
 auto DebuggerDisasmModel::columnCount(const QModelIndex& parent) const noexcept
@@ -44,23 +58,23 @@ auto DebuggerDisasmModel::columnCount(const QModelIndex& parent) const noexcept
 
 auto DebuggerDisasmModel::rowCount(const QModelIndex& parent) const noexcept
     -> int {
-  return chip8::data_size::kInternalMemory /
+  return (chip8::data_size::kInternalMemory - start_address_) /
          chip8::data_size::kInstructionLength;
 }
 
 auto DebuggerDisasmModel::data(const QModelIndex& index,
                                int role) const noexcept -> QVariant {
+  const auto address = GetAddressFromRow(index.row());
+
   switch (role) {
     case Qt::DisplayRole:
       switch (index.column()) {
         case Section::kAddress:
           return QStringLiteral("$%1")
-              .arg(2 * index.row(), 4, 16, QLatin1Char('0'))
+              .arg(address, 4, 16, QLatin1Char('0'))
               .toUpper();
 
         case Section::kRawInstruction: {
-          const auto address = GetAddressFromRow(index.row());
-
           const auto hi = vm_instance_.impl_->memory_[address + 0];
           const auto lo = vm_instance_.impl_->memory_[address + 1];
 
@@ -72,8 +86,6 @@ auto DebuggerDisasmModel::data(const QModelIndex& index,
         }
 
         case Section::kDisassembly: {
-          const auto address = GetAddressFromRow(index.row());
-
           const auto hi = vm_instance_.impl_->memory_[address + 0];
           const auto lo = vm_instance_.impl_->memory_[address + 1];
 
@@ -92,9 +104,7 @@ auto DebuggerDisasmModel::data(const QModelIndex& index,
 
     case Qt::DecorationRole:
       switch (index.column()) {
-        case Section::kBreakpoint: {
-          const auto address = GetAddressFromRow(index.row());
-
+        case Section::kBreakpoint:
           if (vm_instance_.FindBreakpoint(address)) {
             return breakpoint_pixmap_;
           }
@@ -103,7 +113,6 @@ auto DebuggerDisasmModel::data(const QModelIndex& index,
             return current_address_pixmap_;
           }
           return {};
-        }
 
         default:
           return {};

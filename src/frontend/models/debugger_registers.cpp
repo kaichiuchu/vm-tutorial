@@ -18,8 +18,9 @@ DebuggerRegistersModel::DebuggerRegistersModel(
 
 auto DebuggerRegistersModel::rowCount(const QModelIndex&) const noexcept
     -> int {
-  /// The additional rows are for the program counter and the stack pointer.
-  constexpr auto kAdditionalRows = 2;
+  /// The additional rows are for the program counter, stack pointer, delay and
+  /// sound timers.
+  constexpr auto kAdditionalRows = 4;
   return chip8::data_size::kV + kAdditionalRows;
 }
 
@@ -30,41 +31,71 @@ auto DebuggerRegistersModel::columnCount(const QModelIndex&) const noexcept
 
 auto DebuggerRegistersModel::data(const QModelIndex& index,
                                   int role) const noexcept -> QVariant {
-  if (role == Qt::DisplayRole) {
-    const auto row = index.row();
+  const auto row = index.row();
 
-    switch (index.column()) {
-      case Columns::kName:
-        switch (row) {
-          case Rows::kV0... Rows::kVF:
-            return QStringLiteral("V%1").arg(row, 1, 16).toUpper();
+  switch (role) {
+    case Qt::DisplayRole:
+      switch (index.column()) {
+        case Columns::kName:
+          switch (row) {
+            case Rows::kV0... Rows::kVF:
+              return QStringLiteral("V%1").arg(row, 1, 16).toUpper();
 
-          case Rows::kSP:
-            return QStringLiteral("SP");
+            case Rows::kSP:
+              return QStringLiteral("SP");
 
-          case Rows::kPC:
-            return QStringLiteral("PC");
-        }
+            case Rows::kPC:
+              return QStringLiteral("PC");
 
-      case Columns::kValue:
-        switch (row) {
-          case Rows::kV0... Rows::kVF:
-            return QStringLiteral("$%1")
-                .arg(vm_instance_.impl_->V_[row], 2, 16, QLatin1Char('0'))
-                .toUpper();
+            case Rows::kDT:
+              return QStringLiteral("DT");
 
-          case Rows::kSP:
-            return QString::number(vm_instance_.impl_->stack_pointer_);
+            case Rows::kST:
+              return QStringLiteral("ST");
 
-          case Rows::kPC:
-            return QStringLiteral("$%1")
-                .arg(vm_instance_.impl_->program_counter_, 4, 16,
-                     QLatin1Char('0'))
-                .toUpper();
-        }
-    }
+            default:
+              return {};
+          }
+
+        case Columns::kValue:
+          switch (row) {
+            case Rows::kV0... Rows::kVF:
+              return QStringLiteral("$%1")
+                  .arg(vm_instance_.impl_->V_[row], 2, 16, QLatin1Char('0'))
+                  .toUpper();
+
+            case Rows::kSP:
+              return QString::number(vm_instance_.impl_->stack_pointer_);
+
+            case Rows::kPC:
+              return QStringLiteral("$%1")
+                  .arg(vm_instance_.impl_->program_counter_, 4, 16,
+                       QLatin1Char('0'))
+                  .toUpper();
+
+            case Rows::kDT:
+              return QStringLiteral("$%1")
+                  .arg(vm_instance_.impl_->delay_timer_, 2, 16,
+                       QLatin1Char('0'))
+                  .toUpper();
+
+            case Rows::kST:
+              return QStringLiteral("$%1")
+                  .arg(vm_instance_.impl_->sound_timer_, 2, 16,
+                       QLatin1Char('0'))
+                  .toUpper();
+
+            default:
+              return {};
+          }
+
+        default:
+          return {};
+      }
+
+    default:
+      return {};
   }
-  return {};
 }
 
 auto DebuggerRegistersModel::headerData(int section,

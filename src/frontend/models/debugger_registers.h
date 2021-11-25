@@ -109,10 +109,18 @@ class DebuggerRegistersModel : public QAbstractListModel {
     kVD,
     kVE,
     kVF,
-    // Stack pointer
+
+    /// Stack pointer
     kSP,
-    // Program counter
-    kPC
+
+    /// Program counter
+    kPC,
+
+    /// Delay timer
+    kDT,
+
+    /// Sound timer
+    kST,
   };
 
   /// The virtual machine instance.

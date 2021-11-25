@@ -187,9 +187,7 @@ void chip8::VMInstance::PrepareForStepOver() noexcept {
   chip8::Instruction instruction(pc);
 
   switch (instruction.group_) {
-    case chip8::ungrouped_instructions::kJP_Address:
     case chip8::ungrouped_instructions::kCALL_Address:
-    case chip8::ungrouped_instructions::kJP_V0_Addr:
       breakpoints_.push_back(
           {instruction.address_, BreakpointFlags::kClearAfterTrigger});
       return;
