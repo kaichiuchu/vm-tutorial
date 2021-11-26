@@ -241,12 +241,10 @@ void DebuggerWindowController::ConnectSignalsToSlots() noexcept {
 }
 
 void DebuggerWindowController::SetupFromAppSettings() noexcept {
-#if 0
   const auto font = AppSettingsModel().GetDebuggerFont();
 
   view_.disasmView->setFont(font);
   view_.registerView->setFont(font);
   view_.stackView->setFont(font);
   view_.breakpointsWidget->setFont(font);
-#endif
 }

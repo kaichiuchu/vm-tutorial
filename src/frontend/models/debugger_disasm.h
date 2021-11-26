@@ -120,7 +120,7 @@ class DebuggerDisasmModel : public QAbstractTableModel {
 
   /// The address to start disassembling from. This is necessary because CHIP-8
   /// instructions are sadly not byte-aligned.
-  uint_fast16_t start_address_;
+  uint_fast16_t start_address_ = 0x000;
 
   /// The pixmap used to indicate that a breakpoint is set on an address.
   QPixmap breakpoint_pixmap_;
