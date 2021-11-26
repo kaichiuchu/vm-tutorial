@@ -10,6 +10,7 @@
 // with this software. If not, see
 // <http://creativecommons.org/publicdomain/zero/1.0/>.
 
+#include <core/disasm.h>
 #include <core/vm_instance.h>
 
 #include <algorithm>
@@ -25,6 +26,38 @@ chip8::VMInstance::VMInstance() noexcept
   SetTiming(chip8::timing::kDefaultInstructionsPerSecond,
             chip8::timing::kDefaultFrameRate);
   Reset();
+}
+
+auto chip8::VMInstance::StartTracing(std::string_view file_name) noexcept
+    -> bool {
+  if (trace_info_.file_handle_.is_open()) {
+    return false;
+  }
+
+  trace_info_.file_handle_.open(file_name.data(), std::ofstream::out);
+
+  if (!trace_info_.file_handle_) {
+    return false;
+  }
+
+  trace_info_.file_name_ = file_name;
+  Logger::Get().Emit(Logger::LogLevel::kDebug, "Tracing file {} opened.",
+                     file_name);
+  return true;
+}
+
+void chip8::VMInstance::StopTracing() noexcept {
+  if (trace_info_.file_handle_) {
+    trace_info_.file_handle_.flush();
+    trace_info_.file_handle_.close();
+
+    Logger::Get().Emit(Logger::LogLevel::kDebug, "Tracing to {} stopped.",
+                       trace_info_.file_name_);
+  }
+}
+
+auto chip8::VMInstance::IsTracing() const noexcept -> bool {
+  return !!trace_info_.file_handle_;
 }
 
 auto chip8::VMInstance::GetTargetFrameRate() const noexcept -> unsigned int {
@@ -155,6 +188,18 @@ auto chip8::VMInstance::RunForOneFrame() noexcept -> chip8::StepResult {
 }
 
 auto chip8::VMInstance::Step() noexcept -> chip8::StepResult {
+  if (trace_info_.file_handle_) {
+    const auto hi = impl_->memory_[impl_->program_counter_ + 0];
+    const auto lo = impl_->memory_[impl_->program_counter_ + 1];
+
+    chip8::Instruction instruction((hi << 8) | lo);
+
+    trace_info_.file_handle_
+        << fmt::format("${:04X}: {}", impl_->program_counter_,
+                       chip8::debug::DisassembleInstruction(instruction))
+        << '\n';
+  }
+
   // Check to see if we have a breakpoint corresponding to the current program
   // counter.
   const auto breakpoint = FindBreakpoint(impl_->program_counter_);

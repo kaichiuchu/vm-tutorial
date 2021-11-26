@@ -71,6 +71,19 @@ class DebuggerWindowController : public QMainWindow {
   /// \param address The address the user entered.
   void NotifyInvalidJumpAddress(uint_fast16_t address) noexcept;
 
+  /// Notifies the user that tracing to a file has begun.
+  ///
+  /// \param file_name The file that tracing results are written to.
+  void NotifyTraceStart(const QString& trace_file) noexcept;
+
+  /// Notifies the user that tracing has ended.
+  void NotifyTraceEnded() noexcept;
+
+  /// Notifies the user that the trace file was unable to be opened for writing.
+  ///
+  /// \param trace_file The file that was unable to be opened for tracing.
+  void NotifyTraceFileOpenError(const QString& trace_file) noexcept;
+
   /// Connects signals from various widgets to slots.
   void ConnectSignalsToSlots() noexcept;
 

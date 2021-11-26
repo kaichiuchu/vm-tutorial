@@ -34,7 +34,8 @@ void InterpreterImplementation::SkipNextInstructionIf(
     const bool condition_met) noexcept {
   if (condition_met) {
     next_program_counter_ =
-        program_counter_ + (chip8::data_size::kInstructionLength * 2);
+        program_counter_ + (chip8::data_size::kInstructionLength *
+                            chip8::data_size::kInstructionLength);
   }
 }
 

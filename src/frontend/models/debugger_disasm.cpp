@@ -15,7 +15,6 @@
 #include <core/disasm.h>
 
 #include <QIcon>
-#include <algorithm>
 
 DebuggerDisasmModel::DebuggerDisasmModel(
     QObject* parent_object, chip8::VMInstance& vm_instance) noexcept

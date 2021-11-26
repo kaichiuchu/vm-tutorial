@@ -12,6 +12,7 @@
 
 #pragma once
 
+#include <fstream>
 #include <functional>
 #include <memory>
 #include <optional>
@@ -33,17 +34,41 @@ class VMInstance {
   enum class BreakpointFlags {
     // The breakpoint should be removed from the breakpoint list after it is
     // triggered.
-    kClearAfterTrigger
+    kClearAfterTrigger,
+
+    // The breakpoint should remain even after it is triggered.
+    kPreserve
   };
 
   /// Defines a pair containing information necessary to define a breakpoint.
   using BreakpointInfo = std::pair<ProgramCounter, BreakpointFlags>;
 
+  /// Alias to enhance readability of \ref FindBreakpoint().
   using BreakpointsIterator = std::vector<BreakpointInfo>::iterator;
 
   /// Configures the virtual machine to execute 500 instructions per second
   /// (500Hz) within 60 frames.
   VMInstance() noexcept;
+
+  /// Enables tracing to a file.
+  ///
+  /// Tracing logs the execution of the program to a file.
+  ///
+  /// \param file_name The file to write traces to.
+  ///
+  /// \returns \p true if the file was successfully opened, or \p false
+  /// otherwise.
+  auto StartTracing(std::string_view file_name) noexcept -> bool;
+
+  /// Stops tracing to the current file, flushing the stream and closing it.
+  ///
+  /// If tracing isn't active, this method does nothing.
+  void StopTracing() noexcept;
+
+  /// Determines if a trace file is currently active.
+  ///
+  /// \returns \p true if a trace file stream is active, or \p false otherwise.
+  auto IsTracing() const noexcept -> bool;
 
   /// Retrieves the target number of frames per second.
   ///
@@ -217,6 +242,14 @@ class VMInstance {
   /// is determined by the call to the \ref SetTiming() method.
   unsigned int number_of_steps_per_frame_;
 
+  /// The current number of instructions to execute per second as set by the
+  /// last call to \ref SetTiming().
+  unsigned int instructions_per_sec_;
+
+  /// The target frame rate as passed by the last call to the \ref SetTiming()
+  /// method.
+  unsigned int target_frame_rate_;
+
   /// The total number of steps executed since the last call to the \ref Reset()
   /// method.
   uintmax_t number_of_steps_executed_;
@@ -226,10 +259,6 @@ class VMInstance {
   /// sound timer normally.
   bool is_playing_tone_;
 
-  /// The target frame rate as passed by the last call to the \ref SetTiming()
-  /// method.
-  unsigned int target_frame_rate_;
-
   /// The maximum frame time as determined by the last call to the \ref
   /// SetTiming() method.
   double max_frame_time_;
@@ -237,8 +266,9 @@ class VMInstance {
   /// The current frame rate as set by the last call to \ref SetTiming().
   double frame_rate_;
 
-  /// The current number of instructions to execute per second as set by the
-  /// last call to \ref SetTiming().
-  unsigned int instructions_per_sec_;
+  struct {
+    std::ofstream file_handle_;
+    std::string file_name_;
+  } trace_info_;
 };
 }  // namespace chip8

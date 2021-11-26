@@ -14,6 +14,7 @@
 
 #include <models/app_settings.h>
 
+#include <QFileDialog>
 #include <QInputDialog>
 #include <QMessageBox>
 
@@ -76,6 +77,31 @@ void DebuggerWindowController::NotifyBreakpointHit(
                                10000);
 
   ScrollToAddress(address);
+}
+
+void DebuggerWindowController::NotifyTraceStart(
+    const QString& trace_file) noexcept {
+  auto str = QString{tr("Tracing to")};
+  str += QString{" %1 "}.arg(trace_file);
+  str += tr("enabled.");
+
+  QMessageBox::information(this, tr("Trace started"), str);
+}
+
+/// Notifies the user that tracing has ended.
+void DebuggerWindowController::NotifyTraceEnded() noexcept {
+  const auto str = tr("Tracing has stopped.");
+  QMessageBox::information(this, tr("Trace ended"), str);
+}
+
+void DebuggerWindowController::NotifyTraceFileOpenError(
+    const QString& file) noexcept {
+  auto message = QString{tr("Unable to open trace file")};
+  message += QString{"%1 "}.arg(file);
+  message += tr("for writing");
+  message += tr(": %1.").arg(strerror(errno));
+
+  QMessageBox::critical(this, tr("I/O error"), message);
 }
 
 void DebuggerWindowController::EnableControls(const bool enabled) noexcept {
@@ -176,13 +202,51 @@ void DebuggerWindowController::ConnectSignalsToSlots() noexcept {
       }
     }
   });
+
+  connect(view_.actionTrace, &QAction::triggered, [this]() {
+    if (vm_instance_.IsTracing()) {
+      vm_instance_.StopTracing();
+      NotifyTraceEnded();
+
+      return;
+    }
+
+    const auto trace_file = QFileDialog::getSaveFileName(
+        this, tr("Set trace file"), "",
+        tr("Trace files (*.txt);;All files (*.*)"));
+
+    if (!trace_file.isEmpty()) {
+      if (!vm_instance_.StartTracing(trace_file.toStdString())) {
+        NotifyTraceFileOpenError(trace_file);
+        return;
+      }
+      NotifyTraceStart(trace_file);
+    }
+  });
+
+  connect(view_.disasmView, &QTreeView::doubleClicked,
+          [this](const QModelIndex& index) {
+            const auto address = disasm_model_->GetAddressFromRow(index.row());
+
+            const auto bp = vm_instance_.FindBreakpoint(address);
+
+            if (bp) {
+              vm_instance_.breakpoints_.erase(bp.value());
+              return;
+            }
+
+            vm_instance_.breakpoints_.push_back(
+                {address, chip8::VMInstance::BreakpointFlags::kPreserve});
+          });
 }
 
 void DebuggerWindowController::SetupFromAppSettings() noexcept {
+#if 0
   const auto font = AppSettingsModel().GetDebuggerFont();
 
   view_.disasmView->setFont(font);
   view_.registerView->setFont(font);
   view_.stackView->setFont(font);
   view_.breakpointsWidget->setFont(font);
+#endif
 }

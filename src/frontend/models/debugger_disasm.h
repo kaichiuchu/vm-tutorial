@@ -45,12 +45,12 @@ class DebuggerDisasmModel : public QAbstractTableModel {
   /// \returns \p true if the address was valid, or \p false otherwise.
   auto SetStartAddress(uint_fast16_t address) noexcept -> bool;
 
- private:
   /// Determines the address associated with a row.
   ///
   /// \returns The address associated with a row.
   auto GetAddressFromRow(unsigned int row) const noexcept -> uint_fast16_t;
 
+ private:
   /// From Qt documentation:
   ///
   /// Returns the number of columns for the children of the given \p parent.
