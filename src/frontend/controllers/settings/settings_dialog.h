@@ -16,7 +16,6 @@
 
 #include "audio_settings.h"
 #include "general_settings.h"
-#include "keypad_settings.h"
 #include "logger_settings.h"
 #include "machine_settings.h"
 #include "ui_settings_dialog.h"
@@ -32,7 +31,6 @@ class SettingsDialogController : public QDialog {
     kGeneralSettings,
     kLoggerSettings,
     kMachineSettings,
-    kKeypadSettings,
     kAudioSettings
   };
 
@@ -47,9 +45,6 @@ class SettingsDialogController : public QDialog {
 
   /// The controller for the general settings widget.
   GeneralSettingsController* general_settings_;
-
-  /// The controller for the keypad settings widget.
-  KeypadSettingsController* keypad_settings_;
 
   /// The controller for the logger settings widget.
   LoggerSettingsController* logger_settings_;

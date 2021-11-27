@@ -188,21 +188,21 @@ void MainWindowController::CreateStatusBarWidgets() noexcept {
 }
 
 void MainWindowController::keyPressEvent(QKeyEvent* key_event) noexcept {
-  const auto chip8_key = AppSettingsModel().GetVMKeyBinding(key_event->key());
+  const auto key = key_event->key();
 
-  if (!chip8_key) {
+  if (!key_bindings_.count(key)) {
     QMainWindow::keyPressEvent(key_event);
     return;
   }
-  emit CHIP8KeyPress(chip8_key.value());
+  emit CHIP8KeyPress(key_bindings_[key]);
 }
 
 void MainWindowController::keyReleaseEvent(QKeyEvent* key_event) noexcept {
-  const auto chip8_key = AppSettingsModel().GetVMKeyBinding(key_event->key());
+  const auto key = key_event->key();
 
-  if (!chip8_key) {
-    QMainWindow::keyReleaseEvent(key_event);
+  if (!key_bindings_.count(key)) {
+    QMainWindow::keyPressEvent(key_event);
     return;
   }
-  emit CHIP8KeyRelease(chip8_key.value());
+  emit CHIP8KeyRelease(key_bindings_[key]);
 }

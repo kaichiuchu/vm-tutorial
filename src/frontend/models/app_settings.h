@@ -17,7 +17,6 @@
 #include <QColor>
 #include <QFont>
 #include <QSettings>
-#include <unordered_map>
 
 #include "types.h"
 
@@ -27,27 +26,11 @@ class AppSettingsModel : public QSettings {
   Q_OBJECT
 
  public:
-  // Type alias for the virtual machine key bindings.
-  using VMKeyBindings = std::map<QString, int>;
-
   /// Constructs the application settings model.
   ///
   /// \param parent_object The parent widget of which this class is a child of
   /// it.
   explicit AppSettingsModel(QObject* parent_object = nullptr) noexcept;
-
-  /// Gets the mapping of virtual machine key bindings.
-  ///
-  /// \returns The virtual machine key bindings.
-  auto GetVMKeyBindings() noexcept -> VMKeyBindings;
-
-  /// Tries to find the virtual machine key the physical key corresponds to.
-  ///
-  /// \param physical_key The scancode of the key that the user pressed.
-  ///
-  /// \returns The CHIP-8 key that the physical key corresponds to, if any.
-  auto GetVMKeyBinding(const int physical_key) noexcept
-      -> std::optional<chip8::Key>;
 
   /// Tries to find the audio device to use by its name.
   ///
@@ -81,14 +64,6 @@ class AppSettingsModel : public QSettings {
   /// \returns The default path of guest program files, or the current working
   /// directory by default.
   auto GetProgramFilesPath() const noexcept -> QString;
-
-  /// Tries to find if bilinear filtering is enabled according to the
-  /// configuration file.
-  ///
-  /// \returns \p true if bilinear filtering is enabled, or \p false otherwise.
-  /// If the bilinear filtering state is not within the configuration file, \p
-  /// false is returned by default.
-  auto BilinearFilteringEnabled() const noexcept -> bool;
 
   /// Tries to find the color a level belongs to.
   ///
@@ -144,12 +119,6 @@ class AppSettingsModel : public QSettings {
   /// \param path The new default path of the guest program files.
   void SetProgramFilesPath(const QString& path) noexcept;
 
-  /// Sets the state of bilinear filtering within the configuration file.
-  ///
-  /// \param enabled \p true if bilinear filtering should be enabled, or \p
-  /// false otherwise.
-  void SetBilinearFiltering(bool enabled) noexcept;
-
   /// Sets the frequency of the tone to generate within the configuration file.
   ///
   /// \param freq The frequency of the audio tone to generate.
@@ -171,14 +140,6 @@ class AppSettingsModel : public QSettings {
   /// \param audio_device_name The name of the audio device.
   void SetDefaultAudioDeviceName(const QString& audio_device_name) noexcept;
 
-  /// Sets the virtual machine key the physical key corresponds to within the
-  /// configuration file.
-  ///
-  /// \param chip8_key The CHIP-8 key to associate with the physical key.
-  /// \param physical_key The scancode of the physical key to associate with the
-  /// CHIP-8 key.
-  void SetVMKeyBinding(chip8::Key chip8_key, int physical_key) noexcept;
-
   /// Sets the font of the logger within the configuration file.
   ///
   /// \param font The log font to use.
@@ -190,24 +151,4 @@ class AppSettingsModel : public QSettings {
   /// \param color The color to associate with the level.
   void SetLogLevelColor(const QString& level_name,
                         const QColor& color) noexcept;
-
- private:
-  /// Maps the names of virtual machine key binding sections to CHIP-8 keys.
-  std::map<QString, chip8::Key> chip8_key_mapping_ = {
-      {QStringLiteral("key_0"), chip8::Key::k0},
-      {QStringLiteral("key_1"), chip8::Key::k1},
-      {QStringLiteral("key_2"), chip8::Key::k2},
-      {QStringLiteral("key_3"), chip8::Key::k3},
-      {QStringLiteral("key_4"), chip8::Key::k4},
-      {QStringLiteral("key_5"), chip8::Key::k5},
-      {QStringLiteral("key_6"), chip8::Key::k6},
-      {QStringLiteral("key_7"), chip8::Key::k7},
-      {QStringLiteral("key_8"), chip8::Key::k8},
-      {QStringLiteral("key_9"), chip8::Key::k9},
-      {QStringLiteral("key_A"), chip8::Key::kA},
-      {QStringLiteral("key_B"), chip8::Key::kB},
-      {QStringLiteral("key_C"), chip8::Key::kC},
-      {QStringLiteral("key_D"), chip8::Key::kD},
-      {QStringLiteral("key_E"), chip8::Key::kE},
-      {QStringLiteral("key_F"), chip8::Key::kF}};
 };

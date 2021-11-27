@@ -43,14 +43,12 @@ set(CONTROLLER_HDRS controllers/debugger_window.h
 
 set(CONTROLLER_SETTINGS_SRCS controllers/settings/audio_settings.cpp
                              controllers/settings/general_settings.cpp
-                             controllers/settings/keypad_settings.cpp
                              controllers/settings/logger_settings.cpp
                              controllers/settings/machine_settings.cpp
                              controllers/settings/settings_dialog.cpp)
 
 set(CONTROLLER_SETTINGS_HDRS controllers/settings/audio_settings.h
                              controllers/settings/general_settings.h
-                             controllers/settings/keypad_settings.h
                              controllers/settings/logger_settings.h
                              controllers/settings/machine_settings.h
                              controllers/settings/settings_dialog.h)
@@ -71,7 +69,6 @@ set(VIEWS_FILES views/debugger_window.ui
 
 set(VIEWS_SETTINGS_FILES views/settings/audio_settings.ui
                          views/settings/general_settings.ui
-                         views/settings/keypad_settings.ui
                          views/settings/logger_settings.ui
                          views/settings/machine_settings.ui
                          views/settings/settings_dialog.ui)

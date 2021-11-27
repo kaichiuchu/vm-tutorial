@@ -17,7 +17,6 @@ SettingsDialogController::SettingsDialogController(
     : QDialog(parent_widget),
       audio_settings_(new AudioSettingsController(this)),
       general_settings_(new GeneralSettingsController(this)),
-      keypad_settings_(new KeypadSettingsController(this)),
       logger_settings_(new LoggerSettingsController(this)),
       machine_settings_(new MachineSettingsController(this)) {
   view_.setupUi(this);
@@ -41,9 +40,6 @@ void SettingsDialogController::AddSettingsToSettingsContainer() noexcept {
 
   view_.selectedSettingsWidget->insertWidget(SettingsCategory::kMachineSettings,
                                              machine_settings_);
-
-  view_.selectedSettingsWidget->insertWidget(SettingsCategory::kKeypadSettings,
-                                             keypad_settings_);
 
   view_.selectedSettingsWidget->insertWidget(SettingsCategory::kAudioSettings,
                                              audio_settings_);

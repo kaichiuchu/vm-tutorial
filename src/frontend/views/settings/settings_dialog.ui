@@ -36,11 +36,6 @@
      </item>
      <item>
       <property name="text">
-       <string>Keypad Settings</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
        <string>Audio Settings</string>
       </property>
      </item>

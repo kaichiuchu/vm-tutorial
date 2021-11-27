@@ -19,49 +19,6 @@ AppSettingsModel::AppSettingsModel(QObject* parent_object) noexcept
     : QSettings(QStringLiteral("vm-tutorial.ini"), QSettings::IniFormat,
                 parent_object) {}
 
-auto AppSettingsModel::GetVMKeyBindings() noexcept -> VMKeyBindings {
-  VMKeyBindings bindings;
-
-  beginGroup(QStringLiteral("vm_keys"));
-
-  for (const auto& key : childKeys()) {
-    bindings[key] = value(key).toInt();
-  }
-  endGroup();
-  return bindings;
-}
-
-auto AppSettingsModel::GetVMKeyBinding(const int physical_key) noexcept
-    -> std::optional<chip8::Key> {
-  // We call \ref QSettings::beginGroup() here so we can grab all of the child
-  // keys of the virtual machine key binding group without the group name in the
-  // result of \ref QSettings::childKeys().
-  beginGroup("vm_keys");
-
-  // Grab all of the keys within the virual machine key binding group, and
-  // iterate over them one at a time.
-  for (const auto& key : childKeys()) {
-    // Grab the value that the key has.
-    const auto result = value(key).toInt();
-
-    // The key that was pressed corresponds to a virtual machine key binding.
-    if (result == physical_key) {
-      // Restore the original group to what it was before we called \ref
-      // QSettings::beginGroup().
-      endGroup();
-
-      // Now return the CHIP-8 key that the virtual machine key binding section
-      // name refers to.
-      return chip8_key_mapping_[key];
-    }
-  }
-
-  // Key wasn't found, restore the original group to what it was before we
-  // called \ref QSettings::beginGroup().
-  endGroup();
-  return std::nullopt;
-}
-
 auto AppSettingsModel::GetAudioDeviceName() const noexcept -> QString {
   return value(QStringLiteral("audio/default_device")).toString();
 }
@@ -82,10 +39,6 @@ auto AppSettingsModel::GetAudioToneType() const noexcept -> int {
 auto AppSettingsModel::GetProgramFilesPath() const noexcept -> QString {
   return value(QStringLiteral("paths/program_files"), QDir::currentPath())
       .toString();
-}
-
-auto AppSettingsModel::BilinearFilteringEnabled() const noexcept -> bool {
-  return value(QStringLiteral("graphics/bilinear_filtering"), false).toBool();
 }
 
 auto AppSettingsModel::GetLogLevelColor(const QString& level) const noexcept
@@ -152,10 +105,6 @@ void AppSettingsModel::SetProgramFilesPath(const QString& path) noexcept {
   setValue(QStringLiteral("paths/program_files"), path);
 }
 
-void AppSettingsModel::SetBilinearFiltering(const bool enabled) noexcept {
-  setValue(QStringLiteral("graphics/bilinear_filtering"), enabled);
-}
-
 void AppSettingsModel::SetAudioToneFrequency(const unsigned int freq) noexcept {
   setValue(QStringLiteral("audio/tone_freq"), freq);
 }
@@ -171,14 +120,6 @@ void AppSettingsModel::SetAudioToneType(const int tone_type) noexcept {
 void AppSettingsModel::SetDefaultAudioDeviceName(
     const QString& audio_device_name) noexcept {
   setValue(QStringLiteral("audio/default_device"), audio_device_name);
-}
-
-void AppSettingsModel::SetVMKeyBinding(const chip8::Key chip8_key,
-                                       const int physical_key) noexcept {
-  const auto key_string =
-      QString{"vm_keys/key_%1"}.arg(QString::number(chip8_key, 16).toUpper());
-
-  setValue(key_string, physical_key);
 }
 
 void AppSettingsModel::SetLogFont(const QFont& font) noexcept {
