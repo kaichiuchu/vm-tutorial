@@ -14,20 +14,20 @@
 
 #include "models/app_settings.h"
 
+SoundManager::SoundManager(QObject* parent_object) noexcept
+    : QObject(parent_object) {
+  SetupFromAppSettings();
+}
+
 SoundManager::~SoundManager() noexcept { SDL_Quit(); }
 
-std::optional<SoundManager*> SoundManager::Initialize(QObject* parent_object,
-                                                      QString& error) noexcept {
+auto SoundManager::Initialize(QObject* parent_object, QString& error) noexcept
+    -> std::optional<SoundManager*> {
   if (SDL_Init(SDL_INIT_AUDIO) == 0) {
     return new SoundManager{parent_object};
   }
   error = SDL_GetError();
   return std::nullopt;
-}
-
-SoundManager::SoundManager(QObject* parent_object) noexcept
-    : QObject(parent_object) {
-  SetupFromAppSettings();
 }
 
 void SoundManager::PlayTone(const double duration) noexcept {

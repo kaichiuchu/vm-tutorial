@@ -29,7 +29,6 @@ VMTutorialApplication::VMTutorialApplication() noexcept
   // This may fail and an error message may be displayed before the main window
   // is shown, but it does not constitute a fatal program termination.
   InitializeAudio();
-
   ConnectVMThreadSignalsToSlots();
   ConnectMainWindowSignalsToSlots();
 
@@ -39,7 +38,7 @@ VMTutorialApplication::VMTutorialApplication() noexcept
 
 void VMTutorialApplication::InitializeAudio() noexcept {
   // This variable will contain the error from the audio subsystem, if any.
-  QString sound_manager_error;
+  auto sound_manager_error = QString{};
 
   // Try to initialize the sound manager.
   sound_manager_ = SoundManager::Initialize(this, sound_manager_error);
@@ -123,6 +122,13 @@ void VMTutorialApplication::ConnectVMThreadSignalsToSlots() noexcept {
 
   connect(vm_thread_, &VMThread::UpdateScreen, main_window_->GetRenderer(),
           &Renderer::UpdateScreen);
+
+  connect(vm_thread_, &VMThread::LogMessageEmitted, this,
+          [this](const std::string& msg) {
+            if (logger_window_) {
+              logger_window_->AddMessage(QString::fromStdString(msg));
+            }
+          });
 }
 
 void VMTutorialApplication::ConnectMainWindowSignalsToSlots() noexcept {
@@ -167,11 +173,6 @@ void VMTutorialApplication::ConnectMainWindowSignalsToSlots() noexcept {
     if (!logger_window_) {
       logger_window_ = new LoggerWindowController();
       logger_window_->setAttribute(Qt::WA_DeleteOnClose);
-
-      connect(vm_thread_, &VMThread::LogMessageEmitted, this,
-              [this](const std::string& msg) {
-                logger_window_->AddCoreMessage(QString::fromStdString(msg));
-              });
     }
     // If the logger window already exists, it will be brought to the
     // foreground.
@@ -190,7 +191,6 @@ void VMTutorialApplication::ConnectMainWindowSignalsToSlots() noexcept {
               }
 
               ConnectAudioSettingsSignalsToSlots();
-              ConnectGraphicsSettingsSignalsToSlots();
               ConnectMachineSettingsSignalsToSlots();
             }
             // If the settings dialog already exists, it will be brought to the
@@ -329,6 +329,7 @@ void VMTutorialApplication::ConnectDebuggerSignalsToSlots() noexcept {
             // clear any breakpoints that may still be set so as to not cause
             // the thread to suddenly stop.
             vm_thread_->vm_instance_.breakpoints_.clear();
+            vm_thread_->vm_instance_.StopTracing();
           });
 
   connect(debugger_window_, &DebuggerWindowController::ToggleRunState, this,
@@ -369,12 +370,6 @@ void VMTutorialApplication::ConnectAudioSettingsSignalsToSlots() noexcept {
   connect(settings_dialog_->audio_settings_,
           &AudioSettingsController::AudioDeviceChanged, (*sound_manager_),
           &SoundManager::SetAudioOutputDevice);
-}
-
-void VMTutorialApplication::ConnectGraphicsSettingsSignalsToSlots() noexcept {
-  connect(settings_dialog_->graphics_settings_,
-          &GraphicsSettingsController::BilinearFilteringStateChanged,
-          main_window_->GetRenderer(), &Renderer::EnableBilinearFiltering);
 }
 
 void VMTutorialApplication::ConnectMachineSettingsSignalsToSlots() noexcept {

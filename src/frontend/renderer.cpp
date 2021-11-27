@@ -31,7 +31,6 @@ void Renderer::initializeGL() noexcept {
   CreateVertexArray();
   CreateElementArray();
   CreateTexture();
-  SetupFromAppSettings();
 }
 
 void Renderer::resizeGL(const int w, const int h) noexcept {
@@ -55,15 +54,6 @@ void Renderer::UpdateScreen(
   update();
 }
 
-void Renderer::EnableBilinearFiltering(const bool enabled) noexcept {
-  const auto filter = enabled ? GL_LINEAR : GL_NEAREST;
-
-  glBindTexture(GL_TEXTURE_2D, texture_);
-
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
-}
-
 auto Renderer::CreateShader(const GLenum type, const char* const src) noexcept
     -> GLuint {
   auto shader = glCreateShader(type);
@@ -82,10 +72,9 @@ void Renderer::CreateTexture() noexcept {
 
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-}
 
-void Renderer::SetupFromAppSettings() noexcept {
-  EnableBilinearFiltering(AppSettingsModel().BilinearFilteringEnabled());
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 }
 
 void Renderer::CreateVertexArray() noexcept {

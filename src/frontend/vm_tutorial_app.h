@@ -89,9 +89,6 @@ class VMTutorialApplication : public QObject {
   /// Connects the signals from the audio settings widget to slots.
   void ConnectAudioSettingsSignalsToSlots() noexcept;
 
-  /// Connects the signals from the graphics settings widget to slots.
-  void ConnectGraphicsSettingsSignalsToSlots() noexcept;
-
   /// Connects the signals from the machine settings widget to slots.
   void ConnectMachineSettingsSignalsToSlots() noexcept;
 };

@@ -35,12 +35,6 @@ class Renderer : public QOpenGLWidget, public QOpenGLFunctions_4_1_Core {
   void UpdateScreen(
       const chip8::ImplementationInterface::Framebuffer& framebuffer) noexcept;
 
-  /// Controls the state of bilinear filtering.
-  ///
-  /// \param enabled \p true to enable bilinear filtering, or \p false
-  /// otherwise.
-  void EnableBilinearFiltering(bool enabled) noexcept;
-
  protected:
   /// From Qt documentation:
   ///
@@ -88,9 +82,6 @@ class Renderer : public QOpenGLWidget, public QOpenGLFunctions_4_1_Core {
   void paintGL() noexcept override;
 
  private:
-  /// Configures the renderer based on the current application settings.
-  void SetupFromAppSettings() noexcept;
-
   /// Creates the vertex shader.
   void CreateVertexShader() noexcept;
 

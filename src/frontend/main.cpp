@@ -22,7 +22,7 @@
 ///
 /// \param argv The arguments passed to the program from the environment in
 /// which the program is run.
-auto main(int argc, char* argv[]) -> int {
+auto main(int argc, char *argv[]) -> int {
   /// Per Qt documentation at https://doc.qt.io/qt-6/qopenglwidget.html:
   ///
   /// Note: Calling \ref QSurfaceFormat::setDefaultFormat() before constructing

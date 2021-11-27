@@ -42,8 +42,8 @@ class SoundManager : public QObject {
   /// \param error The error message from SDL, if any.
   ///
   /// \returns Either an empty object, or a SoundManager object.
-  static std::optional<SoundManager*> Initialize(QObject* parent_object,
-                                                 QString& error) noexcept;
+  static auto Initialize(QObject* parent_object, QString& error) noexcept
+      -> std::optional<SoundManager*>;
 
   /// Plays a tone for the specified period.
   ///
